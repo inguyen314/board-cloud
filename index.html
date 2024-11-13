@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Refresh" content="300">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board</title>
+    <link href="css/style.css" rel="stylesheet" type="text/css" media="all" />
+    <!-- Include Moment.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+</head>
+
+<body>
+    <script>
+        // SETUP URL PARAMETERS
+        const documentRoot = window.location.protocol + "//" + window.location.host + "/";
+
+        // Determine the default value of cda based on documentRoot
+        const cdaDefault = (documentRoot === "https://wm.mvs.ds.usace.army.mil/") ? "internal" : "public";
+        // console.log("cdaDefault: ", cdaDefault);
+
+        // Create a URL object with the current page URL
+        const urlParams = new URLSearchParams(window.location.search);
+
+        //  URL PARAMETERS
+        const display_type = urlParams.get('display_type') || 'FloodStage';
+        console.log('display_type: ', display_type);
+
+        const cda = urlParams.get('cda') || cdaDefault;
+        console.log('cda: ', cda);
+
+        const display_tributary = urlParams.get('display_tributary') || 'False';
+        console.log('display_tributary: ', display_tributary);
+
+        const dev = urlParams.get('dev') || 'False';
+        console.log('dev: ', dev);
+
+        // BOARD TITLE
+        let boardTitle = null;
+        if (display_tributary === "True") {
+            boardTitle = "Tributary Board";
+        } else {
+            if (display_type === "FloodStage") {
+                boardTitle = "Flood Stage Board";
+            } else if (display_type === "LWRP") {
+                boardTitle = "LWRP Board";
+            } else if (display_type === "Lake") {
+                boardTitle = "Lake Board";
+            } else {
+                boardTitle = 909;
+            }
+        }
+        // console.log('boardTitle: ', boardTitle);
+
+        // Update the HTML title
+        document.title = boardTitle;
+
+
+        // SETUP BASIN
+        if (display_tributary === "False" && display_type !== "Lake") {
+            basin = 'Mississippi';
+            // console.log('basin: ', basin);
+        } else if (display_tributary === "True") {
+            // basin = ['Meramec'];
+            basin = ['Cuivre', 'Illinois', 'Missouri', 'Meramec', 'Kaskaskia', 'Big Muddy', 'Ohio'];
+            // console.log('basin: ', basin);
+        } else if (display_type === "Lake") {
+            // Define an empty array data
+            data = [];
+
+            // GET LAKE LOCATION ID
+            basin = ['Lk Shelbyville-Kaskaskia', 'Carlyle Lk-Kaskaskia', 'Rend Lk-Big Muddy', 'Wappapello Lk-St Francis', 'Mark Twain Lk-Salt'];
+            // console.log('basin: ', basin);
+        } else {
+            basin = 909;
+        }
+    </script>
+
+    <!-- table div -->
+    <div id="loading" style="display: none;"><img src="images/loading4.gif" style='height: 50px; width: 50px;'
+            alt="Loading..." /></div>
+    <!-- <div id="loading" style="display: none;"><img src="../public/images/IQe5 Loading.gif" style='height: 50px; width: 50px;'
+            alt="Loading..." /></div> -->
+    <script type="text/javascript" src="board_functions.js"></script>
+    <script type="text/javascript" src="board_setup.js"></script>
+    <script type="text/javascript">
+        if (dev !== null) {
+            document.write('<script type="text/javascript" src="board_cda.js"><\/script>');
+        } else {
+            document.write('<script type="text/javascript" src="board_php.js"><\/script>');
+        }
+    </script>
+
+    <div id="tableContainer"></div>
+</body>
+
+</html>

@@ -1,0 +1,551 @@
+/* Site Colors:
+  #e03e52 - pink
+  #c8ced2 - grey
+  #f07b27 - orange
+  #786758 - brown
+*/
+/*** ===================================================================================== ***/
+/*** ===== SPAN CLASSES ===== ***/
+/*** ===================================================================================== ***/
+.last_max_value, .last_max_value a {
+	font-size: 1.0em;
+	font-weight: bold;
+	color: darkblue;
+}
+.last_max_value_flood {
+	color:red;
+	font-size: 1.0em
+}
+.last_max_value_flood a {
+	color:red;
+    font-size: 1.0em
+}
+.ngvd29 {
+	font-size: 1.0em;
+	color:purple;
+}
+/*** ===================================================================================== ***/
+/*** ===== MISC ===== ***/
+/*** ===================================================================================== ***/
+.alert {
+	padding: 15px;
+	background-color: #f44336;
+	color: white;
+	text-align: center;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.hard_coded {
+	color: #333; /* Base text color */
+	text-shadow: 0 0 3px darkorange;
+}
+.hard_coded_php {
+	color: #333; /* Base text color */
+	text-shadow: 0 0 3px purple;
+}
+.hard_coded_php_late {
+	color: #333; /* Base text color */
+	text-shadow: 0 0 5px gray;
+}
+/**************************************************************************/
+/*WAR ROOM DISPLAY*/
+/**************************************************************************/
+body {
+	font-family: 'Arial', sans-serif;
+	background-color: #f4f4f4;
+	margin: 0;
+	padding: 0;
+}
+
+[title] {
+	position: relative;
+	cursor: pointer;
+	display: inline-block;
+}
+
+[title]::before {
+	/*content: attr(title);
+	position: absolute;
+	background-color: #333;
+	color: #fff;
+	padding: 8px;
+	border-radius: 4px;
+	white-space: nowrap;
+	z-index: 1;
+	bottom: 125%;
+	left: 50%;
+	transform: translateX(-50%);
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
+	font-size: 12px;*/
+}
+
+[title]:hover::before {
+	opacity: 1;
+}
+
+
+
+#board {
+	border-collapse: collapse;
+	width: 100%;
+	background-color: #fff;
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+#board th, td {
+	border: 1px solid #ddd;
+}
+#board th {
+	background-color: #333;
+    color: white;
+	text-align: center;
+	padding: 4px;
+	border-color: rgb(85, 85, 85);
+}
+#board th a{
+	text-decoration: none;
+	color: goldenrod;
+}
+#board tr:hover {
+	background-color: #f5f5f5;
+}
+#board td {
+  padding: 1px;
+  padding-top: 4px;
+  padding-bottom: 3px;
+  text-align: center;
+}
+
+#board_cda {
+	border-collapse: collapse;
+	width: 100%;
+	background-color: #fff;
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+#board_cda th, td {
+	border: 1px solid #ddd;
+}
+
+#board_cda th, td a{
+	color: darkblue;
+}
+#board_cda th {
+	background-color: darkblue;
+    color: white;
+	text-align: center;
+	padding: 4px;
+	border-color: rgb(85, 85, 85);
+}
+#board_cda th a{
+	text-decoration: none;
+	color: goldenrod;
+}
+#board_cda tr:hover {
+	background-color: #f5f5f5;
+}
+#board_cda td {
+  padding: 1px;
+  padding-top: 4px;
+  padding-bottom: 3px;
+  text-align: center;
+}
+
+#board_title {
+	font-size: 1.6em;
+	padding-top: 10px;
+    padding-bottom: 10px;
+	color:#FFF;
+	vertical-align: middle;
+	text-align: center;
+}
+#board_qpf {
+	background-color:#C00;
+	font-size: 1em;
+	color:#FFF;
+	float:left;
+	display: inline;
+}
+
+.NWS_today_morning_forecast {
+	color: blue;
+	text-shadow: 0 0 2px purple;
+}
+.NWS_yesterday_evening_forecast {
+	color: purple;
+	text-shadow: 0 0 2px purple;
+}
+.NWS_yesterday_morning_forecast {
+	color: green;
+	text-shadow: 0 0 2px purple;
+}
+
+
+.Last_Modified {
+	color:#FFF;
+	text-align: left;
+	font-size: 0.8em;
+}
+.Last_Modified_Tributary {
+	text-align: right;
+    font-size: 0.8em;
+    float: left;
+	padding: 5px 10px;
+}
+.Flood_Stage_Switch_Tributary {
+	float: right;
+	font-size: 0.8em;
+	padding: 5px 10px;
+	background-color: #3498db; /* Choose your desired background color */
+	color: #fff; /* Choose your desired text color */
+	text-decoration: none;
+	border-radius: 3px;
+	transition: background-color 0.3s ease;
+}
+
+.Flood_Stage_Switch_Tributary a {
+	text-decoration: none;
+	color: #fff;
+}
+
+.Flood_Stage_Switch_Tributary:hover {
+	background-color: #2980b9; /* Choose a slightly darker shade for the hover effect */
+}
+.NWS_Forecast_Time {
+	text-align: right;
+	font-size: 0.8em;
+}
+
+.Font_10 {
+	font-size: 1.0em;
+}
+.Font_12 {
+	font-size: 1.2em;
+}
+.Font_15 {
+	font-size: 1.5em;
+}
+.Font_15:hover {
+	background-color: lightgray;
+}
+.Font_18 {
+	font-size: 1.8em;
+}
+.Font_18:hover {
+	background-color: lightgray;
+}
+.Font_20 {
+	font-size: 2.0em;
+}
+.Font_20:hover {
+	background-color: lightgray;
+}
+.Font_25 {
+	font-size: 2.5em;
+}
+.Font_22 {
+	font-size: 2.2em;
+}
+.Font_20 {
+	font-size: 2.0em;
+}
+.Font_15_Late {
+	font-size: 1.5em;
+	opacity: 0.5;
+	font-style: italic;
+	font-weight:bold;
+}
+.Font_20_Late {
+	font-size: 2.0em;
+	opacity: 0.5;
+	font-style: italic;
+}
+.Font_25 {
+	font-size: 2.5em;
+}
+
+.Lower_Upper_Flow_Limit {
+	color:red;
+	font-weight:bold;
+}
+
+.Bankfull_Limit {
+	color:red;
+	font-weight:bold;
+}
+
+.Lower_Upper_Flow {
+	color:lightblue;
+}
+
+.Gen_Now {
+	color:pink;
+	font-weight:bold;
+}
+.Gen {
+	color:pink;
+	font-weight:bold;
+}
+.Gen_No {
+	font-size: 1.0em;
+}
+
+
+
+
+.Above_Flood_Stage_On_Time {
+	color:red;
+}
+.Above_Flood_Stage_Late {
+	color:red;
+	opacity: 0.5;
+	font-style: italic;
+}
+.Above_Flood_Stage_Missing {
+	opacity: 0.5;
+}
+
+.Below_Flood_Stage_On_Time {
+	opacity: 1.0;
+	font-weight: bold;
+	color: darkblue;
+}
+.Below_Flood_Stage_Late {
+	opacity: 0.75;
+	font-style: italic;
+	color: purple;
+	font-weight: bold;
+}
+.Below_Flood_Stage_Missing {
+	opacity: 0.5;
+}
+
+
+.Board_Below_Flood_Stage_Late {
+	opacity: 0.5;
+	font-style: italic;
+}
+.Board_Above_Flood_Stage_Late {
+	opacity: 0.5;
+	font-style: italic;
+	color:red;
+}
+.Board_Above_Flood_Stage, .last_max_value_flood {
+	opacity: 0.5;
+	color:red;
+}
+
+
+
+
+.Crest_Hide {
+	color:#ffffff;
+	font-size: 1.5em;
+}
+.Crest_Hide:hover {
+	color:#ffffff;
+	font-size: 1.5em;
+}
+.Crest_Date_Hide {
+	color:#ffffff;
+	font-size: 1.5em;
+}
+.Crest_Date_Hide1:hover {
+	color:#ffffff;
+	font-size: 1.5em;
+}
+
+.Board_River {
+	text-align: left;
+	margin-bottom: 3px;
+    margin-top: 3px;
+}
+.Board_Roller {
+	background-color:cadetblue;
+	padding: 2px;
+	border: 1px solid #373737;
+	font-weight:bold;
+	display: inline-block;
+    width: 70px;
+	text-align: center;
+	float:none;
+	margin-left: 0.1em;
+	font-size: 1.5em;
+}
+.Board_Roller:hover {
+	background-color: lightgray;
+}
+.Board_Tainter {
+	background-color:powderblue;
+	padding: 2px;
+	border: 1px solid #373737;
+	font-weight:bold;
+	display: inline-block;
+    width: 70px;
+	text-align: center;
+	float:none;
+	margin-right: 0em;
+	font-size: 1.5em;
+}
+.Board_Tainter:hover {
+	background-color: lightgray;
+}
+.Board_Roller_Missing {
+	background-color:orangered;
+	padding: 2px;
+	border: 1px solid #373737;
+	font-weight:bold;
+	display: inline-block;
+    width: 50px;
+	text-align: center;
+	float:none;
+	margin-right: 0em;
+	font-size: 1.5em;
+}
+.Board_Tainter_Missing {
+	background-color:orangered;
+	padding: 3px;
+	border: 1px solid #373737;
+	font-weight:bold;
+	display: inline-block;
+    width: 50px;
+	text-align: center;
+	float:none;
+	margin-left: 1em;
+	font-size: 1.5em;
+}
+
+.project_gage {
+	text-align: center;
+	font-weight: bold;
+}
+.board_project_gage {
+	color:darkblue;
+	font-weight:bold;
+	font-size: 1.75em;
+}
+.board_project_gage:hover {
+	color:rgb(0, 0, 0);
+	/*text-decoration: underline;*/
+	background-color: lightgray;
+}
+.board_gage {
+	color:darkblue;
+	font-weight:bold;
+	font-size: 1.75em;
+}
+.board_gage:hover {
+	color:rgb(0, 0, 0);
+	/*text-decoration: underline;*/
+	background-color: lightgray;
+}
+.next_3_days {
+	color:#373737;
+	font-weight:bold;
+	font-size: 1.5em;
+	background-color: rgb(238, 246, 253);
+}
+.hasData {
+	border: 1px solid #ddd;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+.next_3_days:hover {
+	color:rgb(0, 0, 0);
+	/*text-decoration: underline;*/
+	background-color: lightgray;
+}
+.forecast_time {
+	color:#373737;
+	background-color: rgb(238, 246, 253);
+}
+.board_project_gage_small1 {
+	color:black;
+	font-weight:bold;
+	font-size: 1.5em;
+}
+.board_missing1 {
+	color:red;
+	font-weight:bold;
+	font-size: 2.0em
+}
+.error {
+	color:red;
+	font-weight:bold;
+	font-size: 1.0em
+}
+.board_lake_th1 {
+  background-color: #333333;
+  color: white;
+  font-size: 1.5em;
+  border: 1px solid #ddd;
+}
+.board_lake_note1 {
+  background-color: palegoldenrod;
+  color: #333333;
+  font-size: 1.5em;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+.BG_White1 {
+	background-color:white;
+}
+.hide {
+  display: none;
+}
+.myDIV:hover + .hide {
+	font-size: 0.5em;
+}
+
+
+#formsContainer {
+	display: flex;
+	padding: 0px; /* Adjust the padding as needed */
+	margin: 0px; /* Adjust the padding as needed */
+}
+
+.myForm {
+	margin-right: 10px;
+}
+
+#form1, #form2, #form3 {
+	padding-bottom: 0; /* Adjust the padding as needed */
+	margin-bottom: 0; /* Adjust the margin as needed */
+}
+
+.myForm label {
+	margin-bottom: 0px;
+	margin-right: 5px;
+}
+.myForm select {
+	margin-bottom: 0px;
+	margin-right: 5px;
+	padding: 3px; /* Adjust the padding as needed */
+	border: 1px solid #ccc; /* Add a border for a cleaner look */
+	border-radius: 2px; /* Add rounded corners */
+	background-color: #fff; /* Set a background color */
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle box shadow for depth */
+	appearance: none; /* Remove default styles on some browsers */
+}
+
+button {
+	padding: 2px 2px;
+	border: none;
+	background-color: #3498db;
+	color: #ffffff;
+	cursor: pointer;
+	border-radius: 2px;
+	transition: background-color 0.3s ease;
+}
+
+button:hover {
+	background-color: #2980b9;
+}
+
+#switch_php_board {
+	display: flex;
+	float: left;
+	color: orange;
+	padding-top: 2px;
+	padding-right: 15px;
+}
