@@ -191,9 +191,38 @@ function filterDataByLocationId(ROutput, location_id) {
 }
 
 // Function to update the HTML element with filtered data
-function updateOutflowHTML(filteredData, midnightCell) {
+function updateOutflowHTML(filteredData, midnightCell, bankfullLevel) {
     const locationData = filteredData[Object.keys(filteredData)[0]]; // Get the first (and only) key's data
-    midnightCell.innerHTML = `<span title="Uses PHP Json Output, No Cloud Option to Access Custom Schema Yet" class="hard_coded_php" style="float: left; padding-left: 30px;">${locationData.outflow_midnight}</span><span title="Uses PHP Json Output, No Cloud Option to Access Custom Schema Yet" class="hard_coded_php" style="float: right; padding-right: 30px;">${locationData.outflow_evening}</span>`;
+    const midnight = locationData.outflow_midnight;
+    const evening = locationData.outflow_evening;
+
+    // Check if midnight or evening exceeds or equals bankfullLevel, apply blinking red style if so
+    const midnightStyle = midnight >= bankfullLevel ? 'color: red; animation: blink 1s step-start infinite;' : '';
+    const eveningStyle = evening >= bankfullLevel ? 'color: red; animation: blink 1s step-start infinite;' : '';
+
+    midnightCell.innerHTML = `
+        <span title="Uses PHP Json Output, No Cloud Option to Access Custom Schema Yet" 
+              class="hard_coded_php" 
+              style="float: left; padding-left: 30px; ${midnightStyle}">
+            ${midnight}
+        </span>
+        <span title="Uses PHP Json Output, No Cloud Option to Access Custom Schema Yet" 
+              class="hard_coded_php" 
+              style="float: right; padding-right: 30px; ${eveningStyle}">
+            ${evening}
+        </span>`;
+
+    // Define the blinking animation in CSS
+    if (!document.getElementById('blinking-style')) {
+        const style = document.createElement('style');
+        style.id = 'blinking-style';
+        style.innerHTML = `
+            @keyframes blink {
+                50% { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
 }
 
 // Function to update the HTML element with filtered data

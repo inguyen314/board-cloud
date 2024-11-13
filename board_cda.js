@@ -698,7 +698,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 										// You can choose to return or do something else here
 									} else {
 										// Process the response from another API as needed
-										console.log('fourthteenthData:', fourthteenthData);
+										// console.log('fourthteenthData:', fourthteenthData);
 										combinedFourthteenthData.push(fourthteenthData);
 									}
 								})
@@ -1084,6 +1084,11 @@ async function createTable(dataArray) {
 			if (data.lwrp) {
 				var lwrpLevel = data.lwrp['constant-value'];
 				// console.log("lwrpLevel = ", lwrpLevel);
+			}
+
+			if (data.bankfull) {
+				var bankfullLevel = data.bankfull['constant-value'];
+				console.log("bankfullLevel = ", bankfullLevel);
 			}
 
 
@@ -2406,7 +2411,7 @@ async function createTable(dataArray) {
 							// console.log("Filtered Data for", data.location_id + ":", filteredData);
 
 							// Update the HTML element with filtered data
-							updateOutflowHTML(filteredData, outflowCell);
+							updateOutflowHTML(filteredData, outflowCell, bankfullLevel);
 
 							// Further processing of ROutput data as needed
 						} catch (error) {
