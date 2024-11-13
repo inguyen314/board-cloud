@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 	const combinedEleventhData = [];
 	const combinedTwelfthData = [];
 	const combinedThirteenthData = [];
+	const combinedFourthteenthData = [];
 
 	// Array to store all promises from API requests
 	const apiPromises = [];
@@ -64,6 +65,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 			// Prepare variable to pass in when call api
 			const locationId = locData.location_id;
 			// console.log('locationId: ', locationId);
+
+			//====================================================
+			// ============== Level Id Setup =====================
+			//====================================================
 
 			// Location level "Flood"
 			const levelIdFlood = locData.level_id_flood;
@@ -124,350 +129,71 @@ document.addEventListener('DOMContentLoaded', async function () {
 			const levelIdUnitIdBoc = locData.level_id_unit_id_bottom_of_conservation;
 			// console.log('levelIdBoc: ', levelIdBoc);
 
-			// START CDA CALL
+			// Location level "Bankfull"
+			const levelIdBankfull = locData.level_id_bankfull;
+			const levelIdEffectiveDateBankfull = locData.level_id_effective_date_bankfull;
+			const levelIdUnitIdBankfull = locData.level_id_unit_id_bankfull;
+
+
+			//====================================================
+			// ============== START CDA CALL =====================
+			//====================================================
 
 			// Construct the URL for the API first request - metadata
-			let firstApiUrl = null;
-			if (cda === "public") {
-				firstApiUrl = `https://cwms-data.usace.army.mil/cwms-data/locations/${locationId}?office=MVS`;
-			} else if (cda === "internal") {
-				firstApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/locations/${locationId}?office=MVS`;
-			}
-			// console.log('firstApiUrl: ', firstApiUrl);
+			(() => {
+				let firstApiUrl = null;
+				if (cda === "public") {
+					firstApiUrl = `https://cwms-data.usace.army.mil/cwms-data/locations/${locationId}?office=MVS`;
+				} else if (cda === "internal") {
+					firstApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/locations/${locationId}?office=MVS`;
+				}
+				// console.log('firstApiUrl: ', firstApiUrl);
 
-			// Push the fetch promise to the apiPromises array
-			apiPromises.push(fetch(firstApiUrl)
-				.then(response => {
-					if (!response.ok) {
-						throw new Error('Network response was not ok');
-					}
-					return response.json();
-				})
-				.then(firstData => {
-					// Process the response firstData as needed
-					// console.log('firstData :', firstData);
-					combinedFirstData.push(firstData);
-				})
-			);
-
+				// Push the fetch promise to the apiPromises array
+				apiPromises.push(fetch(firstApiUrl)
+					.then(response => {
+						if (!response.ok) {
+							throw new Error('Network response was not ok');
+						}
+						return response.json();
+					})
+					.then(firstData => {
+						// Process the response firstData as needed
+						// console.log('firstData :', firstData);
+						combinedFirstData.push(firstData);
+					})
+				);
+			})();
 
 			// Construct the URL for the API second request - flood
-			if (levelIdFlood !== null || levelIdEffectiveDateFlood !== null || levelIdUnitIdFlood !== null) {
-				let secondApiUrl = null;
-				if (cda === "public") {
-					secondApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdFlood}?office=MVS&effective-date=${levelIdEffectiveDateFlood}&unit=${levelIdUnitIdFlood}`;
-				} else if (cda === "internal") {
-					secondApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdFlood}?office=MVS&effective-date=${levelIdEffectiveDateFlood}&unit=${levelIdUnitIdFlood}`;
-				}
-				// console.log('secondApiUrl: ', secondApiUrl);
-
-				apiPromises.push(
-					fetch(secondApiUrl)
-						.then(response => {
-							if (!response.ok) {
-								throw new Error('Network response was not ok');
-							}
-							return response.json();
-						})
-						.then(secondData => {
-							// Check if secondData is null
-							if (secondData === null) {
-								// Handle the case when secondData is null
-								// console.log('secondData is null');
-								// You can choose to return or do something else here
-							} else {
-								// Process the response from another API as needed
-								// console.log('secondData:', secondData);
-								combinedSecondData.push(secondData);
-							}
-						})
-						.catch(error => {
-							// Handle any errors that occur during the fetch or processing
-							console.error('Error fetching or processing data:', error);
-						})
-				)
-			}
-
-
-			// Construct the URL for the API third request - basin
-			let thirdApiUrl = null;
-			if (cda === "public") {
-				thirdApiUrl = `https://cwms-data.usace.army.mil/cwms-data/location/group/${basin.basin}?office=MVS&category-id=RDL_Basins`;
-			} else if (cda === "internal") {
-				thirdApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/location/group/${basin.basin}?office=MVS&category-id=RDL_Basins`;
-			}
-			// console.log('thirdApiUrl: ', thirdApiUrl);
-
-			// Push the fetch promise to the apiPromises array
-			apiPromises.push(
-				fetch(thirdApiUrl)
-					.then(response => {
-						// Check if the network response is successful
-						if (!response.ok) {
-							throw new Error('Network response was not ok');
-						}
-						return response.json();
-					})
-					.then(thirdData => {
-						// Check if thirdData is null
-						if (thirdData === null) {
-							console.log('thirdData is null');
-							// Handle the case when thirdData is null (optional)
-						} else {
-							// Process the response from another API as needed
-							// console.log('thirdData:', thirdData);
-
-							// Filter the assigned locations array to find the desired location
-							const foundThirdLocation = thirdData["assigned-locations"].find(location => location["location-id"] === locationId);
-
-							// Extract thirdData if the location is found
-							let extractedThirdData = null;
-							if (foundThirdLocation) {
-								extractedThirdData = {
-									"office-id": thirdData["office-id"],
-									"id": thirdData["id"],
-									"location-id": foundThirdLocation["location-id"]
-								};
-							}
-							// console.log("extractedThirdData", extractedThirdData);
-
-							// Push the extracted thirdData to the combinedThirdData array
-							combinedThirdData.push(extractedThirdData);
-						}
-					})
-			);
-
-
-			// Construct the URL for the API forth request - owner
-			let forthApiUrl = null;
-			if (cda === "public") {
-				forthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/location/group/MVS?office=MVS&category-id=RDL_MVS`;
-			} else if (cda === "internal") {
-				forthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/location/group/MVS?office=MVS&category-id=RDL_MVS`;
-			}
-			// console.log('forthApiUrl: ', forthApiUrl);
-
-			// Push the fetch promise to the apiPromises array
-			apiPromises.push(
-				fetch(forthApiUrl)
-					.then(response => {
-						// Check if the network response is successful
-						if (!response.ok) {
-							throw new Error('Network response was not ok');
-						}
-						return response.json();
-					})
-					.then(forthData => {
-						// Check if forthData is null
-						if (forthData === null) {
-							console.log('forthData is null');
-							// Handle the case when forthData is null (optional)
-						} else {
-							// Process the response from another API as needed
-							// console.log('forthData:', forthData);
-
-							// Filter the assigned locations array to find the desired location
-							const foundForthLocation = forthData["assigned-locations"].find(location => location["location-id"] === locationId);
-
-							// Extract forthData if the location is found
-							let extractedForthData = null;
-							if (foundForthLocation) {
-								extractedForthData = {
-									"office-id": forthData["office-id"],
-									"id": forthData["id"],
-									"location-id": foundForthLocation["location-id"]
-								};
-							}
-							// console.log("extractedForthData", extractedForthData);
-
-							// Push the extracted forthData to the combinedForthData array
-							combinedForthData.push(extractedForthData);
-						}
-					})
-			);
-
-
-			// Construct the URL for the API fifth request - Record Stage
-			if (levelIdRecordStage != null && levelIdEffectiveDateRecordStage != null && levelIdUnitIdRecordStage != null) {
-				let fifthApiUrl = null;
-				if (cda === "public") {
-					fifthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdRecordStage}?office=MVS&effective-date=${levelIdEffectiveDateRecordStage}&unit=${levelIdUnitIdRecordStage}`;
-				} else if (cda === "internal") {
-					fifthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdRecordStage}?office=MVS&effective-date=${levelIdEffectiveDateRecordStage}&unit=${levelIdUnitIdRecordStage}`;
-				}
-
-				apiPromises.push(
-					fetch(fifthApiUrl)
-						.then(response => {
-							if (!response.ok) {
-								throw new Error('Network response was not ok');
-							}
-							return response.json();
-						})
-						.then(fifthData => {
-							if (fifthData == null) { // Check for null or undefined
-								combinedFifthData.push(null);
-								// console.log('fifthData is null or undefined');
-							} else {
-								combinedFifthData.push(fifthData);
-								// console.log('combinedFifthData:', combinedFifthData);
-							}
-						})
-						.catch(error => {
-							if (error.name === 'AbortError') {
-								console.error('The fetch operation was aborted.');
-							} else {
-								console.error('Error fetching or processing data:', error);
-							}
-							combinedFifthData.push(null); // Maintain array structure even on error
-						})
-				);
-			} else {
-				combinedFifthData.push(null);
-			}
-
-
-			// Construct the URL for the API sixth request - NGVD29
-			if (levelIdNgvd29) {
-				let sixthApiUrl = null;
-				if (cda === "public") {
-					sixthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdNgvd29}?office=MVS&effective-date=${levelIdEffectiveDateNgvd29}&unit=${levelIdUnitIdNgvd29}`;
-				} else if (cda === "internal") {
-					sixthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdNgvd29}?office=MVS&effective-date=${levelIdEffectiveDateNgvd29}&unit=${levelIdUnitIdNgvd29}`;
-				}
-				// console.log('sixthApiUrl: ', sixthApiUrl);
-
-				apiPromises.push(
-					fetch(sixthApiUrl)
-						.then(response => {
-							if (!response.ok) {
-								throw new Error('Network response was not ok');
-							}
-							return response.json();
-						})
-						.then(sixthData => {
-							// Check if sixthData is null
-							if (sixthData === null) {
-								// Handle the case when sixthData is null
-								// console.log('sixthData is null');
-							} else {
-								// Process the response from another API as needed
-								combinedSixthData.push(sixthData);
-								// console.log('combinedSixthData:', combinedSixthData);
-							}
-						})
-						.catch(error => {
-							// Handle any errors that occur during the fetch or processing
-							console.error('Error fetching or processing data:', error);
-						})
-				);
-			} else {
-				combinedSixthData.push(null);
-			}
-
-			// Construct the URL for the API second request - Phase1
-			if (levelIdPhase1 !== null || levelIdEffectiveDatePhase1 !== null || levelIdUnitIdPhase1 !== null) {
-				let seventhApiUrl = null;
-				if (cda === "public") {
-					seventhApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdPhase1}?office=MVS&effective-date=${levelIdEffectiveDatePhase1}&unit=${levelIdUnitIdPhase1}`;
-				} else if (cda === "internal") {
-					seventhApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdPhase1}?office=MVS&effective-date=${levelIdEffectiveDatePhase1}&unit=${levelIdUnitIdPhase1}`;
-				}
-				// console.log('seventhApiUrl: ', seventhApiUrl);
-
-				apiPromises.push(
-					fetch(seventhApiUrl)
-						.then(response => {
-							if (!response.ok) {
-								throw new Error('Network response was not ok');
-							}
-							return response.json();
-						})
-						.then(seventhData => {
-							// Check if seventhData is null
-							if (seventhData === null) {
-								// Handle the case when seventhData is null
-								// console.log('seventhData is null');
-								// You can choose to return or do something else here
-							} else {
-								// Process the response from another API as needed
-								// console.log('seventhData:', seventhData);
-								combinedSeventhData.push(seventhData);
-							}
-						})
-						.catch(error => {
-							// Handle any errors that occur during the fetch or processing
-							console.error('Error fetching or processing data:', error);
-						})
-				)
-			}
-
-			// Construct the URL for the API second request - Phase1
-			if (levelIdPhase2 !== null || levelIdEffectiveDatePhase2 !== null || levelIdUnitIdPhase2 !== null) {
-				let eighthApiUrl = null;
-				if (cda === "public") {
-					eighthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdPhase2}?office=MVS&effective-date=${levelIdEffectiveDatePhase2}&unit=${levelIdUnitIdPhase2}`;
-				} else if (cda === "internal") {
-					eighthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdPhase2}?office=MVS&effective-date=${levelIdEffectiveDatePhase2}&unit=${levelIdUnitIdPhase2}`;
-				}
-				// console.log('eighthApiUrl: ', eighthApiUrl);
-
-				apiPromises.push(
-					fetch(eighthApiUrl)
-						.then(response => {
-							if (!response.ok) {
-								throw new Error('Network response was not ok');
-							}
-							return response.json();
-						})
-						.then(eighthData => {
-							// Check if eighthData is null
-							if (eighthData === null) {
-								// Handle the case when eighthData is null
-								// console.log('eighthData is null');
-								// You can choose to return or do something else here
-							} else {
-								// Process the response from another API as needed
-								// console.log('eighthData:', eighthData);
-								combinedEighthData.push(eighthData);
-							}
-						})
-						.catch(error => {
-							// Handle any errors that occur during the fetch or processing
-							console.error('Error fetching or processing data:', error);
-						})
-				)
-			}
-
-			// Construct the URL for the API nineth request - Lwrp
-			if (levelIdLwrp) {
-				if (levelIdLwrp !== null || levelIdEffectiveDateLwrp !== null || levelIdUnitIdLwrp !== null) {
-					let ninethApiUrl = null;
+			(() => {
+				if (levelIdFlood !== null || levelIdEffectiveDateFlood !== null || levelIdUnitIdFlood !== null) {
+					let secondApiUrl = null;
 					if (cda === "public") {
-						ninethApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdLwrp}?office=MVS&effective-date=${levelIdEffectiveDateLwrp}&unit=${levelIdUnitIdLwrp}`;
+						secondApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdFlood}?office=MVS&effective-date=${levelIdEffectiveDateFlood}&unit=${levelIdUnitIdFlood}`;
 					} else if (cda === "internal") {
-						ninethApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdLwrp}?office=MVS&effective-date=${levelIdEffectiveDateLwrp}&unit=${levelIdUnitIdLwrp}`;
+						secondApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdFlood}?office=MVS&effective-date=${levelIdEffectiveDateFlood}&unit=${levelIdUnitIdFlood}`;
 					}
-					// console.log('ninethApiUrl: ', ninethApiUrl);
+					// console.log('secondApiUrl: ', secondApiUrl);
 
 					apiPromises.push(
-						fetch(ninethApiUrl)
+						fetch(secondApiUrl)
 							.then(response => {
 								if (!response.ok) {
 									throw new Error('Network response was not ok');
 								}
 								return response.json();
 							})
-							.then(ninethData => {
-								// Check if ninethData is null
-								if (ninethData === null) {
-									// Handle the case when ninethData is null
-									// console.log('ninethData is null');
+							.then(secondData => {
+								// Check if secondData is null
+								if (secondData === null) {
+									// Handle the case when secondData is null
+									// console.log('secondData is null');
 									// You can choose to return or do something else here
 								} else {
 									// Process the response from another API as needed
-									// console.log('ninethData:', ninethData);
-									combinedNinethData.push(ninethData);
+									// console.log('secondData:', secondData);
+									combinedSecondData.push(secondData);
 								}
 							})
 							.catch(error => {
@@ -476,172 +202,539 @@ document.addEventListener('DOMContentLoaded', async function () {
 							})
 					)
 				}
-			} else {
-				combinedNinethData.push(null);
-			}
+			})();
+
+			// Construct the URL for the API third request - basin
+			(() => {
+				let thirdApiUrl = null;
+				if (cda === "public") {
+					thirdApiUrl = `https://cwms-data.usace.army.mil/cwms-data/location/group/${basin.basin}?office=MVS&category-id=RDL_Basins`;
+				} else if (cda === "internal") {
+					thirdApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/location/group/${basin.basin}?office=MVS&category-id=RDL_Basins`;
+				}
+				// console.log('thirdApiUrl: ', thirdApiUrl);
+
+				// Push the fetch promise to the apiPromises array
+				apiPromises.push(
+					fetch(thirdApiUrl)
+						.then(response => {
+							// Check if the network response is successful
+							if (!response.ok) {
+								throw new Error('Network response was not ok');
+							}
+							return response.json();
+						})
+						.then(thirdData => {
+							// Check if thirdData is null
+							if (thirdData === null) {
+								console.log('thirdData is null');
+								// Handle the case when thirdData is null (optional)
+							} else {
+								// Process the response from another API as needed
+								// console.log('thirdData:', thirdData);
+
+								// Filter the assigned locations array to find the desired location
+								const foundThirdLocation = thirdData["assigned-locations"].find(location => location["location-id"] === locationId);
+
+								// Extract thirdData if the location is found
+								let extractedThirdData = null;
+								if (foundThirdLocation) {
+									extractedThirdData = {
+										"office-id": thirdData["office-id"],
+										"id": thirdData["id"],
+										"location-id": foundThirdLocation["location-id"]
+									};
+								}
+								// console.log("extractedThirdData", extractedThirdData);
+
+								// Push the extracted thirdData to the combinedThirdData array
+								combinedThirdData.push(extractedThirdData);
+							}
+						})
+				);
+			})();
+
+			// Construct the URL for the API forth request - owner
+			(() => {
+				let forthApiUrl = null;
+				if (cda === "public") {
+					forthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/location/group/MVS?office=MVS&category-id=RDL_MVS`;
+				} else if (cda === "internal") {
+					forthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/location/group/MVS?office=MVS&category-id=RDL_MVS`;
+				}
+				// console.log('forthApiUrl: ', forthApiUrl);
+
+				// Push the fetch promise to the apiPromises array
+				apiPromises.push(
+					fetch(forthApiUrl)
+						.then(response => {
+							// Check if the network response is successful
+							if (!response.ok) {
+								throw new Error('Network response was not ok');
+							}
+							return response.json();
+						})
+						.then(forthData => {
+							// Check if forthData is null
+							if (forthData === null) {
+								console.log('forthData is null');
+								// Handle the case when forthData is null (optional)
+							} else {
+								// Process the response from another API as needed
+								// console.log('forthData:', forthData);
+
+								// Filter the assigned locations array to find the desired location
+								const foundForthLocation = forthData["assigned-locations"].find(location => location["location-id"] === locationId);
+
+								// Extract forthData if the location is found
+								let extractedForthData = null;
+								if (foundForthLocation) {
+									extractedForthData = {
+										"office-id": forthData["office-id"],
+										"id": forthData["id"],
+										"location-id": foundForthLocation["location-id"]
+									};
+								}
+								// console.log("extractedForthData", extractedForthData);
+
+								// Push the extracted forthData to the combinedForthData array
+								combinedForthData.push(extractedForthData);
+							}
+						})
+				);
+			})();
+
+			// Construct the URL for the API fifth request - Record Stage
+			(() => {
+				if (levelIdRecordStage != null && levelIdEffectiveDateRecordStage != null && levelIdUnitIdRecordStage != null) {
+					let fifthApiUrl = null;
+					if (cda === "public") {
+						fifthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdRecordStage}?office=MVS&effective-date=${levelIdEffectiveDateRecordStage}&unit=${levelIdUnitIdRecordStage}`;
+					} else if (cda === "internal") {
+						fifthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdRecordStage}?office=MVS&effective-date=${levelIdEffectiveDateRecordStage}&unit=${levelIdUnitIdRecordStage}`;
+					}
+
+					apiPromises.push(
+						fetch(fifthApiUrl)
+							.then(response => {
+								if (!response.ok) {
+									throw new Error('Network response was not ok');
+								}
+								return response.json();
+							})
+							.then(fifthData => {
+								if (fifthData == null) { // Check for null or undefined
+									combinedFifthData.push(null);
+									// console.log('fifthData is null or undefined');
+								} else {
+									combinedFifthData.push(fifthData);
+									// console.log('combinedFifthData:', combinedFifthData);
+								}
+							})
+							.catch(error => {
+								if (error.name === 'AbortError') {
+									console.error('The fetch operation was aborted.');
+								} else {
+									console.error('Error fetching or processing data:', error);
+								}
+								combinedFifthData.push(null); // Maintain array structure even on error
+							})
+					);
+				} else {
+					combinedFifthData.push(null);
+				}
+			})();
+
+			// Construct the URL for the API sixth request - NGVD29
+			(() => {
+				if (levelIdNgvd29) {
+					let sixthApiUrl = null;
+					if (cda === "public") {
+						sixthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdNgvd29}?office=MVS&effective-date=${levelIdEffectiveDateNgvd29}&unit=${levelIdUnitIdNgvd29}`;
+					} else if (cda === "internal") {
+						sixthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdNgvd29}?office=MVS&effective-date=${levelIdEffectiveDateNgvd29}&unit=${levelIdUnitIdNgvd29}`;
+					}
+					// console.log('sixthApiUrl: ', sixthApiUrl);
+
+					apiPromises.push(
+						fetch(sixthApiUrl)
+							.then(response => {
+								if (!response.ok) {
+									throw new Error('Network response was not ok');
+								}
+								return response.json();
+							})
+							.then(sixthData => {
+								// Check if sixthData is null
+								if (sixthData === null) {
+									// Handle the case when sixthData is null
+									// console.log('sixthData is null');
+								} else {
+									// Process the response from another API as needed
+									combinedSixthData.push(sixthData);
+									// console.log('combinedSixthData:', combinedSixthData);
+								}
+							})
+							.catch(error => {
+								// Handle any errors that occur during the fetch or processing
+								console.error('Error fetching or processing data:', error);
+							})
+					);
+				} else {
+					combinedSixthData.push(null);
+				}
+			})();
+
+			// Construct the URL for the API second request - Phase1
+			(() => {
+				if (levelIdPhase1 !== null || levelIdEffectiveDatePhase1 !== null || levelIdUnitIdPhase1 !== null) {
+					let seventhApiUrl = null;
+					if (cda === "public") {
+						seventhApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdPhase1}?office=MVS&effective-date=${levelIdEffectiveDatePhase1}&unit=${levelIdUnitIdPhase1}`;
+					} else if (cda === "internal") {
+						seventhApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdPhase1}?office=MVS&effective-date=${levelIdEffectiveDatePhase1}&unit=${levelIdUnitIdPhase1}`;
+					}
+					// console.log('seventhApiUrl: ', seventhApiUrl);
+
+					apiPromises.push(
+						fetch(seventhApiUrl)
+							.then(response => {
+								if (!response.ok) {
+									throw new Error('Network response was not ok');
+								}
+								return response.json();
+							})
+							.then(seventhData => {
+								// Check if seventhData is null
+								if (seventhData === null) {
+									// Handle the case when seventhData is null
+									// console.log('seventhData is null');
+									// You can choose to return or do something else here
+								} else {
+									// Process the response from another API as needed
+									// console.log('seventhData:', seventhData);
+									combinedSeventhData.push(seventhData);
+								}
+							})
+							.catch(error => {
+								// Handle any errors that occur during the fetch or processing
+								console.error('Error fetching or processing data:', error);
+							})
+					)
+				}
+			})();
+
+			// Construct the URL for the API second request - Phase1
+			(() => {
+				if (levelIdPhase2 !== null || levelIdEffectiveDatePhase2 !== null || levelIdUnitIdPhase2 !== null) {
+					let eighthApiUrl = null;
+					if (cda === "public") {
+						eighthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdPhase2}?office=MVS&effective-date=${levelIdEffectiveDatePhase2}&unit=${levelIdUnitIdPhase2}`;
+					} else if (cda === "internal") {
+						eighthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdPhase2}?office=MVS&effective-date=${levelIdEffectiveDatePhase2}&unit=${levelIdUnitIdPhase2}`;
+					}
+					// console.log('eighthApiUrl: ', eighthApiUrl);
+
+					apiPromises.push(
+						fetch(eighthApiUrl)
+							.then(response => {
+								if (!response.ok) {
+									throw new Error('Network response was not ok');
+								}
+								return response.json();
+							})
+							.then(eighthData => {
+								// Check if eighthData is null
+								if (eighthData === null) {
+									// Handle the case when eighthData is null
+									// console.log('eighthData is null');
+									// You can choose to return or do something else here
+								} else {
+									// Process the response from another API as needed
+									// console.log('eighthData:', eighthData);
+									combinedEighthData.push(eighthData);
+								}
+							})
+							.catch(error => {
+								// Handle any errors that occur during the fetch or processing
+								console.error('Error fetching or processing data:', error);
+							})
+					)
+				}
+			})();
+
+			// Construct the URL for the API nineth request - Lwrp
+			(() => {
+				if (levelIdLwrp) {
+					if (levelIdLwrp !== null || levelIdEffectiveDateLwrp !== null || levelIdUnitIdLwrp !== null) {
+						let ninethApiUrl = null;
+						if (cda === "public") {
+							ninethApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdLwrp}?office=MVS&effective-date=${levelIdEffectiveDateLwrp}&unit=${levelIdUnitIdLwrp}`;
+						} else if (cda === "internal") {
+							ninethApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdLwrp}?office=MVS&effective-date=${levelIdEffectiveDateLwrp}&unit=${levelIdUnitIdLwrp}`;
+						}
+						// console.log('ninethApiUrl: ', ninethApiUrl);
+
+						apiPromises.push(
+							fetch(ninethApiUrl)
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(ninethData => {
+									// Check if ninethData is null
+									if (ninethData === null) {
+										// Handle the case when ninethData is null
+										// console.log('ninethData is null');
+										// You can choose to return or do something else here
+									} else {
+										// Process the response from another API as needed
+										// console.log('ninethData:', ninethData);
+										combinedNinethData.push(ninethData);
+									}
+								})
+								.catch(error => {
+									// Handle any errors that occur during the fetch or processing
+									console.error('Error fetching or processing data:', error);
+								})
+						)
+					}
+				} else {
+					combinedNinethData.push(null);
+				}
+			})();
 
 			// Construct the URL for the API tenth request - Top of Flood
-			if (levelIdTof) {
-				if (levelIdTof !== null || levelIdEffectiveDateTof !== null || levelIdUnitIdTof !== null) {
-					let tenthApiUrl = null;
-					if (cda === "public") {
-						tenthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdTof}?office=MVS&effective-date=${levelIdEffectiveDateTof}&unit=${levelIdUnitIdTof}`;
-					} else if (cda === "internal") {
-						tenthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdTof}?office=MVS&effective-date=${levelIdEffectiveDateTof}&unit=${levelIdUnitIdTof}`;
-					}
-					// console.log('tenthApiUrl: ', tenthApiUrl);
+			(() => {
+				if (levelIdTof) {
+					if (levelIdTof !== null || levelIdEffectiveDateTof !== null || levelIdUnitIdTof !== null) {
+						let tenthApiUrl = null;
+						if (cda === "public") {
+							tenthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdTof}?office=MVS&effective-date=${levelIdEffectiveDateTof}&unit=${levelIdUnitIdTof}`;
+						} else if (cda === "internal") {
+							tenthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdTof}?office=MVS&effective-date=${levelIdEffectiveDateTof}&unit=${levelIdUnitIdTof}`;
+						}
+						// console.log('tenthApiUrl: ', tenthApiUrl);
 
-					apiPromises.push(
-						fetch(tenthApiUrl)
-							.then(response => {
-								if (!response.ok) {
-									throw new Error('Network response was not ok');
-								}
-								return response.json();
-							})
-							.then(tenthData => {
-								// Check if tenthData is null
-								if (tenthData === null) {
-									// console.log('tenthData is null');
-									// You can choose to return or do something else here
-								} else {
-									// console.log('tenthData:', tenthData);
-									combinedTenthData.push(tenthData);
-								}
-							})
-							.catch(error => {
-								// Handle any errors that occur during the fetch or processing
-								console.error('Error fetching or processing data:', error);
-							})
-					)
+						apiPromises.push(
+							fetch(tenthApiUrl)
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(tenthData => {
+									// Check if tenthData is null
+									if (tenthData === null) {
+										// console.log('tenthData is null');
+										// You can choose to return or do something else here
+									} else {
+										// console.log('tenthData:', tenthData);
+										combinedTenthData.push(tenthData);
+									}
+								})
+								.catch(error => {
+									// Handle any errors that occur during the fetch or processing
+									console.error('Error fetching or processing data:', error);
+								})
+						)
+					}
+				} else {
+					combinedTenthData.push(null);
 				}
-			} else {
-				combinedTenthData.push(null);
-			}
+			})();
 
 			// Construct the URL for the API tenth request - Bottom of Flood
-			if (levelIdBof) {
-				if (levelIdBof !== null || levelIdEffectiveDateBof !== null || levelIdUnitIdBof !== null) {
-					let eleventhApiUrl = null;
-					if (cda === "public") {
-						eleventhApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdBof}?office=MVS&effective-date=${levelIdEffectiveDateBof}&unit=${levelIdUnitIdBof}`;
-					} else if (cda === "internal") {
-						eleventhApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdBof}?office=MVS&effective-date=${levelIdEffectiveDateBof}&unit=${levelIdUnitIdBof}`;
-					}
-					// console.log('eleventhApiUrl: ', eleventhApiUrl);
+			(() => {
+				if (levelIdBof) {
+					if (levelIdBof !== null || levelIdEffectiveDateBof !== null || levelIdUnitIdBof !== null) {
+						let eleventhApiUrl = null;
+						if (cda === "public") {
+							eleventhApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdBof}?office=MVS&effective-date=${levelIdEffectiveDateBof}&unit=${levelIdUnitIdBof}`;
+						} else if (cda === "internal") {
+							eleventhApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdBof}?office=MVS&effective-date=${levelIdEffectiveDateBof}&unit=${levelIdUnitIdBof}`;
+						}
+						// console.log('eleventhApiUrl: ', eleventhApiUrl);
 
-					apiPromises.push(
-						fetch(eleventhApiUrl)
-							.then(response => {
-								if (!response.ok) {
-									throw new Error('Network response was not ok');
-								}
-								return response.json();
-							})
-							.then(eleventhData => {
-								// Check if eleventhData is null
-								if (eleventhData === null) {
-									// console.log('eleventhData is null');
-									// You can choose to return or do something else here
-								} else {
-									// console.log('eleventhData:', eleventhData);
-									combinedEleventhData.push(eleventhData);
-								}
-							})
-							.catch(error => {
-								// Handle any errors that occur during the fetch or processing
-								console.error('Error fetching or processing data:', error);
-							})
-					)
+						apiPromises.push(
+							fetch(eleventhApiUrl)
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(eleventhData => {
+									// Check if eleventhData is null
+									if (eleventhData === null) {
+										// console.log('eleventhData is null');
+										// You can choose to return or do something else here
+									} else {
+										// console.log('eleventhData:', eleventhData);
+										combinedEleventhData.push(eleventhData);
+									}
+								})
+								.catch(error => {
+									// Handle any errors that occur during the fetch or processing
+									console.error('Error fetching or processing data:', error);
+								})
+						)
+					}
+				} else {
+					combinedEleventhData.push(null);
 				}
-			} else {
-				combinedEleventhData.push(null);
-			}
+			})();
 
 			// Construct the URL for the API tenth request - Bottom of Consevation
-			if (levelIdBoc) {
-				if (levelIdBoc !== null || levelIdEffectiveDateBoc !== null || levelIdUnitIdBoc !== null) {
-					let twelfthApiUrl = null;
-					if (cda === "public") {
-						twelfthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdBoc}?office=MVS&effective-date=${levelIdEffectiveDateBoc}&unit=${levelIdUnitIdBoc}`;
-					} else if (cda === "internal") {
-						twelfthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdBoc}?office=MVS&effective-date=${levelIdEffectiveDateBoc}&unit=${levelIdUnitIdBoc}`;
-					}
-					// console.log('twelfthApiUrl: ', twelfthApiUrl);
+			(() => {
+				if (levelIdBoc) {
+					if (levelIdBoc !== null || levelIdEffectiveDateBoc !== null || levelIdUnitIdBoc !== null) {
+						let twelfthApiUrl = null;
+						if (cda === "public") {
+							twelfthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdBoc}?office=MVS&effective-date=${levelIdEffectiveDateBoc}&unit=${levelIdUnitIdBoc}`;
+						} else if (cda === "internal") {
+							twelfthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdBoc}?office=MVS&effective-date=${levelIdEffectiveDateBoc}&unit=${levelIdUnitIdBoc}`;
+						}
+						// console.log('twelfthApiUrl: ', twelfthApiUrl);
 
-					apiPromises.push(
-						fetch(twelfthApiUrl)
-							.then(response => {
-								if (!response.ok) {
-									throw new Error('Network response was not ok');
-								}
-								return response.json();
-							})
-							.then(twelfthData => {
-								// Check if twelfthData is null
-								if (twelfthData === null) {
-									// console.log('twelfthData is null');
-									// You can choose to return or do something else here
-								} else {
-									// console.log('twelfthData:', twelfthData);
-									combinedTwelfthData.push(twelfthData);
-								}
-							})
-							.catch(error => {
-								// Handle any errors that occur during the fetch or processing
-								console.error('Error fetching or processing data:', error);
-							})
-					)
+						apiPromises.push(
+							fetch(twelfthApiUrl)
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(twelfthData => {
+									// Check if twelfthData is null
+									if (twelfthData === null) {
+										// console.log('twelfthData is null');
+										// You can choose to return or do something else here
+									} else {
+										// console.log('twelfthData:', twelfthData);
+										combinedTwelfthData.push(twelfthData);
+									}
+								})
+								.catch(error => {
+									// Handle any errors that occur during the fetch or processing
+									console.error('Error fetching or processing data:', error);
+								})
+						)
+					}
+				} else {
+					combinedTwelfthData.push(null);
 				}
-			} else {
-				combinedTwelfthData.push(null);
-			}
+			})();
 
 			// Construct the URL for the API tenth request - Top of Consevation
-			if (levelIdToc) {
-				if (levelIdToc !== null || levelIdEffectiveDateToc !== null || levelIdUnitIdToc !== null) {
-					let thirteenthApiUrl = null;
-					if (cda === "public") {
-						thirteenthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdToc}?office=MVS&effective-date=${levelIdEffectiveDateToc}&unit=${levelIdUnitIdToc}`;
-					} else if (cda === "internal") {
-						thirteenthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdToc}?office=MVS&effective-date=${levelIdEffectiveDateToc}&unit=${levelIdUnitIdToc}`;
-					}
-					// console.log('thirteenthApiUrl: ', thirteenthApiUrl);
+			(() => {
+				if (levelIdToc) {
+					if (levelIdToc !== null || levelIdEffectiveDateToc !== null || levelIdUnitIdToc !== null) {
+						let thirteenthApiUrl = null;
+						if (cda === "public") {
+							thirteenthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdToc}?office=MVS&effective-date=${levelIdEffectiveDateToc}&unit=${levelIdUnitIdToc}`;
+						} else if (cda === "internal") {
+							thirteenthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdToc}?office=MVS&effective-date=${levelIdEffectiveDateToc}&unit=${levelIdUnitIdToc}`;
+						}
+						// console.log('thirteenthApiUrl: ', thirteenthApiUrl);
 
-					apiPromises.push(
-						fetch(thirteenthApiUrl)
-							.then(response => {
-								if (!response.ok) {
-									throw new Error('Network response was not ok');
-								}
-								return response.json();
-							})
-							.then(thirteenthData => {
-								// Check if thirteenthData is null
-								if (thirteenthData === null) {
-									// console.log('thirteenthData is null');
-									// You can choose to return or do something else here
-								} else {
-									// console.log('thirteenthData:', thirteenthData);
-									combinedThirteenthData.push(thirteenthData);
-								}
-							})
-							.catch(error => {
-								// Handle any errors that occur during the fetch or processing
-								console.error('Error fetching or processing data:', error);
-							})
-					)
+						apiPromises.push(
+							fetch(thirteenthApiUrl)
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(thirteenthData => {
+									// Check if thirteenthData is null
+									if (thirteenthData === null) {
+										// console.log('thirteenthData is null');
+										// You can choose to return or do something else here
+									} else {
+										// console.log('thirteenthData:', thirteenthData);
+										combinedThirteenthData.push(thirteenthData);
+									}
+								})
+								.catch(error => {
+									// Handle any errors that occur during the fetch or processing
+									console.error('Error fetching or processing data:', error);
+								})
+						)
+					}
+				} else {
+					combinedThirteenthData.push(null);
 				}
-			} else {
-				combinedThirteenthData.push(null);
-			}
+			})();
+
+			// Construct the URL for the API nineth request - bankfull
+			(() => {
+				if (levelIdBankfull) {
+					if (levelIdBankfull !== null || levelIdEffectiveDateBankfull !== null || levelIdUnitIdBankfull !== null) {
+						let fourthteenthApiUrl = null;
+						if (cda === "public") {
+							fourthteenthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdBankfull.split('-')[0]}?office=MVS&effective-date=${levelIdEffectiveDateBankfull}&unit=${levelIdUnitIdBankfull}`;
+						} else if (cda === "internal") {
+							fourthteenthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdBankfull.split('-')[0]}?office=MVS&effective-date=${levelIdEffectiveDateBankfull}&unit=${levelIdUnitIdBankfull}`;
+						}
+						// console.log('fourthteenthApiUrl: ', fourthteenthApiUrl);
+
+						apiPromises.push(
+							fetch(fourthteenthApiUrl)
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(fourthteenthData => {
+									// Check if fourthteenthData is null
+									if (fourthteenthData === null) {
+										// Handle the case when fourthteenthData is null
+										// console.log('fourthteenthData is null');
+										// You can choose to return or do something else here
+									} else {
+										// Process the response from another API as needed
+										console.log('fourthteenthData:', fourthteenthData);
+										combinedFourthteenthData.push(fourthteenthData);
+									}
+								})
+								.catch(error => {
+									// Handle any errors that occur during the fetch or processing
+									console.error('Error fetching or processing data:', error);
+								})
+						)
+					}
+				} else {
+					combinedFourthteenthData.push(null);
+				}
+			})();
+
 			// END CDA CALL 
 
 			// Wait for all API requests to finish
 			await Promise.all(apiPromises);
 
 			// Call mergeDataCda
-			mergeDataCda(basinData, combinedFirstData, combinedSecondData, combinedThirdData, combinedForthData, combinedFifthData, combinedSixthData, combinedSeventhData, combinedEighthData, combinedNinethData, combinedTenthData, combinedEleventhData, combinedTwelfthData, combinedThirteenthData);
+			mergeDataCda(basinData,
+				combinedFirstData,
+				combinedSecondData,
+				combinedThirdData,
+				combinedForthData,
+				combinedFifthData,
+				combinedSixthData,
+				combinedSeventhData,
+				combinedEighthData,
+				combinedNinethData,
+				combinedTenthData,
+				combinedEleventhData,
+				combinedTwelfthData,
+				combinedThirteenthData,
+				combinedFourthteenthData
+			);
 		}
 	};
 

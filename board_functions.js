@@ -442,7 +442,21 @@ function submitAllForms() {
 // ============== CDA =====================
 //=========================================
 // Function to merge basinData with additional data
-function mergeDataCda(basinData, combinedFirstData, combinedSecondData, combinedThirdData, combinedForthData, combinedFifthData, combinedSixthData, combinedSeventhData, combinedEighthData, combinedNinethData, combinedTenthData, combinedEleventhData, combinedTwelfthData, combinedThirteenthData) {
+function mergeDataCda(basinData, 
+    combinedFirstData, 
+    combinedSecondData, 
+    combinedThirdData, 
+    combinedForthData, 
+    combinedFifthData, 
+    combinedSixthData, 
+    combinedSeventhData, 
+    combinedEighthData, 
+    combinedNinethData, 
+    combinedTenthData, 
+    combinedEleventhData, 
+    combinedTwelfthData, 
+    combinedThirteenthData, 
+    combinedFourthteenthData) {
     // Clear allData before merging data
     allData = [];
 
@@ -613,6 +627,19 @@ function mergeDataCda(basinData, combinedFirstData, combinedSecondData, combined
                 }
             } else {
                 gage.toc = null;
+            }
+
+            // Find the corresponding fourthteenthData object
+            if (Array.isArray(combinedFourthteenthData)) {
+                const fourthteenthData = combinedFourthteenthData.find(data => data && data['location-level-id'].split('.')[0] === locationId.split('-')[0]);
+                if (fourthteenthData) {
+                    // Append the fourthteenthData properties to the gage object
+                    gage.bankfull = fourthteenthData;
+                } else {
+                    gage.bankfull = null;
+                }
+            } else {
+                gage.bankfull = null;
             }
         })
     });
