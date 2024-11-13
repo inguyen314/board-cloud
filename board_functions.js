@@ -196,9 +196,9 @@ function updateOutflowHTML(filteredData, midnightCell, bankfullLevel) {
     const midnight = locationData.outflow_midnight;
     const evening = locationData.outflow_evening;
 
-    // Check if midnight or evening exceeds or equals bankfullLevel, apply blinking red style if so
-    const midnightStyle = midnight >= bankfullLevel ? 'color: red; animation: blink 1s step-start infinite;' : '';
-    const eveningStyle = evening >= bankfullLevel ? 'color: red; animation: blink 1s step-start infinite;' : '';
+    // Check if midnight or evening exceeds or equals bankfullLevel, apply gradual red style if so
+    const midnightStyle = midnight >= bankfullLevel ? 'color: red; transition: color 5s ease-in;' : '';
+    const eveningStyle = evening >= bankfullLevel ? 'color: red; transition: color 5s ease-in;' : '';
 
     midnightCell.innerHTML = `
         <span title="Uses PHP Json Output, No Cloud Option to Access Custom Schema Yet" 
@@ -211,18 +211,6 @@ function updateOutflowHTML(filteredData, midnightCell, bankfullLevel) {
               style="float: right; padding-right: 30px; ${eveningStyle}">
             ${evening}
         </span>`;
-
-    // Define the blinking animation in CSS
-    if (!document.getElementById('blinking-style')) {
-        const style = document.createElement('style');
-        style.id = 'blinking-style';
-        style.innerHTML = `
-            @keyframes blink {
-                50% { opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
 }
 
 // Function to update the HTML element with filtered data
