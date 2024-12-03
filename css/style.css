@@ -464,10 +464,15 @@ body {
 	font-weight:bold;
 	font-size: 1.5em;
 }
-.board_missing1 {
+.board_missing {
 	color:red;
 	font-weight:bold;
 	font-size: 2.0em
+}
+.missing {
+	color:red;
+	font-weight:bold;
+	font-size: 1.2em
 }
 .error {
 	color:red;

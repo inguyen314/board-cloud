@@ -1088,19 +1088,19 @@ async function createTable(dataArray) {
 
 			if (data.bankfull) {
 				var bankfullLevel = data.bankfull['constant-value'];
-				console.log("bankfullLevel = ", bankfullLevel);
+				// console.log("bankfullLevel = ", bankfullLevel);
 			}
 
 
 			//==============================================================================================================================================
-			// BUILD TABLE RIVER
+			// RIVER
 			//==============================================================================================================================================
 			if (data.display_board === "True" && display_type !== "Lake") {
 				// Create a new row for each gage data entry
 				const row = table.insertRow();
 
-				// ======= RIVER MILE =======
-				if (1 === 1) {
+				// RIVER MILE
+				(() => {
 					// Create a new table cell for river mile
 					const riverMileCell = row.insertCell(0);
 					riverMileCell.colSpan = 1; // Set the colspan to 1 for River Mile
@@ -1119,10 +1119,10 @@ async function createTable(dataArray) {
 					riverMileCellInnerHTML = "<span class='hard_coded'>" + parseFloat(data.river_mile_hard_coded).toFixed(1) + "</span>";
 					// console.log("riverMileCellInnerHTML =", riverMileCellInnerHTML);
 					riverMileCell.innerHTML = riverMileCellInnerHTML;
-				}
+				})();
 
-				// ======= LOCATION =======
-				if (2 === 2) {
+				// LOCATION
+				(() => {
 					// Create a new table cell for public name
 					const publicNameCell = row.insertCell(1);
 					publicNameCell.colSpan = 1; // Set the colspan to 1 for Public Name
@@ -1136,10 +1136,10 @@ async function createTable(dataArray) {
 					publicNameCellInnerHTML = "<span title='" + data.tsid_stage_rev + "'>" + data.location_id.split('-')[0] + "</span>";
 					// console.log("publicNameCellInnerHTML = ", publicNameCellInnerHTML);
 					publicNameCell.innerHTML = publicNameCellInnerHTML;
-				}
+				})();
 
-				// ======= CURRENT STAGE =======
-				if (34 === 34) {
+				// CURRENT STAGE AND 24HR CHANGE
+				(() => {
 					// Create a new table cell
 					const stageCell = row.insertCell(2);
 					stageCell.style.width = "6%";
@@ -1206,19 +1206,23 @@ async function createTable(dataArray) {
 								const lastNonNullValue = getLastNonNullValue(stage);
 								// console.log("lastNonNullValue:", lastNonNullValue);
 
+								let timestampLast = null;
+								let valueLast = null;
+								let qualityCodeLast = null;
+
 								// Check if a non-null value was found
 								if (lastNonNullValue !== null) {
 									// Extract timestamp, value, and quality code from the last non-null value
-									var timestampLast = lastNonNullValue.timestamp;
-									var valueLast = lastNonNullValue.value;
-									var qualityCodeLast = lastNonNullValue.qualityCode;
+									timestampLast = lastNonNullValue.timestamp;
+									valueLast = lastNonNullValue.value;
+									qualityCodeLast = lastNonNullValue.qualityCode;
 									// console.log("timestampLast:", timestampLast);
 									// console.log("timestampLast:", typeof (timestampLast));
 									// console.log("valueLast:", valueLast);
 									// console.log("qualityCodeLast:", qualityCodeLast);
 								} else {
 									// If no non-null valueLast is found, log a message
-									console.log("No non-null valueLast found.");
+									console.log("No lastNonNullValue found.");
 								}
 
 								const c_count = calculateCCount(tsidStage);
@@ -1239,7 +1243,7 @@ async function createTable(dataArray) {
 									// console.log("qualityCode24HoursLast:", qualityCode24HoursLast);
 								} else {
 									// If no non-null valueLast is found, log a message
-									console.log("No non-null valueLast found.");
+									console.log("No lastNonNull24HoursValue found.");
 								}
 
 								// Calculate the 24 hours change between first and last value
@@ -1250,11 +1254,9 @@ async function createTable(dataArray) {
 								var floodClass = determineStageClass(valueLast, flood_level, timestampLast);
 								// console.log("floodClass:", floodClass);
 
-								if (valueLast !== null || valueLast !== undefined) {
+								if (valueLast) {
 									stageCellInnerHTML = "<span class='" + floodClass + "' title='" + stage.name + ", Value = " + valueLast.toFixed(2) + ", Date Time = " + timestampLast + ", Flood Level = " + flood_level.toFixed(2) + "'>"
-										// + "<a href='../../../district_templates/chart/public/chart.html?cwms_ts_id=" + stage.name + "&start_day=4&end_day=0' target='_blank'>"
 										+ valueLast.toFixed(1)
-										// + "</a>"
 										+ "</span>";
 
 									stageDeltaCellInnerHTML = "<span class='last_max_value' title='" + stage.name + ", Value = " + value24HoursLast.toFixed(2) + ", Date Time = " + timestamp24HoursLast + ", Delta = (" + valueLast.toFixed(2) + " - " + value24HoursLast.toFixed(2) + ") = " + delta_24.toFixed(2) + "'>"
@@ -1271,10 +1273,10 @@ async function createTable(dataArray) {
 								console.error("Error fetching or processing data:", error);
 							});
 					}
-				}
+				})();
 
-				// ======= NWS DAY1, DAY2, DAY3, Forecast Time =======
-				if (5678 === 5678) {
+				// NWS DAY1, DAY2, DAY3, Forecast Time
+				(() => {
 					// Create a new table cell
 					const nwsDayOneCell = row.insertCell(4);
 					nwsDayOneCell.classList.add("next_3_days");
@@ -1353,7 +1355,7 @@ async function createTable(dataArray) {
 									// Extract the first second middle value
 									const firstFirstValue = valuesWithTimeNoon[1][0];
 									const firstMiddleValue = (valuesWithTimeNoon[1][1] !== null) ? (((parseFloat(valuesWithTimeNoon[1][1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon[1][1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon[1][1])).toFixed(1) : (parseFloat(valuesWithTimeNoon[1][1])).toFixed(1)) : "";
-									console.log("x = ", valuesWithTimeNoon[1][0]);
+									// console.log("x = ", valuesWithTimeNoon[1][0]);
 
 									// Extract the second second middle value
 									const secondFirstValue = valuesWithTimeNoon[2][0];
@@ -1399,10 +1401,10 @@ async function createTable(dataArray) {
 								});
 						}
 					}
-				}
+				})();
 
-				// ======= CREST AND CREST DATE =======
-				if (910 === 910) {
+				// CREST AND CREST DATE
+				(() => {
 					// Create a new table cell
 					const crestCell = row.insertCell(8);
 					crestCell.style.width = "5%";
@@ -1507,10 +1509,10 @@ async function createTable(dataArray) {
 						crestCell.innerHTML = crestCellInnerHTML;
 						crestDateCell.innerHTML = crestDateCellInnerHTML;
 					}
-				}
+				})();
 
-				// ======= LD SETTINGS =======
-				if (11 === 11) {
+				// LD SETTINGS
+				(() => {
 					// Create a new table cell
 					const lDSettingCell = row.insertCell(10);
 					lDSettingCell.classList.add("project_gage");
@@ -1693,10 +1695,10 @@ async function createTable(dataArray) {
 						}
 						lDSettingCell.innerHTML = lDSettingCellInnerHTML;
 					}
-				}
+				})();
 
-				// ======= LWRP OR FLOODSTAGE =======
-				if (12 === 12) {
+				// LWRP OR FLOODSTAGE
+				(() => {
 					if (display_type === "LWRP") {
 						// Create a new table cell
 						const lwrpCell = row.insertCell(11);
@@ -1757,10 +1759,10 @@ async function createTable(dataArray) {
 					} else {
 
 					}
-				}
+				})();
 
 				// PLUS MINUS LWRP OR PHASE1/PHASE2 
-				if (13 === 13) {
+				(() => {
 					if (display_type === "LWRP") {
 						// Create a new table cell
 						const plusMinusLWRPCell = row.insertCell(12);
@@ -1829,7 +1831,7 @@ async function createTable(dataArray) {
 										// console.log("qualityCodeLast:", qualityCodeLast);
 									} else {
 										// If no non-null valueLast is found, log a message
-										console.log("No non-null valueLast found.");
+										console.log("No lastNonNullValue found.");
 									}
 
 									// Check for Nav TW-Kaskaskia
@@ -1898,10 +1900,10 @@ async function createTable(dataArray) {
 						let yCellInnerHTML = "-0-";
 						yCell.innerHTML = yCellInnerHTML;
 					}
-				}
+				})();
 
-				// ======= GAGEZERO =======
-				if (14 === 14) {
+				// GAGEZERO
+				(() => {
 					// Create a new table cell
 					const gageZeroCell = row.insertCell(13);
 					gageZeroCell.classList.add("Font_15");
@@ -1910,7 +1912,7 @@ async function createTable(dataArray) {
 					// Initialize stageCwmsIdCell.innerHTML as an empty string
 					let gageZeroCellInnerHTML = "--";
 
-					console.log(data.location_id.split('-')[0], data.metadata["vertical-datum"], data.metadata["elevation"].toFixed(2));
+					// console.log(data.location_id.split('-')[0], data.metadata["vertical-datum"], data.metadata["elevation"].toFixed(2));
 
 					// TODO: Cairo still use NGVD29, needs to change to NAV88. NAVD88 = 271.08ft
 					if (data.display_stage_29 === true || data.location_id === "Alton-Mississippi") {
@@ -1936,13 +1938,14 @@ async function createTable(dataArray) {
 
 					// Set the HTML inside the cell once the fetch is complete
 					gageZeroCell.innerHTML = gageZeroCellInnerHTML;
-				}
+				})();
+
 			} else {
 				// NO VISIABLE GAGE
 			}
 
 			//==============================================================================================================================================
-			// BUILD TABLE LAKE
+			// LAKE
 			//==============================================================================================================================================
 			if (display_type === 'Lake') {
 				// =====================
@@ -1952,8 +1955,8 @@ async function createTable(dataArray) {
 					// Create a new row for each lake data entry
 					const row = table.insertRow();
 
-					// ======= LAKE =======
-					if ("lake" === "lake") {
+					// LAKE
+					(() => {
 						// Create a new table cell for lake name
 						const lakeCell = row.insertCell(0);
 						lakeCell.colSpan = 1;
@@ -1967,10 +1970,10 @@ async function createTable(dataArray) {
 						lakeCellInnerHTML = "<span>" + data.location_id.split('-')[0] + "</span>";
 						// console.log('lakeCellInnerHTML =', lakeCellInnerHTML);
 						lakeCell.innerHTML = lakeCellInnerHTML;
-					}
+					})();
 
-					// ======= CURRENT POOL AND 24HR CHANGE =======
-					if ("pool" === "pool") {
+					// CURRENT POOL AND 24HR CHANGE
+					(() => {
 						// Create a new table cell for lake name
 						const stageCell = row.insertCell(1);
 						stageCell.colSpan = 1;
@@ -2099,10 +2102,10 @@ async function createTable(dataArray) {
 									console.error("Error fetching or processing data:", error);
 								});
 						}
-					}
+					})();
 
-					// ======= STORAGE UTILIZED =======
-					if ("util" === "util") {
+					// STORAGE UTILIZED
+					(() => {
 						// Create a new table cell for lake name
 						const storageCell = row.insertCell(3);
 						storageCell.colSpan = 1;
@@ -2212,10 +2215,10 @@ async function createTable(dataArray) {
 									console.error("Error fetching or processing data:", error);
 								});
 						}
-					}
+					})();
 
-					// ======= PRECIP =======
-					if ("precip" === "precip") {
+					// PRECIP
+					(() => {
 						// Create a new table cell for lake name
 						const precipCell = row.insertCell(4);
 						precipCell.colSpan = 1;
@@ -2301,10 +2304,10 @@ async function createTable(dataArray) {
 									console.error("Error fetching or processing data:", error);
 								});
 						}
-					}
+					})();
 
-					// ======= YESTERDAY INFLOW =======
-					if ("inflow" === "inflow") {
+					// YESTERDAY INFLOW
+					(() => {
 						// Create a new table cell for lake name
 						const inflowCell = row.insertCell(5);
 						inflowCell.colSpan = 1;
@@ -2390,7 +2393,7 @@ async function createTable(dataArray) {
 									console.error("Error fetching or processing data:", error);
 								});
 						}
-					}
+					})();
 
 					// ======= CONTROLLED OUTFLOW =======
 					if ("outflow" === "outflow") {
