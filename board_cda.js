@@ -2709,12 +2709,12 @@ async function createTable(dataArray) {
 									const delta_24 = valueLast - value24HoursLast;
 									// console.log("delta_24:", delta_24);
 
-									if (valueLast !== null || valueLast !== undefined) {
+									if (valueLast !== null && valueLast !== undefined) {
 										twDoCellInnerHTML = "<span>"
 											+ "Tw Do: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")" + " mg/L"
 											+ "</span>";
 									} else {
-										twDoCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>"
+										twDoCellInnerHTML = "Tw Do: " + "<span class='missing'>" + "-M-" + "</span>"
 									}
 									twDoCell.innerHTML = twDoCellInnerHTML;
 								})
@@ -3327,12 +3327,12 @@ async function createTable(dataArray) {
 										const delta_24 = valueLast - value24HoursLast;
 										// console.log("delta_24:", delta_24);
 
-										if (valueLast !== null || valueLast !== undefined) {
+										if (valueLast !== null && valueLast !== undefined) {
 											reregDoCellInnerHTML = "<span>"
 												+ "DO1: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")"
 												+ "</span>";
 										} else {
-											reregDoCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>"
+											reregDoCellInnerHTML = "DO1: " + "<span class='missing'>" + "-M-" + "</span>"
 										}
 										reregDoCell.innerHTML = reregDoCellInnerHTML;
 									})
@@ -3443,12 +3443,12 @@ async function createTable(dataArray) {
 										const delta_24 = valueLast - value24HoursLast;
 										// console.log("delta_24:", delta_24);
 
-										if (valueLast !== null || valueLast !== undefined) {
+										if (valueLast !== null && valueLast !== undefined) {
 											reregDoCell2InnerHTML = "<span>"
 												+ "DO2: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")"
 												+ "</span>";
 										} else {
-											reregDoCell2InnerHTML = "<span class='missing'>" + "-M-" + "</span>"
+											reregDoCell2InnerHTML = "DO2: " + "<span class='missing'>" + "-M-" + "</span>"
 										}
 										reregDoCell2.innerHTML = reregDoCell2InnerHTML;
 									})
