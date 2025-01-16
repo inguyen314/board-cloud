@@ -2081,6 +2081,7 @@ async function createTable(dataArray) {
 									// Calculate the 24 hours change between first and last value
 									const delta_24 = valueLast - value24HoursLast;
 									// console.log("delta_24:", delta_24);
+									// console.log("delta_24:", typeof (delta_24));
 
 									// FLOOD CLASS
 									var floodClass = determineStageClass(valueLast, flood_level, timestampLast);
@@ -2092,9 +2093,13 @@ async function createTable(dataArray) {
 											+ "</span>";
 
 										if (!isNaN(delta_24)) {
-											stageDeltaCellInnerHTML = "<span class='last_max_value' title='" + data.name + ", Value = " + value24HoursLast + ", Date Time = " + timestamp24HoursLast + ", Delta = (" + valueLast + " - " + value24HoursLast + ") = " + delta_24 + "'>"
-												+ delta_24.toFixed(2)
-												+ "</span>";
+											if (parseFloat(delta_24) > 5 || parseFloat(delta_24) < -5) {
+												stageDeltaCellInnerHTML = "<span class='missing'>" + delta_24.toFixed(2) + "</span>"
+											} else {
+												stageDeltaCellInnerHTML = "<span class='last_max_value' title='" + data.name + ", Value = " + value24HoursLast + ", Date Time = " + timestamp24HoursLast + ", Delta = (" + valueLast + " - " + value24HoursLast + ") = " + delta_24 + "'>"
+													+ delta_24.toFixed(2)
+													+ "</span>";
+											}
 										} else {
 											stageDeltaCellInnerHTML = "<img src='images/loading5.gif' style='width: 30px; height: 30px;'>";
 										}
@@ -3306,7 +3311,7 @@ async function createTable(dataArray) {
 											// console.log("qualityCodeLast:", qualityCodeLast);
 										} else {
 											// If no non-null valueLast is found, log a message
-											console.log("No non-null valueLast found.");
+											// console.log("No non-null valueLast found.");
 										}
 
 										const c_count = calculateCCount(tsid);
