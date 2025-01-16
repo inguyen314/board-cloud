@@ -1001,6 +1001,9 @@ async function createTable(dataArray) {
 	const currentDateTime = new Date();
 	// console.log('currentDateTime:', currentDateTime);
 
+	const currentMonth = new Date().getMonth() + 1;
+	console.log("currentMonth: ", currentMonth);
+
 	// Subtract two hours from current date and time
 	const currentDateTimeMinus2Hours = subtractHoursFromDate(currentDateTime, 2);
 	// console.log('currentDateTimeMinus2Hours :', currentDateTimeMinus2Hours);
@@ -2583,7 +2586,6 @@ async function createTable(dataArray) {
 						// 	});
 					}
 
-
 					// ======= BLANK =======
 					if ("blank" === "blank") {
 						// Create a new table cell for lake name
@@ -2606,7 +2608,6 @@ async function createTable(dataArray) {
 						// Set the HTML inside the cell once the fetch is complete
 						blankblankCell.innerHTML = blankblankCellInnerHTML;
 					}
-
 
 					// ======= TW DO =======
 					if ("twdo" === "twdo") {
@@ -2714,7 +2715,11 @@ async function createTable(dataArray) {
 											+ "Tw Do: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")" + " mg/L"
 											+ "</span>";
 									} else {
-										twDoCellInnerHTML = "Tw Do: " + "<span class='missing'>" + "-M-" + "</span>"
+										if ([10,11,12,1, 2, 3].includes(currentMonth)) {
+											twDoCellInnerHTML = "Tw Do: " + "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
+										} else {
+											twDoCellInnerHTML = "Tw Do: " + "<span class='missing'>" + "-M-" + "</span>"
+										}
 									}
 									twDoCell.innerHTML = twDoCellInnerHTML;
 								})
@@ -2724,7 +2729,6 @@ async function createTable(dataArray) {
 								});
 						}
 					}
-
 
 					// ======= GAGED OUTFLOW =======
 					if ("gagedoutflow" === "gagedoutflow") {
@@ -2987,7 +2991,6 @@ async function createTable(dataArray) {
 						// 		console.error("Error:", error);
 						// 	});
 					}
-
 
 					// ======= SEASONAL RULE CURVE DELTA =======
 					if ("ruledelta" === "ruledelta") {
@@ -3332,7 +3335,11 @@ async function createTable(dataArray) {
 												+ "DO1: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")"
 												+ "</span>";
 										} else {
-											reregDoCellInnerHTML = "DO1: " + "<span class='missing'>" + "-M-" + "</span>"
+											if ([10,11,12,1, 2, 3].includes(currentMonth)) {
+												reregDoCellInnerHTML = "Do1: " + "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
+											} else {
+												reregDoCellInnerHTML = "Do1: " + "<span class='missing'>" + "-M-" + "</span>"
+											}
 										}
 										reregDoCell.innerHTML = reregDoCellInnerHTML;
 									})
@@ -3448,7 +3455,13 @@ async function createTable(dataArray) {
 												+ "DO2: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")"
 												+ "</span>";
 										} else {
-											reregDoCell2InnerHTML = "DO2: " + "<span class='missing'>" + "-M-" + "</span>"
+											if ([10,11,12,1, 2, 3].includes(currentMonth)) {
+												reregDoCell2InnerHTML = "Do2: "
+													+ "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
+											} else {
+												reregDoCell2InnerHTML = "Do2: "
+													+ "<span class='missing'>-M-</span>";
+											}
 										}
 										reregDoCell2.innerHTML = reregDoCell2InnerHTML;
 									})
