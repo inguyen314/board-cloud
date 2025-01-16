@@ -2091,9 +2091,13 @@ async function createTable(dataArray) {
 											+ valueLast.toFixed(1)
 											+ "</span>";
 
-										stageDeltaCellInnerHTML = "<span class='last_max_value' title='" + data.name + ", Value = " + value24HoursLast + ", Date Time = " + timestamp24HoursLast + ", Delta = (" + valueLast + " - " + value24HoursLast + ") = " + delta_24 + "'>"
-											+ delta_24.toFixed(2)
-											+ "</span>";
+										if (!isNaN(delta_24)) {
+											stageDeltaCellInnerHTML = "<span class='last_max_value' title='" + data.name + ", Value = " + value24HoursLast + ", Date Time = " + timestamp24HoursLast + ", Delta = (" + valueLast + " - " + value24HoursLast + ") = " + delta_24 + "'>"
+												+ delta_24.toFixed(2)
+												+ "</span>";
+										} else {
+											stageDeltaCellInnerHTML = "<img src='images/loading5.gif' style='width: 30px; height: 30px;'>";
+										}
 									} else {
 										stageCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>"
 									}
@@ -2715,7 +2719,7 @@ async function createTable(dataArray) {
 											+ "Tw Do: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")" + " mg/L"
 											+ "</span>";
 									} else {
-										if ([10,11,12,1, 2, 3].includes(currentMonth)) {
+										if ([10, 11, 12, 1, 2, 3].includes(currentMonth)) {
 											twDoCellInnerHTML = "Tw Do: " + "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
 										} else {
 											twDoCellInnerHTML = "Tw Do: " + "<span class='missing'>" + "-M-" + "</span>"
@@ -3335,7 +3339,7 @@ async function createTable(dataArray) {
 												+ "DO1: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")"
 												+ "</span>";
 										} else {
-											if ([10,11,12,1, 2, 3].includes(currentMonth)) {
+											if ([10, 11, 12, 1, 2, 3].includes(currentMonth)) {
 												reregDoCellInnerHTML = "Do1: " + "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
 											} else {
 												reregDoCellInnerHTML = "Do1: " + "<span class='missing'>" + "-M-" + "</span>"
@@ -3455,7 +3459,7 @@ async function createTable(dataArray) {
 												+ "DO2: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")"
 												+ "</span>";
 										} else {
-											if ([10,11,12,1, 2, 3].includes(currentMonth)) {
+											if ([10, 11, 12, 1, 2, 3].includes(currentMonth)) {
 												reregDoCell2InnerHTML = "Do2: "
 													+ "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
 											} else {
