@@ -1343,7 +1343,7 @@ async function createTable(dataArray) {
 									return response.json();
 								})
 								.then(nws3Days => {
-									// console.log("nws3Days: ", nws3Days);
+									console.log("nws3Days: ", nws3Days);
 
 									// Convert timestamps in the JSON object
 									nws3Days.values.forEach(entry => {
@@ -1356,17 +1356,17 @@ async function createTable(dataArray) {
 									// console.log("valuesWithTimeNoon = ", valuesWithTimeNoon);
 
 									// Extract the first second middle value
-									const firstFirstValue = valuesWithTimeNoon[1][0];
-									const firstMiddleValue = (valuesWithTimeNoon[1][1] !== null) ? (((parseFloat(valuesWithTimeNoon[1][1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon[1][1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon[1][1])).toFixed(1) : (parseFloat(valuesWithTimeNoon[1][1])).toFixed(1)) : "";
+									const firstFirstValue = valuesWithTimeNoon?.[1]?.[0];
+									const firstMiddleValue = (valuesWithTimeNoon?.[1]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1)) : "";
 									// console.log("x = ", valuesWithTimeNoon[1][0]);
 
 									// Extract the second second middle value
-									const secondFirstValue = valuesWithTimeNoon[2][0];
-									const secondMiddleValue = (valuesWithTimeNoon[2][1] !== null) ? (((parseFloat(valuesWithTimeNoon[2][1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon[2][1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon[2][1])).toFixed(1) : (parseFloat(valuesWithTimeNoon[2][1])).toFixed(1)) : "";
+									const secondFirstValue = valuesWithTimeNoon?.[2]?.[0];
+									const secondMiddleValue = (valuesWithTimeNoon?.[2]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1)) : "";
 
 									// Extract the third second middle value
-									const thirdFirstValue = valuesWithTimeNoon[3][0];
-									const thirdMiddleValue = (valuesWithTimeNoon[3][1] !== null) ? (((parseFloat(valuesWithTimeNoon[3][1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon[3][1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon[3][1])).toFixed(1) : (parseFloat(valuesWithTimeNoon[3][1])).toFixed(1)) : "";
+									const thirdFirstValue = valuesWithTimeNoon?.[3]?.[0];
+									const thirdMiddleValue = (valuesWithTimeNoon?.[3]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1)) : "";
 
 									// Dertermine Flood Classes
 									var floodClassDay1 = determineStageClass(firstMiddleValue, flood_level, firstFirstValue);
