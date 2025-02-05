@@ -375,6 +375,18 @@ body {
 .Board_Roller:hover {
 	background-color: lightgray;
 }
+.Board_Roller_Hide {
+	background-color:white;
+	padding: 2px;
+	border: 1px solid white;
+	font-weight:bold;
+	display: inline-block;
+    width: 70px;
+	text-align: center;
+	float:none;
+	margin-left: 0.1em;
+	font-size: 1.5em;
+}
 .Board_Tainter {
 	background-color:powderblue;
 	padding: 2px;

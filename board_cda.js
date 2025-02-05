@@ -1739,7 +1739,7 @@ async function createTable(dataArray) {
 									// console.log("roller is null");
 
 									// Set the combined value to the cell, preserving HTML
-									lDSettingCellInnerHTML += "<span class='Board_Roller' title='No Roller'>" + "-n/a-" + "</span>";
+									lDSettingCellInnerHTML += "<span class='Board_Roller_Hide' title='No Roller'>" + "" + "</span>";
 									// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
 								}
 								lDSettingCell.innerHTML = lDSettingCellInnerHTML;
@@ -1897,9 +1897,17 @@ async function createTable(dataArray) {
 									// Check for Nav TW-Kaskaskia
 									let plusMinusLwrp = null;
 									if (data.location_id === "Nav TW-Kaskaskia") {
-										plusMinusLwrp = ((valueLast - 0) - data.lwrp['constant-value']).toFixed(1);
+										if (data.lwrp && data.lwrp['constant-value'] !== undefined) {
+											plusMinusLwrp = ((valueLast - 0) - data.lwrp['constant-value']).toFixed(1);
+										} else {
+											console.warn("Warn: 'constant-value' is missing in data.lwrp");
+										}
 									} else {
-										plusMinusLwrp = (valueLast - data.lwrp['constant-value']).toFixed(1);
+										if (data.lwrp && data.lwrp['constant-value'] !== undefined) {
+											plusMinusLwrp = (valueLast - data.lwrp['constant-value']).toFixed(1);
+										} else {
+											console.warn("Warn: 'constant-value' is missing in data.lwrp");
+										}
 									}
 
 									// Add "+" for positive and "-" for negative values
@@ -1913,10 +1921,10 @@ async function createTable(dataArray) {
 												plusMinusLWRPCellInnerHTML = "<span class='missing'>-M-</span>";
 											}
 										} else {
-											plusMinusLWRPCellInnerHTML = "<span class='missing'>-</span>";
+											plusMinusLWRPCellInnerHTML = "<span class='missing'></span>";
 										}
 									} else {
-										plusMinusLWRPCellInnerHTML = "<span class='missing'>---</span>";
+										plusMinusLWRPCellInnerHTML = "<span class='missing'></span>";
 									}
 
 									plusMinusLWRPCell.innerHTML = plusMinusLWRPCellInnerHTML;
