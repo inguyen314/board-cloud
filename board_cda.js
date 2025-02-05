@@ -1,5 +1,7 @@
 var allData = [];
 
+console.log("*** This version still uses gage_control.json to get tsid ***");
+
 document.addEventListener('DOMContentLoaded', async function () {
 	// Display the loading_alarm_mvs indicator
 	const loadingIndicator = document.getElementById('loading');
@@ -55,6 +57,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 	const combinedTwelfthData = [];
 	const combinedThirteenthData = [];
 	const combinedFourthteenthData = [];
+	const combinedFifthteenthData = [];
 
 	// Array to store all promises from API requests
 	const apiPromises = [];
@@ -713,6 +716,46 @@ document.addEventListener('DOMContentLoaded', async function () {
 				}
 			})();
 
+			// river mile data request
+			(() => {
+				let fifthteenthApiUrl = null;
+				if (cda === "public") {
+					fifthteenthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/mvs-data/stream-locations?office-mask=MVS`;
+				} else if (cda === "internal") {
+					fifthteenthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/stream-locations?office-mask=MVS`;
+				}
+				// console.log('fifthteenthApiUrl: ', fifthteenthApiUrl);
+
+				if (fifthteenthApiUrl) {
+					apiPromises.push(
+						fetch(fifthteenthApiUrl)
+							.then(response => {
+								if (response.status === 404) {
+									console.warn(`River Mile data not found for location: ${loc['location-id']}`);
+									return null;
+								}
+								if (!response.ok) {
+									throw new Error(`Network response was not ok: ${response.statusText}`);
+								}
+								return response.json();
+							})
+							.then(fifthteenthData => {
+								// console.log('fifthteenthData: ', fifthteenthData);
+
+								if (fifthteenthData === null) {
+								} else {
+									combinedFifthteenthData.push(fifthteenthData);
+								}
+							})
+							.catch(error => {
+								console.error(`Problem with the fetch operation for river mile data at ${fifthteenthApiUrl}:`, error);
+							})
+					);
+				} else {
+					combinedFifthteenthData.push(null);
+				}
+			})();
+
 			// END CDA CALL 
 
 			// Wait for all API requests to finish
@@ -733,7 +776,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 				combinedEleventhData,
 				combinedTwelfthData,
 				combinedThirteenthData,
-				combinedFourthteenthData
+				combinedFourthteenthData,
+				combinedFifthteenthData
 			);
 		}
 	};
@@ -1343,7 +1387,7 @@ async function createTable(dataArray) {
 									return response.json();
 								})
 								.then(nws3Days => {
-									console.log("nws3Days: ", nws3Days);
+									// console.log("nws3Days: ", nws3Days);
 
 									// Convert timestamps in the JSON object
 									nws3Days.values.forEach(entry => {
@@ -1358,7 +1402,8 @@ async function createTable(dataArray) {
 									// Extract the first second middle value
 									const firstFirstValue = valuesWithTimeNoon?.[1]?.[0];
 									const firstMiddleValue = (valuesWithTimeNoon?.[1]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1)) : "";
-									// console.log("x = ", valuesWithTimeNoon[1][0]);
+									// console.log("firstMiddleValue = ", firstMiddleValue);
+									// console.log("firstMiddleValue = ", typeof (firstMiddleValue));
 
 									// Extract the second second middle value
 									const secondFirstValue = valuesWithTimeNoon?.[2]?.[0];
@@ -1378,13 +1423,25 @@ async function createTable(dataArray) {
 									var floodClassDay3 = determineStageClass(thirdMiddleValue, flood_level, thirdFirstValue);
 									// console.log("floodClassDay3:", floodClassDay3);
 
-									if (nws3Days !== null) {
-										nwsDayOneCellInnerHTML = "<span class='" + floodClassDay1 + "'>" + firstMiddleValue + "</span>";
-										nwsDayTwoCellInnerHTML = "<span class='" + floodClassDay2 + "'>" + secondMiddleValue + "</span>";
-										nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + thirdMiddleValue + "</span>";
+									if (nws3Days !== null || nws3Days !== undefined) {
+										if (firstMiddleValue !== null && !isNaN(firstMiddleValue)) {
+											nwsDayOneCellInnerHTML = "<span class='" + floodClassDay1 + "'>" + firstMiddleValue + "</span>";
+										} else {
+											nwsDayOneCellInnerHTML = "<span class='" + floodClassDay1 + "'>" + "-" + "</span>";
+										}
 
-										// TODO: When CDA return data entry date, hide forecast if the data entry date is late.
-										// Forecast Time from exported PHP Json file
+										if (secondMiddleValue !== null && !isNaN(secondMiddleValue)) {
+											nwsDayTwoCellInnerHTML = "<span class='" + floodClassDay2 + "'>" + secondMiddleValue + "</span>";
+										} else {
+											nwsDayTwoCellInnerHTML = "<span class='" + floodClassDay2 + "'>" + "-" + "</span>";
+										}
+
+										if (thirdMiddleValue !== null && !isNaN(thirdMiddleValue)) {
+											nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + thirdMiddleValue + "</span>";
+										} else {
+											nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + "-" + "</span>";
+										}
+
 										fetchAndLogNwsData(data.tsid_stage_nws_3_day_forecast, forecastTimeCell);
 									} else {
 										nwsDayOneCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
