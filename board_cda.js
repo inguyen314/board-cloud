@@ -2786,13 +2786,13 @@ async function createTable(dataArray) {
 
 									if (valueLast !== null && valueLast !== undefined) {
 										twDoCellInnerHTML = "<span>"
-											+ "Tw Do: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")" + " mg/L"
+											+ "TW DO: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")" + " mg/L"
 											+ "</span>";
 									} else {
 										if ([10, 11, 12, 1, 2, 3].includes(currentMonth)) {
-											twDoCellInnerHTML = "Tw Do: " + "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
+											twDoCellInnerHTML = "TW DO: " + "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
 										} else {
-											twDoCellInnerHTML = "Tw Do: " + "<span class='missing'>" + "-M-" + "</span>"
+											twDoCellInnerHTML = "TW DO: " + "<span class='missing'>" + "-M-" + "</span>"
 										}
 									}
 									twDoCell.innerHTML = twDoCellInnerHTML;
@@ -3410,9 +3410,9 @@ async function createTable(dataArray) {
 												+ "</span>";
 										} else {
 											if ([10, 11, 12, 1, 2, 3].includes(currentMonth)) {
-												reregDoCellInnerHTML = "Do1: " + "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
+												reregDoCellInnerHTML = "DO1: " + "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
 											} else {
-												reregDoCellInnerHTML = "Do1: " + "<span class='missing'>" + "-M-" + "</span>"
+												reregDoCellInnerHTML = "DO1: " + "<span class='missing'>" + "-M-" + "</span>"
 											}
 										}
 										reregDoCell.innerHTML = reregDoCellInnerHTML;
@@ -3530,10 +3530,10 @@ async function createTable(dataArray) {
 												+ "</span>";
 										} else {
 											if ([10, 11, 12, 1, 2, 3].includes(currentMonth)) {
-												reregDoCell2InnerHTML = "Do2: "
+												reregDoCell2InnerHTML = "DO2: "
 													+ "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
 											} else {
-												reregDoCell2InnerHTML = "Do2: "
+												reregDoCell2InnerHTML = "DO2: "
 													+ "<span class='missing'>-M-</span>";
 											}
 										}
