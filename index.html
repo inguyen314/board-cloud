@@ -2,43 +2,56 @@
 <html lang="en">
 
 <head>
+    <!-- Refresh the page every 300 seconds (5 minutes) -->
     <meta http-equiv="Refresh" content="300">
+    
+    <!-- Define character encoding -->
     <meta charset="UTF-8">
+    
+    <!-- Ensure the page is responsive on different screen sizes -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Board</title>
+    
+    <!-- Link to external CSS file for styling -->
     <link href="css/style.css" rel="stylesheet" type="text/css" media="all" />
-    <script src="js/moment.min.js"></script>
-    <script src="js/moment-timezone-with-data.js"></script>
-    <script src="js/chart.js"></script>
-    <script src="js/chartjs-adapter-moment.min.js"></script>
+    
+    <!-- Include JavaScript libraries for date/time handling and chart rendering -->
+    <script src="js/libraries/moment.min.js"></script>
+    <script src="js/libraries/moment-timezone-with-data.js"></script>
+    <script src="js/libraries/chart.js"></script>
+    <script src="js/libraries/chartjs-adapter-moment.min.js"></script>
 </head>
 
 <body>
     <script>
-        // SETUP URL PARAMETERS
+        // Get the root URL of the current website
         const documentRoot = window.location.protocol + "//" + window.location.host + "/";
 
-        // Determine the default value of cda based on documentRoot
+        // Determine the default data access type based on the URL
         const cdaDefault = (documentRoot === "https://wm.mvs.ds.usace.army.mil/") ? "internal" : "public";
-        // console.log("cdaDefault: ", cdaDefault);
+        console.log("cdaDefault: ", cdaDefault);
 
-        // Create a URL object with the current page URL
+        // Get URL parameters from the query string
         const urlParams = new URLSearchParams(window.location.search);
 
-        //  URL PARAMETERS
+        // Retrieve and log display type from the URL or default to 'FloodStage'
         const display_type = urlParams.get('display_type') || 'FloodStage';
         console.log('display_type: ', display_type);
 
+        // Retrieve and log the data access type (cda)
         const cda = urlParams.get('cda') || cdaDefault;
         console.log('cda: ', cda);
 
+        // Retrieve and log whether tributaries should be displayed
         const display_tributary = urlParams.get('display_tributary') || 'False';
         console.log('display_tributary: ', display_tributary);
 
+        // Retrieve and log development mode setting
         const dev = urlParams.get('dev') || 'False';
         console.log('dev: ', dev);
 
-        // BOARD TITLE
+        // Set board title based on display type and tributary setting
         let boardTitle = null;
         if (display_tributary === "True") {
             boardTitle = "Tributary Board";
@@ -50,50 +63,50 @@
             } else if (display_type === "Lake") {
                 boardTitle = "Lake Board";
             } else {
-                boardTitle = 909;
+                boardTitle = 909; // Default case if no valid display type is found
             }
         }
-        // console.log('boardTitle: ', boardTitle);
+        console.log('boardTitle: ', boardTitle);
 
-        // Update the HTML title
+        // Set the document title based on the determined board title
         document.title = boardTitle;
 
-
-        // SETUP BASIN
+        // Define the basin variable based on the display type and tributary setting
         if (display_tributary === "False" && display_type !== "Lake") {
-            basin = 'Mississippi';
-            // console.log('basin: ', basin);
+            basin = 'Mississippi'; // Default to Mississippi basin
         } else if (display_tributary === "True") {
-            // basin = ['Meramec'];
+            // If tributary view is enabled, set multiple basin names
             basin = ['Cuivre', 'Illinois', 'Missouri', 'Meramec', 'Kaskaskia', 'Big Muddy', 'Ohio'];
-            // console.log('basin: ', basin);
         } else if (display_type === "Lake") {
-            // Define an empty array data
+            // Define an empty data array (though not used here)
             data = [];
 
-            // GET LAKE LOCATION ID
+            // Define basin names specific to lake monitoring
             basin = ['Lk Shelbyville-Kaskaskia', 'Carlyle Lk-Kaskaskia', 'Rend Lk-Big Muddy', 'Wappapello Lk-St Francis', 'Mark Twain Lk-Salt'];
-            // console.log('basin: ', basin);
         } else {
-            basin = 909;
+            basin = 909; // Default case if no valid basin is found
         }
     </script>
 
-    <!-- table div -->
-    <div id="loading" style="display: none;"><img src="images/loading4.gif" style='height: 50px; width: 50px;'
-            alt="Loading..." /></div>
-    <!-- <div id="loading" style="display: none;"><img src="../public/images/IQe5 Loading.gif" style='height: 50px; width: 50px;'
-            alt="Loading..." /></div> -->
-    <script type="text/javascript" src="board_functions.js"></script>
-    <script type="text/javascript" src="board_setup.js"></script>
+    <!-- Loading indicator -->
+    <div id="loading" style="display: none; align-items: center; text-align: center;">
+        <img src="images/loading4.gif" style='height: 50px; width: 50px;' alt="Loading..." />
+    </div>
+
+    <!-- Include JavaScript files for board functionality -->
+    <script type="text/javascript" src="js/board_functions.js"></script>
+    <script type="text/javascript" src="js/board_setup.js"></script>
+
     <script type="text/javascript">
+        // Conditionally load different JavaScript files based on the 'dev' parameter
         if (dev !== null) {
-            document.write('<script type="text/javascript" src="board_cda.js"><\/script>');
+            document.write('<script type="text/javascript" src="js/board_cda.js"><\/script>');
         } else {
-            document.write('<script type="text/javascript" src="board_php.js"><\/script>');
+            document.write('<script type="text/javascript" src="js/board_php.js"><\/script>');
         }
     </script>
 
+    <!-- Container for the dynamically generated table -->
     <div id="tableContainer"></div>
 </body>
 
