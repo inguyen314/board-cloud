@@ -41,8 +41,8 @@
 	text-shadow: 0 0 3px darkorange;
 }
 .hard_coded_php {
-	color: #333; /* Base text color */
-	text-shadow: 0 0 3px purple;
+	color: purple; /* Base text color */
+	/* text-shadow: 0 0 3px purple; */
 }
 .hard_coded_php_late {
 	color: #333; /* Base text color */
@@ -169,15 +169,15 @@ body {
 
 .NWS_today_morning_forecast {
 	color: blue;
-	text-shadow: 0 0 2px purple;
+	/* text-shadow: 0 0 2px purple; */
 }
 .NWS_yesterday_evening_forecast {
 	color: purple;
-	text-shadow: 0 0 2px purple;
+	/* text-shadow: 0 0 2px purple; */
 }
 .NWS_yesterday_morning_forecast {
 	color: green;
-	text-shadow: 0 0 2px purple;
+	/* text-shadow: 0 0 2px purple; */
 }
 
 

@@ -1483,94 +1483,96 @@ async function createTable(dataArray) {
 					// Prepare time to send to CDA
 					const { currentDateTimeMidNightISO, currentDateTimePlus4DaysMidNightISO } = generateDateTimeStrings(currentDateTime, currentDateTimePlus14Days);
 
+					// Use PHP 
+					fetchAndLogNwsCrestData(tsidCrest, crestCell, crestDateCell);
 
-					if (tsidCrest !== null) {
-						// Fetch the time series data from the API using the determined query string
-						let urlCrest = null;
-						if (cda === "public") {
-							urlCrest = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
-						} else if (cda === "internal") {
-							urlCrest = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
-						} else {
-							urlCrest = null;
-						}
-						// console.log("urlCrest = ", urlCrest);
-						fetch(urlCrest, {
-							method: 'GET',
-							headers: {
-								'Accept': 'application/json;version=2'
-							}
-						})
-							.then(response => {
-								if (!response.ok) {
-									if (response.status === 404) {
-										throw new Error('Resource not found (404)');
-									} else {
-										throw new Error('Network response was not ok');
-									}
-								}
-								return response.json();
-							})
-							.then(crest => {
-								if (crest && crest.values) {
-									crest.values.forEach(entry => {
-										entry[0] = formatNWSDate(entry[0]); // Update timestamp
-									});
+					// if (tsidCrest !== null) {
+					// 	// Fetch the time series data from the API using the determined query string
+					// 	let urlCrest = null;
+					// 	if (cda === "public") {
+					// 		urlCrest = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+					// 	} else if (cda === "internal") {
+					// 		urlCrest = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+					// 	} else {
+					// 		urlCrest = null;
+					// 	}
+					// 	// console.log("urlCrest = ", urlCrest);
+					// 	fetch(urlCrest, {
+					// 		method: 'GET',
+					// 		headers: {
+					// 			'Accept': 'application/json;version=2'
+					// 		}
+					// 	})
+					// 		.then(response => {
+					// 			if (!response.ok) {
+					// 				if (response.status === 404) {
+					// 					throw new Error('Resource not found (404)');
+					// 				} else {
+					// 					throw new Error('Network response was not ok');
+					// 				}
+					// 			}
+					// 			return response.json();
+					// 		})
+					// 		.then(crest => {
+					// 			if (crest && crest.values) {
+					// 				crest.values.forEach(entry => {
+					// 					entry[0] = formatNWSDate(entry[0]); // Update timestamp
+					// 				});
 
-									console.log("crest = ", crest);
+					// 				console.log("crest = ", crest);
 
-									const lastNonNullCrestValue = getLastNonNullValue(crest);
+					// 				const lastNonNullCrestValue = getLastNonNullValue(crest);
 
-									if (lastNonNullCrestValue !== null) {
-										var timestampLastCrest = lastNonNullCrestValue.timestamp;
-										var valueLastCrest = parseFloat(lastNonNullCrestValue.value).toFixed(2);
-										var qualityCodeLastCrest = lastNonNullCrestValue.qualityCode;
+					// 				if (lastNonNullCrestValue !== null) {
+					// 					var timestampLastCrest = lastNonNullCrestValue.timestamp;
+					// 					var valueLastCrest = parseFloat(lastNonNullCrestValue.value).toFixed(2);
+					// 					var qualityCodeLastCrest = lastNonNullCrestValue.qualityCode;
 
-										const c_count = calculateCCount(tsidCrest);
+					// 					const c_count = calculateCCount(tsidCrest);
 
-										const formattedLastCrestValueTimeStamp = formatTimestampToString(timestampLastCrest);
+					// 					const formattedLastCrestValueTimeStamp = formatTimestampToString(timestampLastCrest);
 
-										const timeStampDateCrestObject = new Date(timestampLastCrest);
+					// 					const timeStampDateCrestObject = new Date(timestampLastCrest);
 
-										var floodClass = determineStageClass(valueLastCrest, flood_level);
+					// 					var floodClass = determineStageClass(valueLastCrest, flood_level);
 
-										if (valueLastCrest === null) {
-											crestCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
-										} else if (valueLastCrest === undefined) {
-											crestCellInnerHTML = "<span>" + "" + "</span>";
-										} else {
-											crestCellInnerHTML = "<span class='" + floodClass + "' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + valueLastCrest + "</span>";
-										}
-										crestCell.innerHTML = crestCellInnerHTML;
+					// 					if (valueLastCrest === null) {
+					// 						crestCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
+					// 					} else if (valueLastCrest === undefined) {
+					// 						crestCellInnerHTML = "<span>" + "" + "</span>";
+					// 					} else {
+					// 						crestCellInnerHTML = "<span style='font-weight: bold; color: red; font-size: 1.5em;' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + valueLastCrest + "</span>";
+					// 					}
+					// 					crestCell.innerHTML = crestCellInnerHTML;
 
-										if (valueLastCrest === null) {
-											crestDateCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
-										} else if (valueLastCrest === undefined) {
-											crestDateCellInnerHTML = "<span>" + "" + "</span>";
-										} else {
-											crestDateCellInnerHTML = "<span class='" + floodClass + "' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + timestampLastCrest.substring(0, 5) + "</span>";
-										}
-										crestDateCell.innerHTML = crestDateCellInnerHTML;
-									} else {
-										crestCell.innerHTML = "";
-										crestDateCell.innerHTML = "";
-									}
-								} else {
-									crestCell.innerHTML = "";
-									crestDateCell.innerHTML = "";
-								}
-							})
-							.catch(error => {
-								// Catch and log any errors that occur during fetching or processing
-								console.error("Error fetching or processing data:", error);
-								// Optionally provide user feedback for the error
-								crestCell.innerHTML = "<span class='error'>--</span>";
-								crestDateCell.innerHTML = "<span class='error'>--</span>";
-							});
-					} else {
-						crestCell.innerHTML = crestCellInnerHTML;
-						crestDateCell.innerHTML = crestDateCellInnerHTML;
-					}
+					// 					if (valueLastCrest === null) {
+					// 						crestDateCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
+					// 					} else if (valueLastCrest === undefined) {
+					// 						crestDateCellInnerHTML = "<span>" + "" + "</span>";
+					// 					} else {
+					// 						crestDateCellInnerHTML = "<span style='font-weight: bold; font-size: 1.5em;' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + timestampLastCrest.substring(0, 5) + "</span>";
+					// 					}
+					// 					crestDateCell.innerHTML = crestDateCellInnerHTML;
+					// 				} else {
+					// 					crestCell.innerHTML = "";
+					// 					crestDateCell.innerHTML = "";
+					// 				}
+					// 			} else {
+					// 				crestCell.innerHTML = "";
+					// 				crestDateCell.innerHTML = "";
+					// 			}
+					// 		})
+					// 		.catch(error => {
+					// 			// Catch and log any errors that occur during fetching or processing
+					// 			console.error("Error fetching or processing data:", error);
+					// 			// Optionally provide user feedback for the error
+					// 			crestCell.innerHTML = "<span class='error'>--</span>";
+					// 			crestDateCell.innerHTML = "<span class='error'>--</span>";
+					// 		});
+					// } else {
+					// 	crestCell.innerHTML = crestCellInnerHTML;
+					// 	crestDateCell.innerHTML = crestDateCellInnerHTML;
+					// }
 				})();
 
 				// LD SETTINGS
@@ -2276,7 +2278,7 @@ async function createTable(dataArray) {
 											if (valueLast < data.bof['constant-value']) {
 												storageCellInnerHTML += "<span style='float: right; padding-right: 15px;' title='Lake Storage < Bottom of Flood'>" + "0.0%" + "</span>";
 											} else if (valueLast > data.tof['constant-value']) {
-												storageCellInnerHTML += "<span style='float: right; padding-right: 15px;' title='" + "Lake Storage > Top of Flood: " + valueLast + " > " + lake_storage.tof + "'>" + "100.0%" + "</span>";
+												storageCellInnerHTML += "<span style='float: right; padding-right: 15px;' title='" + "Lake Storage > Top of Flood: " + valueLast + " > " + data.tof + "'>" + "100.0%" + "</span>";
 											} else {
 												const total = (valueLast - data.bof['constant-value']) / (data.tof['constant-value'] - data.bof['constant-value']) * 100;
 												storageCellInnerHTML += "<span style='float: right; padding-right: 15px;' title='" + "(" + valueLast + "(Lake Storage)" + " - " + data.bof['constant-value'] + "(Bottom of Flood)" + ")/(" + data.tof['constant-value'] + "(Top of Flood)" + "-" + data.bof['constant-value'] + "(Bottom of Flood)" + ")*100" + " = " + total + "%" + "'>" + total.toFixed(1) + "%" + "</span>";

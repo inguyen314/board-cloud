@@ -240,10 +240,12 @@ function updateCrestHTML2(filteredData, crestCell) {
     const locationData = filteredData[Object.keys(filteredData)[0]]; // Get the first (and only) key's data
     if (locationData.crest) {
         // Parse crest as a float and format it to 1 decimal place
-        const crestValue = parseFloat(locationData.crest).toFixed(1);
+        const crestValue = parseFloat(locationData.crest) > 0
+            ? parseFloat(locationData.crest).toFixed(1)
+            : "";
         // Extract only the date part from crest_date_time
         const crestDate = locationData.crest_date_time ? locationData.crest_date_time.split(' ')[0] : '';
-        const crestOption = locationData.option;
+        const crestOption = locationData.option === "CG" ? "Cresting" : locationData.option;
         crestCell.innerHTML = `Crest: <div style="color: lightgray;" class="hard_coded_php" title="Uses PHP Json Output, No Cloud Option to Access Custom Schema Yet!">${crestOption} ${crestValue} | ${crestDate}</div>`;
     } else {
         crestCell.innerHTML = `Crest: <div style="color: lightgray;" class="hard_coded_php" title="Uses PHP Json Output, No Cloud Option to Access Custom Schema Yet!"></div>`;
@@ -459,20 +461,20 @@ function submitAllForms() {
 // ============== CDA =====================
 //=========================================
 // Function to merge basinData with additional data
-function mergeDataCda(basinData, 
-    combinedFirstData, 
-    combinedSecondData, 
-    combinedThirdData, 
-    combinedForthData, 
-    combinedFifthData, 
-    combinedSixthData, 
-    combinedSeventhData, 
-    combinedEighthData, 
-    combinedNinethData, 
-    combinedTenthData, 
-    combinedEleventhData, 
-    combinedTwelfthData, 
-    combinedThirteenthData, 
+function mergeDataCda(basinData,
+    combinedFirstData,
+    combinedSecondData,
+    combinedThirdData,
+    combinedForthData,
+    combinedFifthData,
+    combinedSixthData,
+    combinedSeventhData,
+    combinedEighthData,
+    combinedNinethData,
+    combinedTenthData,
+    combinedEleventhData,
+    combinedTwelfthData,
+    combinedThirteenthData,
     combinedFourthteenthData) {
     // Clear allData before merging data
     allData = [];
@@ -984,7 +986,7 @@ async function fetchAndLogNwsData(tsid_stage_nws_3_day_forecast, forecastTimeCel
         // console.log("Filtered NwsOutput Data for", tsid_stage_nws_3_day_forecast + ":", filteredData);
 
         // Update the HTML element with filtered data
-        updateNwsForecastTimeHTML2(filteredData, forecastTimeCell);
+        updateNwsForecastTimeHTML(filteredData, forecastTimeCell);
 
         // Further processing of ROutput data as needed
     } catch (error) {
@@ -1108,7 +1110,7 @@ function updateNwsForecastTimeHTML(filteredData, forecastTimeCell) {
 }
 
 // Function to update the HTML element with filtered data using data_entry_date_day1 from json
-function updateNwsForecastTimeHTML2(filteredData, forecastTimeCell) {
+function updateNwsForecastTimeHTML(filteredData, forecastTimeCell) {
     // console.log("filteredData = ", filteredData);
 
     const locationData = filteredData.find(item => item !== null); // Find the first non-null item
@@ -1166,6 +1168,102 @@ function updateNwsForecastTimeHTML2(filteredData, forecastTimeCell) {
         forecastTimeCell.innerHTML = `<div class="${forecastTimeClass}" title="Forecast is more than 24 hours late">--</div>`;
     } else {
         forecastTimeCell.innerHTML = `<div class="${forecastTimeClass}" title="Uses PHP exportNwsForecasts2Json.json Output, No Cloud Option Yet">${formattedDateTime}</div>`;
+    }
+}
+
+/****************************************************************************** NWS CREST OUTPUT FUNCTIONS ******/
+// Function to fetch and log NwsCrestOutput data
+async function fetchAndLogNwsCrestData(tsid, crestCell, crestDateCell) {
+    try {
+        const NwsCrestOutput = await fetchDataFromNwsCrestForecastsOutput();
+        console.log('NwsCrestOutput:', NwsCrestOutput);
+
+        const filteredData = filterDataByTsidCrest(NwsCrestOutput, tsid);
+        console.log("Filtered NwsCrestOutput Data for", tsid + ":", filteredData);
+
+        // Update the HTML element with filtered data
+        updateNwsCrestForecastTimeHTML(filteredData, crestCell, crestDateCell);
+
+        // Further processing of ROutput data as needed
+    } catch (error) {
+        // Handle errors from fetchDataFromROutput
+        console.error('Failed to fetch data:', error);
+    }
+}
+
+// Function to filter ROutput data by tsid_stage_nws_3_day_forecast
+function filterDataByTsidCrest(NwsCrestOutput, cwms_ts_id) {
+    const filteredData = NwsCrestOutput.filter(item => {
+        return item !== null && item.cwms_ts_id === cwms_ts_id;
+    });
+
+    return filteredData;
+}
+
+// Function to fetch exportNwsForecasts2Json.json
+async function fetchDataFromNwsCrestForecastsOutput() {
+    let urlNwsForecast = null;
+    if (cda === "public") {
+        urlNwsForecast = '../../../php_data_api/public/json/exportNwsCrestForecasts2Json.json';
+    } else if (cda === "internal") {
+        urlNwsForecast = '../../../php_data_api/public/json/exportNwsCrestForecasts2Json.json';
+    } else {
+
+    }
+    // console.log("urlNwsForecast: ", urlNwsForecast);
+
+    try {
+        const response = await fetch(urlNwsForecast);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        throw error; // Propagate the error further if needed
+    }
+}
+
+// Function to update the HTML element with filtered data using data_entry_date_day1 from json
+function updateNwsCrestForecastTimeHTML(filteredData, crestCell, crestDateCell) {
+    // Find the first non-null item in the filteredData
+    const locationData = filteredData.find(item => item !== null);
+    if (!locationData) {
+        crestCell.innerHTML = ''; // Handle case where no valid data is found
+        crestDateCell.innerHTML = ''; // Handle case where no valid data is found
+        return;
+    }
+
+    // Extract value and date_time from the first valid data object
+    const { value, date_time } = locationData;
+
+    if (value && date_time) {
+        const monthMap = {
+            JAN: '01',
+            FEB: '02',
+            MAR: '03',
+            APR: '04',
+            MAY: '05',
+            JUN: '06',
+            JUL: '07',
+            AUG: '08',
+            SEP: '09',
+            OCT: '10',
+            NOV: '11',
+            DEC: '12'
+        };
+
+        const [day, monthAbbr] = date_time.split('-');
+        const month = monthMap[monthAbbr.toUpperCase()];
+        const shortDate = `${month}-${day}`;
+
+        // Display value in crestCell with one decimal place (in red color), and shortDate in crestDateCell
+        crestCell.innerHTML = `<div style="font-size: 1.5em; color: red; font-weight: bold;">${parseFloat(value).toFixed(1)}</div>`; // Value in red and 1 decimal place
+        crestDateCell.innerHTML = `<div style="font-size: 1em;">${shortDate}</div>`; // Display date (e.g., "08-APR") with font size 1.5em
+    } else {
+        crestCell.innerHTML = ''; // If no value exists, clear the cell
+        crestDateCell.innerHTML = ''; // If no date_time exists, clear the cell
     }
 }
 

@@ -1,839 +1,537 @@
 var allData = [];
 
-console.log("*** This version still uses gage_control.json to get tsid ***");
-
 document.addEventListener('DOMContentLoaded', async function () {
-	// Display the loading_alarm_mvs indicator
 	const loadingIndicator = document.getElementById('loading');
 	loadingIndicator.style.display = 'block';
 
-	// Gage control json file
-	let jsonFileURL = null;
-	if (cda === "public") {
-		jsonFileURL = '../../../php_data_api/public/json/gage_control.json';
-	} else if (cda === "internal") {
-		jsonFileURL = '../../../php_data_api/public/json/gage_control.json';
+	let setBaseUrl = null;
+	if (cda === "internal") {
+		setBaseUrl = `https://wm.${office.toLowerCase()}.ds.usace.army.mil/${office.toLowerCase()}-data/`;
+	} else if (cda === "internal-coop") {
+		setBaseUrl = `https://wm-${office.toLowerCase()}coop.mvk.ds.usace.army.mil/${office.toLowerCase()}-data/`;
+	} else if (cda === "public") {
+		setBaseUrl = `https://cwms-data.usace.army.mil/cwms-data/`;
 	}
-	console.log('jsonFileURL: ', jsonFileURL);
+	console.log("setBaseUrl: ", setBaseUrl);
 
-	const response = await fetch(jsonFileURL);
-	// console.log('response: ', response);
+	const lakeLocs = [
+		"Lk Shelbyville-Kaskaskia",
+		"Carlyle Lk-Kaskaskia",
+		"Rend Lk-Big Muddy",
+		"Wappapello Lk-St Francis",
+		"Mark Twain Lk-Salt"
+	];
 
-	if (!response.ok) {
-		throw new Error('Network response was not ok');
-	}
-	const gageControlData = await response.json();
-
-	// Check if data_items array is present in the gageControlData
-	console.log('gageControlData: ', gageControlData);
-
-	console.log('basin: ', basin);
-
-	let basinData = null;
-	if (display_type === "FloodStage" || display_type === "LWRP") {
-		// Extracted gageControlData for the basin
-		basinData = filterBasins(gageControlData, basin);
-		// Print the extracted data for basin
-		console.log('basinData: ', basinData);
-	} else if (display_type === "Lake") {
-		// Extracted gageControlData for the basin
-		basinData = filterGagesByLocationIdWithBasin(gageControlData, basin);
-		// Print the extracted data for basin
-		console.log('basinData: ', basinData);
-	}
-
-	// Combine all secondDataArray into one object based on name
-	const combinedFirstData = [];
-	const combinedSecondData = [];
-	const combinedThirdData = [];
-	const combinedForthData = [];
-	const combinedFifthData = [];
-	const combinedSixthData = [];
-	const combinedSeventhData = [];
-	const combinedEighthData = [];
-	const combinedNinethData = [];
-	const combinedTenthData = [];
-	const combinedEleventhData = [];
-	const combinedTwelfthData = [];
-	const combinedThirteenthData = [];
-	const combinedFourthteenthData = [];
-	const combinedFifthteenthData = [];
-
-	// Array to store all promises from API requests
-	const apiPromises = [];
-
-	// Iterate over each object in basinData and append location levels and letadata
-	for (const basin of basinData) {
-		for (const locData of basin.gages) {
-			// Prepare variable to pass in when call api
-			const locationId = locData.location_id;
-			// console.log('locationId: ', locationId);
-
-			//====================================================
-			// ============== Level Id Setup =====================
-			//====================================================
-
-			// Location level "Flood"
-			const levelIdFlood = locData.level_id_flood;
-			const levelIdEffectiveDateFlood = locData.level_id_effective_date_flood;
-			const levelIdUnitIdFlood = locData.level_id_unit_id_flood;
-			// console.log("levelIdFlood = ", levelIdFlood);
-
-			// Location level "NGVD29"
-			const levelIdNgvd29 = locData.level_id_ngvd29;
-			const levelIdEffectiveDateNgvd29 = locData.level_id_effective_date_ngvd29;
-			const levelIdUnitIdNgvd29 = locData.level_id_unit_id_ngvd29;
-
-			// Location level "Record Stage"
-			const levelIdRecordStage = locData.level_id_record_stage;
-			const levelIdEffectiveDateRecordStage = locData.level_id_effective_date_record_stage;
-			const levelIdUnitIdRecordStage = locData.level_id_unit_id_record_stage;
-			// console.log('levelIdRecordStage: ', levelIdRecordStage);
-
-			// Location level "Phase 1"
-			const levelIdPhase1 = locData.level_id_phase1;
-			const levelIdEffectiveDatePhase1 = locData.level_id_effective_date_phase1;
-			const levelIdUnitIdPhase1 = locData.level_id_unit_id_phase1;
-			// console.log('levelIdPhase1: ', levelIdPhase1);
-
-			// Location level "Phase 2"
-			const levelIdPhase2 = locData.level_id_phase2;
-			const levelIdEffectiveDatePhase2 = locData.level_id_effective_date_phase2;
-			const levelIdUnitIdPhase2 = locData.level_id_unit_id_phase2;
-			// console.log('levelIdPhase2: ', levelIdPhase2);
-
-			// Location level "LWRP"
-			const levelIdLwrp = locData.level_id_lwrp;
-			const levelIdEffectiveDateLwrp = locData.level_id_effective_date_lwrp;
-			const levelIdUnitIdLwrp = locData.level_id_unit_id_lwrp;
-			// console.log('levelIdLwrp: ', levelIdLwrp);
-
-			// Location level "Top of Flood"
-			const levelIdTof = locData.level_id_top_of_flood;
-			const levelIdEffectiveDateTof = locData.level_id_effective_date_top_of_flood;
-			const levelIdUnitIdTof = locData.level_id_unit_id_top_of_flood;
-			// console.log('levelIdTof: ', levelIdTof);
-
-			// Location level "Bottom of Flood"
-			const levelIdBof = locData.level_id_bottom_of_flood;
-			const levelIdEffectiveDateBof = locData.level_id_effective_date_bottom_of_flood;
-			const levelIdUnitIdBof = locData.level_id_unit_id_bottom_of_flood;
-			// console.log('levelIdBof: ', levelIdBof);
-
-			// Location level "Top of Con"
-			const levelIdToc = locData.level_id_top_of_conservation;
-			const levelIdEffectiveDateToc = locData.level_id_effective_date_top_of_conservation;
-			const levelIdUnitIdToc = locData.level_id_unit_id_top_of_conservation;
-			// console.log('levelIdToc: ', levelIdToc);
-
-			// Location level "Bottom of Con"
-			const levelIdBoc = locData.level_id_bottom_of_conservation;
-			const levelIdEffectiveDateBoc = locData.level_id_effective_date_bottom_of_conservation;
-			const levelIdUnitIdBoc = locData.level_id_unit_id_bottom_of_conservation;
-			// console.log('levelIdBoc: ', levelIdBoc);
-
-			// Location level "Bankfull"
-			const levelIdBankfull = locData.level_id_bankfull;
-			const levelIdEffectiveDateBankfull = locData.level_id_effective_date_bankfull;
-			const levelIdUnitIdBankfull = locData.level_id_unit_id_bankfull;
-
-
-			//====================================================
-			// ============== START CDA CALL =====================
-			//====================================================
-
-			// Construct the URL for the API first request - metadata
-			(() => {
-				let firstApiUrl = null;
-				if (cda === "public") {
-					firstApiUrl = `https://cwms-data.usace.army.mil/cwms-data/locations/${locationId}?office=MVS`;
-				} else if (cda === "internal") {
-					firstApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/locations/${locationId}?office=MVS`;
+	if (json === "true") {
+		fetch(`json/gage_control.json`)
+			.then(response => {
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
 				}
-				// console.log('firstApiUrl: ', firstApiUrl);
+				return response.json();
+			})
+			.then(gageControlData => {
+				console.log('gageControlData:', gageControlData);
 
-				// Push the fetch promise to the apiPromises array
-				apiPromises.push(fetch(firstApiUrl)
-					.then(response => {
-						if (!response.ok) {
-							throw new Error('Network response was not ok');
+				const formatDate = (daysToAdd) => {
+					const date = new Date();
+					date.setDate(date.getDate() + daysToAdd);
+					return ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
+				};
+
+				const [day1, day2, day3] = [1, 2, 3].map(days => formatDate(days));
+				const combinedDataRiver = structuredClone ? structuredClone(gageControlData) : JSON.parse(JSON.stringify(gageControlData));
+				const combinedDataReservoir = structuredClone ? structuredClone(gageControlData) : JSON.parse(JSON.stringify(gageControlData));
+
+				console.log('combinedDataRiver:', combinedDataRiver);
+				console.log('combinedDataReservoir:', combinedDataReservoir);
+
+				let tableRiver = null;
+				let tableReservoir = null;
+
+				if ((display_type === "FloodStage" || display_type === "LWRP") && display_tributary === "False") {
+					// Correctly filter `combinedDataRiver`
+					const filteredDataRiver = combinedDataRiver.filter(item => item.id === "Mississippi");
+
+					console.log('filteredDataRiver:', filteredDataRiver);
+
+					if (filteredDataRiver.length > 0) {
+						tableRiver = createTable(filteredDataRiver, setBaseUrl, display_type, display_tributary);
+					}
+				} else if (display_type === "Lake" && display_tributary === "False") {
+					// tableReservoir = createTable(combinedDataReservoir, display_type, day1, day2, day3, lakeLocs, setBaseUrl);
+				}
+
+				loadingIndicator.style.display = 'none';
+			})
+			.catch(error => {
+				console.error('Error fetching data:', error);
+			});
+	} else {
+		let setLocationCategory = null;
+		let setLocationGroupOwner = null;
+		let setTimeseriesGroup1 = null;
+		let setTimeseriesGroup2 = null;
+		let setTimeseriesGroup3 = null;
+		let setTimeseriesGroup4 = null;
+		let setTimeseriesGroup5 = null;
+		let setTimeseriesGroup6 = null;
+		let setLookBack = null;
+		let setLookForward = null;
+
+		setLocationCategory = "Basins";
+		setLocationGroupOwner = "River-Reservoir";
+		setTimeseriesGroup1 = "Stage";
+		setTimeseriesGroup2 = "Forecast-NWS";
+		setTimeseriesGroup3 = "Crest";
+		setTimeseriesGroup4 = "Precip-Lake";
+		setTimeseriesGroup5 = "Inflow-Yesterday-Lake";
+		setTimeseriesGroup6 = "Storage";
+		setLookBack = subtractDaysFromDate(new Date(), 2);
+		setLookForward = addDaysFromDate(new Date(), 14);
+
+		const categoryApiUrl = setBaseUrl + `location/group?office=${office}&group-office-id=${office}&category-office-id=${office}&category-id=${setLocationCategory}`;
+
+		// Initialize Maps to hold datasets
+		const metadataMap = new Map();
+		const recordStageMap = new Map();
+		const lwrpMap = new Map();
+		const floodMap = new Map();
+		const stageTsidMap = new Map();
+		const riverMileMap = new Map();
+		const forecastNwsTsidMap = new Map();
+		const crestNwsTsidMap = new Map();
+		const precipLakeTsidMap = new Map();
+		const inflowYesterdayLakeTsidMap = new Map();
+		const storageLakeTsidMap = new Map();
+		const topOfFloodMap = new Map();
+		const topOfConservationMap = new Map();
+		const bottomOfFloodMap = new Map();
+		const bottomOfConservationMap = new Map();
+
+		// Fetch data functions with promise arrays for async processing
+		const metadataPromises = [];
+		const recordStageTsidPromises = [];
+		const lwrpPromises = [];
+		const floodPromises = [];
+		const stageTsidPromises = [];
+		const riverMilePromises = [];
+		const forecastNwsTsidPromises = [];
+		const crestTsidPromises = [];
+		const precipLakeTsidPromises = [];
+		const inflowYesterdayLakeTsidPromises = [];
+		const storageLakeTsidPromises = [];
+		const topOfFloodPromises = [];
+		const topOfConservationPromises = [];
+		const bottomOfFloodPromises = [];
+		const bottomOfConservationPromises = [];
+		const apiPromises = [];
+
+		let combinedData = [];
+
+		// Initial category fetch
+		fetch(categoryApiUrl)
+			.then(response => {
+				if (!response.ok) throw new Error('Network response was not ok');
+				return response.json();
+			})
+			.then(data => {
+				if (!Array.isArray(data) || data.length === 0) {
+					console.warn('No data available from the initial fetch.');
+					return;
+				}
+
+				// Filter data where category is "Basins"
+				const targetCategory = { "office-id": office, "id": setLocationCategory };
+				const filteredArray = filterByLocationCategory(data, targetCategory);
+
+				let basins = filteredArray.map(item => item.id);
+				if (basins.length === 0) {
+					console.warn('No basins found for the given category.');
+					return;
+				}
+
+				console.log("basins: ", basins);
+
+				basins = basins.filter((basin, index) => index === 6);
+				// basins = basins.slice(3, 6);
+
+				console.log("basins filter: ", basins);
+
+				// Loop through each basin and get all the assigned locations
+				basins.forEach(basin => {
+					const basinApiUrl = `${setBaseUrl}location/group/${basin}?office=${office}&category-id=${setLocationCategory}`;
+					console.log("basinApiUrl: ", basinApiUrl)
+					apiPromises.push(
+						fetch(basinApiUrl)
+							.then(response => {
+								if (!response.ok) throw new Error(`Network response was not ok for basin ${basin}`);
+								return response.json();
+							})
+							.then(getBasin => {
+								// console.log("getBasin: ", getBasin);
+
+								if (getBasin) {
+									// Fetch additional data needed for filtering
+									const additionalDataPromises = getBasin['assigned-locations'].map(location => {
+										return fetchAdditionalLocationGroupOwnerData(location[`location-id`], setBaseUrl, setLocationGroupOwner, office);
+									});
+
+									// console.log("additionalDataPromises: ", additionalDataPromises);
+
+									// Wait for all promises to resolve
+									Promise.all(additionalDataPromises)
+										.then(results => {
+											results = results[0];
+											console.log("results: ", results);
+
+											// Loop through getBasin['assigned-locations'] and compare with results
+											getBasin['assigned-locations'] = getBasin['assigned-locations'].filter(location => {
+												let matchedData;
+												// Check if 'assigned-locations' exists in the results object
+												if (results && results['assigned-locations']) {
+													for (const loc of results['assigned-locations']) {
+														// console.log('Comparing:', loc['location-id'], 'with', location['location-id']);
+														if (loc['location-id'] === location['location-id']) {
+															matchedData = results;
+															break;
+														}
+													}
+												}
+												// console.log("matchedData: ", matchedData);
+
+												if (matchedData) {
+													// If matchedData exists and contains a location with the same location-id, keep the location
+													return true;
+												} else {
+													// Log the location that has been removed
+													// console.log("Removed location: ", location);
+													return false;  // Remove location if there is no match
+												}
+											});
+
+											// Filter locations with attribute <= 900
+											getBasin['assigned-locations'] = getBasin['assigned-locations'].filter(location => location.attribute <= 900);
+
+											// Sort the locations by their attribute
+											getBasin['assigned-locations'].sort((a, b) => a.attribute - b.attribute);
+
+											// Push the updated basin data to combinedData
+											combinedData.push(getBasin);
+
+											console.log("combinedData: ", combinedData);
+										})
+										.catch(error => {
+											console.error('Error in fetching additional data:', error);
+										});
+
+									getBasin['assigned-locations'].forEach(loc => {
+										fetchAndStoreDataForLocation(loc);
+									});
+								}
+							})
+							.catch(error => console.error(`Problem with the fetch operation for basin ${basin}:`, error))
+					);
+				});
+
+				// Fetch data for each location's attributes
+				function fetchAndStoreDataForLocation(loc) {
+					// Fetch location levels
+					(() => {
+						const metadataApiUrl = `${setBaseUrl}locations/${loc['location-id']}?office=${office}`;
+						metadataPromises.push(fetch(metadataApiUrl)
+							.then(response => response.ok ? response.json() : null)
+							.then(data => {
+								if (data) {
+									console.log(`Fetched metadata for location ${loc['location-id']}:`, data); // Log the data
+									metadataMap.set(loc['location-id'], data);
+								}
+							})
+							.catch(error => console.error(`Error fetching metadata for ${loc['location-id']}:`, error))
+						);
+
+						const recordStageLevelId = `${loc['location-id']}.Stage.Inst.0.Record Stage`;
+						const levelIdEffectiveDate = "2024-01-01T08:00:00";
+						const recordStageApiUrl = `${setBaseUrl}levels/${recordStageLevelId}?office=${office}&effective-date=${levelIdEffectiveDate}&unit=ft`;
+						recordStageTsidPromises.push(
+							fetch(recordStageApiUrl)
+								.then(response => response.status === 404 ? null : response.ok ? response.json() : Promise.reject(`Network response was not ok: ${response.statusText}`))
+								.then(recordStageData => {
+									// Set map to null if the data is null or undefined
+									recordStageMap.set(loc['location-id'], recordStageData != null ? recordStageData : null);
+								})
+								.catch(error => console.error(`Error fetching record stage for ${loc['location-id']}:`, error))
+						);
+
+						// For Rivers only
+						if (!lakeLocs.includes(loc['location-id'])) {
+							const riverMileApiUrl = `${setBaseUrl}stream-locations?office-mask=${office}&name-mask=${loc['location-id']}`;
+							riverMilePromises.push(fetch(riverMileApiUrl)
+								.then(response => response.ok ? response.json() : null)
+								.then(data => data && riverMileMap.set(loc['location-id'], data))
+								.catch(error => console.error(`Error fetching river mile for ${loc['location-id']}:`, error))
+							);
+
+							const levelIdLwrp = `${loc['location-id']}.Stage.Inst.0.LWRP`;
+							const lwrpApiUrl = `${setBaseUrl}levels/${levelIdLwrp}?office=${office}&effective-date=${levelIdEffectiveDate}&unit=ft`;
+							lwrpPromises.push(
+								fetch(lwrpApiUrl)
+									.then(response => response.status === 404 ? null : response.ok ? response.json() : Promise.reject(`Network response was not ok: ${response.statusText}`))
+									.then(lwrpData => {
+										// Set map to null if the data is null or undefined
+										lwrpMap.set(loc['location-id'], lwrpData != null ? lwrpData : null);
+									})
+									.catch(error => console.error(`Error fetching lwrp level for ${loc['location-id']}:`, error))
+							);
+
+							const levelIdFlood = `${loc['location-id']}.Stage.Inst.0.Flood`;
+							const floodApiUrl = `${setBaseUrl}levels/${levelIdFlood}?office=${office}&effective-date=${levelIdEffectiveDate}&unit=ft`;
+							floodPromises.push(
+								fetch(floodApiUrl)
+									.then(response => response.status === 404 ? null : response.ok ? response.json() : Promise.reject(`Network response was not ok: ${response.statusText}`))
+									.then(floodData => {
+										// Set map to null if the data is null or undefined
+										floodMap.set(loc['location-id'], floodData != null ? floodData : null);
+									})
+									.catch(error => console.error(`Error fetching flood level for ${loc['location-id']}:`, error))
+							);
+
 						}
-						return response.json();
+
+						// For Lakes only
+						if (lakeLocs.includes(loc['location-id'])) {
+							const levelIdTopOfFlood = `${loc['location-id'].split('-')[0]}.Stor.Inst.0.Top of Flood`;
+							const topOfFloodApiUrl = `${setBaseUrl}levels/${levelIdTopOfFlood}?office=${office}&effective-date=${levelIdEffectiveDate}&unit=ac-ft`;
+							topOfFloodPromises.push(
+								fetch(topOfFloodApiUrl)
+									.then(response => response.status === 404 ? null : response.ok ? response.json() : Promise.reject(`Network response was not ok: ${response.statusText}`))
+									.then(topOfFloodData => {
+										// Set map to null if the data is null or undefined
+										topOfFloodMap.set(loc['location-id'], topOfFloodData != null ? topOfFloodData : null);
+									})
+									.catch(error => console.error(`Error fetching top of flood level for ${loc['location-id']}:`, error))
+							);
+
+							const levelIdBottomOfFlood = `${loc['location-id'].split('-')[0]}.Stor.Inst.0.Bottom of Flood`;
+							const bottomOfFloodApiUrl = `${setBaseUrl}levels/${levelIdBottomOfFlood}?office=${office}&effective-date=${levelIdEffectiveDate}&unit=ac-ft`;
+							bottomOfFloodPromises.push(
+								fetch(bottomOfFloodApiUrl)
+									.then(response => response.status === 404 ? null : response.ok ? response.json() : Promise.reject(`Network response was not ok: ${response.statusText}`))
+									.then(bottomOfFloodData => {
+										// Set map to null if the data is null or undefined
+										bottomOfFloodMap.set(loc['location-id'], bottomOfFloodData != null ? bottomOfFloodData : null);
+									})
+									.catch(error => console.error(`Error fetching bottom of flood level for ${loc['location-id']}:`, error))
+							);
+
+							const levelIdTopOfConservation = `${loc['location-id'].split('-')[0]}.Stor.Inst.0.Top of Conservation`;
+							const topOfConservationApiUrl = `${setBaseUrl}levels/${levelIdTopOfConservation}?office=${office}&effective-date=${levelIdEffectiveDate}&unit=ac-ft`;
+							topOfConservationPromises.push(
+								fetch(topOfConservationApiUrl)
+									.then(response => response.status === 404 ? null : response.ok ? response.json() : Promise.reject(`Network response was not ok: ${response.statusText}`))
+									.then(topOfConservationData => {
+										// Set map to null if the data is null or undefined
+										topOfConservationMap.set(loc['location-id'], topOfConservationData != null ? topOfConservationData : null);
+									})
+									.catch(error => console.error(`Error fetching top of conservation level for ${loc['location-id']}:`, error))
+							);
+
+							const levelIdBottomOfConservation = `${loc['location-id'].split('-')[0]}.Stor.Inst.0.Bottom of Conservation`;
+							const bottomOfConservationApiUrl = `${setBaseUrl}levels/${levelIdBottomOfConservation}?office=${office}&effective-date=${levelIdEffectiveDate}&unit=ac-ft`;
+							bottomOfConservationPromises.push(
+								fetch(bottomOfConservationApiUrl)
+									.then(response => response.status === 404 ? null : response.ok ? response.json() : Promise.reject(`Network response was not ok: ${response.statusText}`))
+									.then(bottomOfConservationData => {
+										// Set map to null if the data is null or undefined
+										bottomOfConservationMap.set(loc['location-id'], bottomOfConservationData != null ? bottomOfConservationData : null);
+									})
+									.catch(error => console.error(`Error fetching bottom of conservation level for ${loc['location-id']}:`, error))
+							);
+						}
+					})();
+
+					// Fetch tsids
+					(() => {
+						const stageApiUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup1}?office=${office}&category-id=${loc['location-id']}`;
+						stageTsidPromises.push(fetch(stageApiUrl)
+							.then(response => response.ok ? response.json() : null)
+							.then(data => {
+								if (data) {
+									// console.log(`Fetched stage data for location ${loc['location-id']}:`, data); // Log the data
+									stageTsidMap.set(loc['location-id'], data);
+								}
+							})
+							.catch(error => console.error(`Error fetching stage TSID for ${loc['location-id']}:`, error))
+						);
+
+						// For Rivers only
+						if (!lakeLocs.includes(loc['location-id'])) {
+							const forecastNwsApiUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup2}?office=${office}&category-id=${loc['location-id']}`;
+							forecastNwsTsidPromises.push(fetch(forecastNwsApiUrl)
+								.then(response => response.ok ? response.json() : null)
+								.then(data => {
+									if (data) {
+										// console.log(`Fetched forecast NWS data for location ${loc['location-id']}:`, data); // Log the data
+										forecastNwsTsidMap.set(loc['location-id'], data);
+									}
+								})
+								.catch(error => console.error(`Error fetching forecast NWS TSID for ${loc['location-id']}:`, error))
+							);
+
+							const crestApiUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup3}?office=${office}&category-id=${loc['location-id']}`;
+							crestTsidPromises.push(fetch(crestApiUrl)
+								.then(response => response.ok ? response.json() : null)
+								.then(data => data && crestNwsTsidMap.set(loc['location-id'], data))
+								.catch(error => console.error(`Error fetching crest TSID for ${loc['location-id']}:`, error))
+							);
+						}
+
+						// For Lakes only
+						if (lakeLocs.includes(loc['location-id'])) {
+							const precipLakeApiUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup4}?office=${office}&category-id=${loc['location-id']}`;
+							precipLakeTsidPromises.push(
+								fetch(precipLakeApiUrl)
+									.then(response => response.status === 404 ? null : response.ok ? response.json() : Promise.reject(`Network response was not ok: ${response.statusText}`))
+									.then(data => data && precipLakeTsidMap.set(loc['location-id'], data))
+									.catch(error => console.error(`Error fetching precipLake TSID for ${loc['location-id']}:`, error))
+							);
+
+							const inflowYesterdayLakeApiUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup5}?office=${office}&category-id=${loc['location-id']}`;
+							inflowYesterdayLakeTsidPromises.push(
+								fetch(inflowYesterdayLakeApiUrl)
+									.then(response => response.status === 404 ? null : response.ok ? response.json() : Promise.reject(`Network response was not ok: ${response.statusText}`))
+									.then(data => data && inflowYesterdayLakeTsidMap.set(loc['location-id'], data))
+									.catch(error => console.error(`Error fetching inflowYesterdayLake TSID for ${loc['location-id']}:`, error))
+							);
+
+							const storageLakeApiUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup6}?office=${office}&category-id=${loc['location-id']}`;
+							storageLakeTsidPromises.push(
+								fetch(storageLakeApiUrl)
+									.then(response => response.status === 404 ? null : response.ok ? response.json() : Promise.reject(`Network response was not ok: ${response.statusText}`))
+									.then(data => data && storageLakeTsidMap.set(loc['location-id'], data))
+									.catch(error => console.error(`Error fetching storageLake TSID for ${loc['location-id']}:`, error))
+							);
+						}
+					})();
+				}
+
+				// Resolve all initial fetches before processing
+				Promise.all(apiPromises)
+					.then(() => Promise.all([
+						...metadataPromises,
+						...recordStageTsidPromises,
+						...lwrpPromises,
+						...floodPromises,
+						...topOfFloodPromises,
+						...topOfConservationPromises,
+						...bottomOfFloodPromises,
+						...bottomOfConservationPromises,
+						...riverMilePromises,
+						...stageTsidPromises,
+						...forecastNwsTsidPromises,
+						...crestTsidPromises,
+						...precipLakeTsidPromises,
+						...inflowYesterdayLakeTsidPromises,
+						...storageLakeTsidPromises]))
+					.then(() => {
+						// Process data to add to each location and display combinedData
+						combinedData.forEach(basinData => {
+							if (basinData['assigned-locations']) {
+								basinData['assigned-locations'].forEach(loc => {
+									loc['metadata'] = metadataMap.get(loc['location-id']);
+									loc['record-stage'] = recordStageMap.get(loc['location-id']);
+									loc['lwrp'] = lwrpMap.get(loc['location-id']);
+									loc['flood'] = floodMap.get(loc['location-id']);
+									loc['top-of-flood'] = topOfFloodMap.get(loc['location-id']);
+									loc['top-of-conservation'] = topOfConservationMap.get(loc['location-id']);
+									loc['bottom-of-flood'] = bottomOfFloodMap.get(loc['location-id']);
+									loc['bottom-of-conservation'] = bottomOfConservationMap.get(loc['location-id']);
+									loc['river-mile'] = riverMileMap.get(loc['location-id']);
+									loc['tsid-stage'] = stageTsidMap.get(loc['location-id']);
+									loc['tsid-nws-forecast'] = forecastNwsTsidMap.get(loc['location-id']);
+									loc['tsid-nws-crest'] = crestNwsTsidMap.get(loc['location-id']);
+									loc['tsid-lake-precip'] = precipLakeTsidMap.get(loc['location-id']);
+									loc['tsid-lake-inflow-yesterday'] = inflowYesterdayLakeTsidMap.get(loc['location-id']);
+									loc['tsid-lake-storage'] = storageLakeTsidMap.get(loc['location-id']);
+								});
+							}
+						});
+
+						console.log('All combined data fetched successfully:', combinedData);
+
+						// Filter data
+						(() => {
+							// Step 1: Remove locations where 'attribute' ends with '.1'
+							combinedData.forEach(dataObj => {
+								dataObj['assigned-locations'] = dataObj['assigned-locations'].filter(location => !location['attribute'].toString().endsWith('.1'));
+							});
+							console.log('Filtered locations with attribute ending in .1:', combinedData);
+
+							// Step 3: Remove locations where 'tsid-stage' is null
+							combinedData.forEach(dataGroup => {
+								dataGroup['assigned-locations'] = dataGroup['assigned-locations'].filter(location => location['tsid-stage'] != null);
+							});
+							console.log('Filtered locations with null tsid-stage:', combinedData);
+
+							// Step 4: Remove basins with no 'assigned-locations'
+							combinedData = combinedData.filter(item => item['assigned-locations']?.length > 0);
+							console.log('Filtered empty basins:', combinedData);
+
+							// Step 5: Sort basins by predefined order
+							const sortOrderBasin = ['Mississippi', 'Illinois', 'Cuivre', 'Missouri', 'Meramec', 'Ohio', 'Kaskaskia', 'Big Muddy', 'St Francis', 'Salt'];
+							combinedData.sort((a, b) => {
+								const indexA = sortOrderBasin.indexOf(a.id);
+								const indexB = sortOrderBasin.indexOf(b.id);
+								return (indexA === -1 ? 1 : indexA) - (indexB === -1 ? 1 : indexB);
+							});
+							console.log('Sorted basins:', combinedData);
+						})();
 					})
-					.then(firstData => {
-						// Process the response firstData as needed
-						// console.log('firstData :', firstData);
-						combinedFirstData.push(firstData);
+					.then(() => {
+						console.log('All combinedData fetched and filtered successfully:', combinedData);
+
+						const formatDate = (daysToAdd) => {
+							const date = new Date();
+							date.setDate(date.getDate() + daysToAdd);
+							return ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
+						};
+
+						const [day1, day2, day3] = [1, 2, 3].map(days => formatDate(days));
+						const combinedDataRiver = structuredClone ? structuredClone(combinedData) : JSON.parse(JSON.stringify(combinedData));
+						const combinedDataReservoir = structuredClone ? structuredClone(combinedData) : JSON.parse(JSON.stringify(combinedData));
+
+						console.log('combinedDataRiver:', combinedDataRiver);
+						console.log('combinedDataReservoir:', combinedDataReservoir);
+
+						let tableRiver = null;
+						let tableReservoir = null;
+
+						if ((display_type === "FloodStage" || display_type === "LWRP") && display_tributary === "False") {
+							// Correctly filter `combinedDataRiver`
+							const filteredDataRiver = combinedDataRiver.filter(item => item.id === "Mississippi");
+
+							console.log('filteredDataRiver:', filteredDataRiver);
+
+							if (filteredDataRiver.length > 0) {
+								tableRiver = createTable(filteredDataRiver, setBaseUrl, display_type, display_tributary);
+							}
+						} else if (display_type === "Lake" && display_tributary === "False") {
+							// tableReservoir = createTable(combinedDataReservoir, display_type, day1, day2, day3, lakeLocs, setBaseUrl);
+						}
+
+						loadingIndicator.style.display = 'none';
 					})
-				);
-			})();
-
-			// Construct the URL for the API second request - flood
-			(() => {
-				if (levelIdFlood !== null || levelIdEffectiveDateFlood !== null || levelIdUnitIdFlood !== null) {
-					let secondApiUrl = null;
-					if (cda === "public") {
-						secondApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdFlood}?office=MVS&effective-date=${levelIdEffectiveDateFlood}&unit=${levelIdUnitIdFlood}`;
-					} else if (cda === "internal") {
-						secondApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdFlood}?office=MVS&effective-date=${levelIdEffectiveDateFlood}&unit=${levelIdUnitIdFlood}`;
-					}
-					// console.log('secondApiUrl: ', secondApiUrl);
-
-					apiPromises.push(
-						fetch(secondApiUrl)
-							.then(response => {
-								if (!response.ok) {
-									throw new Error('Network response was not ok');
-								}
-								return response.json();
-							})
-							.then(secondData => {
-								// Check if secondData is null
-								if (secondData === null) {
-									// Handle the case when secondData is null
-									// console.log('secondData is null');
-									// You can choose to return or do something else here
-								} else {
-									// Process the response from another API as needed
-									// console.log('secondData:', secondData);
-									combinedSecondData.push(secondData);
-								}
-							})
-							.catch(error => {
-								// Handle any errors that occur during the fetch or processing
-								console.error('Error fetching or processing data:', error);
-							})
-					)
-				}
-			})();
-
-			// Construct the URL for the API third request - basin
-			(() => {
-				let thirdApiUrl = null;
-				if (cda === "public") {
-					thirdApiUrl = `https://cwms-data.usace.army.mil/cwms-data/location/group/${basin.basin}?office=MVS&category-id=RDL_Basins`;
-				} else if (cda === "internal") {
-					thirdApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/location/group/${basin.basin}?office=MVS&category-id=RDL_Basins`;
-				}
-				// console.log('thirdApiUrl: ', thirdApiUrl);
-
-				// Push the fetch promise to the apiPromises array
-				apiPromises.push(
-					fetch(thirdApiUrl)
-						.then(response => {
-							// Check if the network response is successful
-							if (!response.ok) {
-								throw new Error('Network response was not ok');
-							}
-							return response.json();
-						})
-						.then(thirdData => {
-							// Check if thirdData is null
-							if (thirdData === null) {
-								console.log('thirdData is null');
-								// Handle the case when thirdData is null (optional)
-							} else {
-								// Process the response from another API as needed
-								// console.log('thirdData:', thirdData);
-
-								// Filter the assigned locations array to find the desired location
-								const foundThirdLocation = thirdData["assigned-locations"].find(location => location["location-id"] === locationId);
-
-								// Extract thirdData if the location is found
-								let extractedThirdData = null;
-								if (foundThirdLocation) {
-									extractedThirdData = {
-										"office-id": thirdData["office-id"],
-										"id": thirdData["id"],
-										"location-id": foundThirdLocation["location-id"]
-									};
-								}
-								// console.log("extractedThirdData", extractedThirdData);
-
-								// Push the extracted thirdData to the combinedThirdData array
-								combinedThirdData.push(extractedThirdData);
-							}
-						})
-				);
-			})();
-
-			// Construct the URL for the API forth request - owner
-			(() => {
-				let forthApiUrl = null;
-				if (cda === "public") {
-					forthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/location/group/MVS?office=MVS&category-id=RDL_MVS`;
-				} else if (cda === "internal") {
-					forthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/location/group/MVS?office=MVS&category-id=RDL_MVS`;
-				}
-				// console.log('forthApiUrl: ', forthApiUrl);
-
-				// Push the fetch promise to the apiPromises array
-				apiPromises.push(
-					fetch(forthApiUrl)
-						.then(response => {
-							// Check if the network response is successful
-							if (!response.ok) {
-								throw new Error('Network response was not ok');
-							}
-							return response.json();
-						})
-						.then(forthData => {
-							// Check if forthData is null
-							if (forthData === null) {
-								console.log('forthData is null');
-								// Handle the case when forthData is null (optional)
-							} else {
-								// Process the response from another API as needed
-								// console.log('forthData:', forthData);
-
-								// Filter the assigned locations array to find the desired location
-								const foundForthLocation = forthData["assigned-locations"].find(location => location["location-id"] === locationId);
-
-								// Extract forthData if the location is found
-								let extractedForthData = null;
-								if (foundForthLocation) {
-									extractedForthData = {
-										"office-id": forthData["office-id"],
-										"id": forthData["id"],
-										"location-id": foundForthLocation["location-id"]
-									};
-								}
-								// console.log("extractedForthData", extractedForthData);
-
-								// Push the extracted forthData to the combinedForthData array
-								combinedForthData.push(extractedForthData);
-							}
-						})
-				);
-			})();
-
-			// Construct the URL for the API fifth request - Record Stage
-			(() => {
-				if (levelIdRecordStage != null && levelIdEffectiveDateRecordStage != null && levelIdUnitIdRecordStage != null) {
-					let fifthApiUrl = null;
-					if (cda === "public") {
-						fifthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdRecordStage}?office=MVS&effective-date=${levelIdEffectiveDateRecordStage}&unit=${levelIdUnitIdRecordStage}`;
-					} else if (cda === "internal") {
-						fifthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdRecordStage}?office=MVS&effective-date=${levelIdEffectiveDateRecordStage}&unit=${levelIdUnitIdRecordStage}`;
-					}
-
-					apiPromises.push(
-						fetch(fifthApiUrl)
-							.then(response => {
-								if (!response.ok) {
-									throw new Error('Network response was not ok');
-								}
-								return response.json();
-							})
-							.then(fifthData => {
-								if (fifthData == null) { // Check for null or undefined
-									combinedFifthData.push(null);
-									// console.log('fifthData is null or undefined');
-								} else {
-									combinedFifthData.push(fifthData);
-									// console.log('combinedFifthData:', combinedFifthData);
-								}
-							})
-							.catch(error => {
-								if (error.name === 'AbortError') {
-									console.error('The fetch operation was aborted.');
-								} else {
-									console.error('Error fetching or processing data:', error);
-								}
-								combinedFifthData.push(null); // Maintain array structure even on error
-							})
-					);
-				} else {
-					combinedFifthData.push(null);
-				}
-			})();
-
-			// Construct the URL for the API sixth request - NGVD29
-			(() => {
-				if (levelIdNgvd29) {
-					let sixthApiUrl = null;
-					if (cda === "public") {
-						sixthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdNgvd29}?office=MVS&effective-date=${levelIdEffectiveDateNgvd29}&unit=${levelIdUnitIdNgvd29}`;
-					} else if (cda === "internal") {
-						sixthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdNgvd29}?office=MVS&effective-date=${levelIdEffectiveDateNgvd29}&unit=${levelIdUnitIdNgvd29}`;
-					}
-					// console.log('sixthApiUrl: ', sixthApiUrl);
-
-					apiPromises.push(
-						fetch(sixthApiUrl)
-							.then(response => {
-								if (!response.ok) {
-									throw new Error('Network response was not ok');
-								}
-								return response.json();
-							})
-							.then(sixthData => {
-								// Check if sixthData is null
-								if (sixthData === null) {
-									// Handle the case when sixthData is null
-									// console.log('sixthData is null');
-								} else {
-									// Process the response from another API as needed
-									combinedSixthData.push(sixthData);
-									// console.log('combinedSixthData:', combinedSixthData);
-								}
-							})
-							.catch(error => {
-								// Handle any errors that occur during the fetch or processing
-								console.error('Error fetching or processing data:', error);
-							})
-					);
-				} else {
-					combinedSixthData.push(null);
-				}
-			})();
-
-			// Construct the URL for the API second request - Phase1
-			(() => {
-				if (levelIdPhase1 !== null || levelIdEffectiveDatePhase1 !== null || levelIdUnitIdPhase1 !== null) {
-					let seventhApiUrl = null;
-					if (cda === "public") {
-						seventhApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdPhase1}?office=MVS&effective-date=${levelIdEffectiveDatePhase1}&unit=${levelIdUnitIdPhase1}`;
-					} else if (cda === "internal") {
-						seventhApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdPhase1}?office=MVS&effective-date=${levelIdEffectiveDatePhase1}&unit=${levelIdUnitIdPhase1}`;
-					}
-					// console.log('seventhApiUrl: ', seventhApiUrl);
-
-					apiPromises.push(
-						fetch(seventhApiUrl)
-							.then(response => {
-								if (!response.ok) {
-									throw new Error('Network response was not ok');
-								}
-								return response.json();
-							})
-							.then(seventhData => {
-								// Check if seventhData is null
-								if (seventhData === null) {
-									// Handle the case when seventhData is null
-									// console.log('seventhData is null');
-									// You can choose to return or do something else here
-								} else {
-									// Process the response from another API as needed
-									// console.log('seventhData:', seventhData);
-									combinedSeventhData.push(seventhData);
-								}
-							})
-							.catch(error => {
-								// Handle any errors that occur during the fetch or processing
-								console.error('Error fetching or processing data:', error);
-							})
-					)
-				}
-			})();
-
-			// Construct the URL for the API second request - Phase1
-			(() => {
-				if (levelIdPhase2 !== null || levelIdEffectiveDatePhase2 !== null || levelIdUnitIdPhase2 !== null) {
-					let eighthApiUrl = null;
-					if (cda === "public") {
-						eighthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdPhase2}?office=MVS&effective-date=${levelIdEffectiveDatePhase2}&unit=${levelIdUnitIdPhase2}`;
-					} else if (cda === "internal") {
-						eighthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdPhase2}?office=MVS&effective-date=${levelIdEffectiveDatePhase2}&unit=${levelIdUnitIdPhase2}`;
-					}
-					// console.log('eighthApiUrl: ', eighthApiUrl);
-
-					apiPromises.push(
-						fetch(eighthApiUrl)
-							.then(response => {
-								if (!response.ok) {
-									throw new Error('Network response was not ok');
-								}
-								return response.json();
-							})
-							.then(eighthData => {
-								// Check if eighthData is null
-								if (eighthData === null) {
-									// Handle the case when eighthData is null
-									// console.log('eighthData is null');
-									// You can choose to return or do something else here
-								} else {
-									// Process the response from another API as needed
-									// console.log('eighthData:', eighthData);
-									combinedEighthData.push(eighthData);
-								}
-							})
-							.catch(error => {
-								// Handle any errors that occur during the fetch or processing
-								console.error('Error fetching or processing data:', error);
-							})
-					)
-				}
-			})();
-
-			// Construct the URL for the API nineth request - Lwrp
-			(() => {
-				if (levelIdLwrp) {
-					if (levelIdLwrp !== null || levelIdEffectiveDateLwrp !== null || levelIdUnitIdLwrp !== null) {
-						let ninethApiUrl = null;
-						if (cda === "public") {
-							ninethApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdLwrp}?office=MVS&effective-date=${levelIdEffectiveDateLwrp}&unit=${levelIdUnitIdLwrp}`;
-						} else if (cda === "internal") {
-							ninethApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdLwrp}?office=MVS&effective-date=${levelIdEffectiveDateLwrp}&unit=${levelIdUnitIdLwrp}`;
-						}
-						// console.log('ninethApiUrl: ', ninethApiUrl);
-
-						apiPromises.push(
-							fetch(ninethApiUrl)
-								.then(response => {
-									if (!response.ok) {
-										throw new Error('Network response was not ok');
-									}
-									return response.json();
-								})
-								.then(ninethData => {
-									// Check if ninethData is null
-									if (ninethData === null) {
-										// Handle the case when ninethData is null
-										// console.log('ninethData is null');
-										// You can choose to return or do something else here
-									} else {
-										// Process the response from another API as needed
-										// console.log('ninethData:', ninethData);
-										combinedNinethData.push(ninethData);
-									}
-								})
-								.catch(error => {
-									// Handle any errors that occur during the fetch or processing
-									console.error('Error fetching or processing data:', error);
-								})
-						)
-					}
-				} else {
-					combinedNinethData.push(null);
-				}
-			})();
-
-			// Construct the URL for the API tenth request - Top of Flood
-			(() => {
-				if (levelIdTof) {
-					if (levelIdTof !== null || levelIdEffectiveDateTof !== null || levelIdUnitIdTof !== null) {
-						let tenthApiUrl = null;
-						if (cda === "public") {
-							tenthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdTof}?office=MVS&effective-date=${levelIdEffectiveDateTof}&unit=${levelIdUnitIdTof}`;
-						} else if (cda === "internal") {
-							tenthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdTof}?office=MVS&effective-date=${levelIdEffectiveDateTof}&unit=${levelIdUnitIdTof}`;
-						}
-						// console.log('tenthApiUrl: ', tenthApiUrl);
-
-						apiPromises.push(
-							fetch(tenthApiUrl)
-								.then(response => {
-									if (!response.ok) {
-										throw new Error('Network response was not ok');
-									}
-									return response.json();
-								})
-								.then(tenthData => {
-									// Check if tenthData is null
-									if (tenthData === null) {
-										// console.log('tenthData is null');
-										// You can choose to return or do something else here
-									} else {
-										// console.log('tenthData:', tenthData);
-										combinedTenthData.push(tenthData);
-									}
-								})
-								.catch(error => {
-									// Handle any errors that occur during the fetch or processing
-									console.error('Error fetching or processing data:', error);
-								})
-						)
-					}
-				} else {
-					combinedTenthData.push(null);
-				}
-			})();
-
-			// Construct the URL for the API tenth request - Bottom of Flood
-			(() => {
-				if (levelIdBof) {
-					if (levelIdBof !== null || levelIdEffectiveDateBof !== null || levelIdUnitIdBof !== null) {
-						let eleventhApiUrl = null;
-						if (cda === "public") {
-							eleventhApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdBof}?office=MVS&effective-date=${levelIdEffectiveDateBof}&unit=${levelIdUnitIdBof}`;
-						} else if (cda === "internal") {
-							eleventhApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdBof}?office=MVS&effective-date=${levelIdEffectiveDateBof}&unit=${levelIdUnitIdBof}`;
-						}
-						// console.log('eleventhApiUrl: ', eleventhApiUrl);
-
-						apiPromises.push(
-							fetch(eleventhApiUrl)
-								.then(response => {
-									if (!response.ok) {
-										throw new Error('Network response was not ok');
-									}
-									return response.json();
-								})
-								.then(eleventhData => {
-									// Check if eleventhData is null
-									if (eleventhData === null) {
-										// console.log('eleventhData is null');
-										// You can choose to return or do something else here
-									} else {
-										// console.log('eleventhData:', eleventhData);
-										combinedEleventhData.push(eleventhData);
-									}
-								})
-								.catch(error => {
-									// Handle any errors that occur during the fetch or processing
-									console.error('Error fetching or processing data:', error);
-								})
-						)
-					}
-				} else {
-					combinedEleventhData.push(null);
-				}
-			})();
-
-			// Construct the URL for the API tenth request - Bottom of Consevation
-			(() => {
-				if (levelIdBoc) {
-					if (levelIdBoc !== null || levelIdEffectiveDateBoc !== null || levelIdUnitIdBoc !== null) {
-						let twelfthApiUrl = null;
-						if (cda === "public") {
-							twelfthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdBoc}?office=MVS&effective-date=${levelIdEffectiveDateBoc}&unit=${levelIdUnitIdBoc}`;
-						} else if (cda === "internal") {
-							twelfthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdBoc}?office=MVS&effective-date=${levelIdEffectiveDateBoc}&unit=${levelIdUnitIdBoc}`;
-						}
-						// console.log('twelfthApiUrl: ', twelfthApiUrl);
-
-						apiPromises.push(
-							fetch(twelfthApiUrl)
-								.then(response => {
-									if (!response.ok) {
-										throw new Error('Network response was not ok');
-									}
-									return response.json();
-								})
-								.then(twelfthData => {
-									// Check if twelfthData is null
-									if (twelfthData === null) {
-										// console.log('twelfthData is null');
-										// You can choose to return or do something else here
-									} else {
-										// console.log('twelfthData:', twelfthData);
-										combinedTwelfthData.push(twelfthData);
-									}
-								})
-								.catch(error => {
-									// Handle any errors that occur during the fetch or processing
-									console.error('Error fetching or processing data:', error);
-								})
-						)
-					}
-				} else {
-					combinedTwelfthData.push(null);
-				}
-			})();
-
-			// Construct the URL for the API tenth request - Top of Consevation
-			(() => {
-				if (levelIdToc) {
-					if (levelIdToc !== null || levelIdEffectiveDateToc !== null || levelIdUnitIdToc !== null) {
-						let thirteenthApiUrl = null;
-						if (cda === "public") {
-							thirteenthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdToc}?office=MVS&effective-date=${levelIdEffectiveDateToc}&unit=${levelIdUnitIdToc}`;
-						} else if (cda === "internal") {
-							thirteenthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdToc}?office=MVS&effective-date=${levelIdEffectiveDateToc}&unit=${levelIdUnitIdToc}`;
-						}
-						// console.log('thirteenthApiUrl: ', thirteenthApiUrl);
-
-						apiPromises.push(
-							fetch(thirteenthApiUrl)
-								.then(response => {
-									if (!response.ok) {
-										throw new Error('Network response was not ok');
-									}
-									return response.json();
-								})
-								.then(thirteenthData => {
-									// Check if thirteenthData is null
-									if (thirteenthData === null) {
-										// console.log('thirteenthData is null');
-										// You can choose to return or do something else here
-									} else {
-										// console.log('thirteenthData:', thirteenthData);
-										combinedThirteenthData.push(thirteenthData);
-									}
-								})
-								.catch(error => {
-									// Handle any errors that occur during the fetch or processing
-									console.error('Error fetching or processing data:', error);
-								})
-						)
-					}
-				} else {
-					combinedThirteenthData.push(null);
-				}
-			})();
-
-			// Construct the URL for the API nineth request - bankfull
-			(() => {
-				if (levelIdBankfull) {
-					if (levelIdBankfull !== null || levelIdEffectiveDateBankfull !== null || levelIdUnitIdBankfull !== null) {
-						let fourthteenthApiUrl = null;
-						if (cda === "public") {
-							fourthteenthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/${levelIdBankfull.split('-')[0]}?office=MVS&effective-date=${levelIdEffectiveDateBankfull}&unit=${levelIdUnitIdBankfull}`;
-						} else if (cda === "internal") {
-							fourthteenthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/levels/${levelIdBankfull.split('-')[0]}?office=MVS&effective-date=${levelIdEffectiveDateBankfull}&unit=${levelIdUnitIdBankfull}`;
-						}
-						// console.log('fourthteenthApiUrl: ', fourthteenthApiUrl);
-
-						apiPromises.push(
-							fetch(fourthteenthApiUrl)
-								.then(response => {
-									if (!response.ok) {
-										throw new Error('Network response was not ok');
-									}
-									return response.json();
-								})
-								.then(fourthteenthData => {
-									// Check if fourthteenthData is null
-									if (fourthteenthData === null) {
-										// Handle the case when fourthteenthData is null
-										// console.log('fourthteenthData is null');
-										// You can choose to return or do something else here
-									} else {
-										// Process the response from another API as needed
-										// console.log('fourthteenthData:', fourthteenthData);
-										combinedFourthteenthData.push(fourthteenthData);
-									}
-								})
-								.catch(error => {
-									// Handle any errors that occur during the fetch or processing
-									console.error('Error fetching or processing data:', error);
-								})
-						)
-					}
-				} else {
-					combinedFourthteenthData.push(null);
-				}
-			})();
-
-			// river mile data request
-			(() => {
-				let fifthteenthApiUrl = null;
-				if (cda === "public") {
-					fifthteenthApiUrl = `https://cwms-data.usace.army.mil/cwms-data/levels/mvs-data/stream-locations?office-mask=MVS`;
-				} else if (cda === "internal") {
-					fifthteenthApiUrl = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/stream-locations?office-mask=MVS`;
-				}
-				// console.log('fifthteenthApiUrl: ', fifthteenthApiUrl);
-
-				if (fifthteenthApiUrl) {
-					apiPromises.push(
-						fetch(fifthteenthApiUrl)
-							.then(response => {
-								if (response.status === 404) {
-									console.warn(`River Mile data not found for location: ${loc['location-id']}`);
-									return null;
-								}
-								if (!response.ok) {
-									throw new Error(`Network response was not ok: ${response.statusText}`);
-								}
-								return response.json();
-							})
-							.then(fifthteenthData => {
-								// console.log('fifthteenthData: ', fifthteenthData);
-
-								if (fifthteenthData === null) {
-								} else {
-									combinedFifthteenthData.push(fifthteenthData);
-								}
-							})
-							.catch(error => {
-								console.error(`Problem with the fetch operation for river mile data at ${fifthteenthApiUrl}:`, error);
-							})
-					);
-				} else {
-					combinedFifthteenthData.push(null);
-				}
-			})();
-
-			// END CDA CALL 
-
-			// Wait for all API requests to finish
-			await Promise.all(apiPromises);
-
-			// Call mergeDataCda
-			mergeDataCda(basinData,
-				combinedFirstData,
-				combinedSecondData,
-				combinedThirdData,
-				combinedForthData,
-				combinedFifthData,
-				combinedSixthData,
-				combinedSeventhData,
-				combinedEighthData,
-				combinedNinethData,
-				combinedTenthData,
-				combinedEleventhData,
-				combinedTwelfthData,
-				combinedThirteenthData,
-				combinedFourthteenthData,
-				combinedFifthteenthData
-			);
-		}
-	};
-
-	console.log('allData:', allData);
-
-	// Call the function to create and populate the table
-	console.log("===== Calling createTable with allData =====");
-	createTable(allData);
-
-	loadingIndicator.style.display = 'none';
+					.catch(error => {
+						console.error('There was a problem with one or more fetch operations:', error);
+						loadingIndicator.style.display = 'none';
+					});
+			})
+			.catch(error => {
+				console.error('There was a problem with the initial fetch operation:', error);
+				loadingIndicator.style.display = 'none';
+			});
+	}
 });
-
-//================================================
-// ============== FORM DATA ======================
-//================================================
-if (display_type == "FloodStage" && display_tributary == "False") {
-	// Function to make an AJAX request
-	function fetchData() {
-		return new Promise((resolve, reject) => {
-			var xhr = new XMLHttpRequest();
-			xhr.open('GET', 'form_values.json', true);
-			xhr.setRequestHeader('Content-Type', 'application/json');
-
-			xhr.onreadystatechange = function () {
-				if (xhr.readyState === 4) {
-					if (xhr.status === 200) {
-						resolve(JSON.parse(xhr.responseText));
-					} else {
-						reject('Failed to fetch data');
-					}
-				}
-			};
-
-			xhr.send();
-		});
-	}
-
-	// Use the fetchData function to get JSON data and assign it to a variable
-	var jsonData;
-
-	// Wrap the asynchronous operation in a promise
-	var fetchDataPromise = fetchData()
-		.then(data => {
-			jsonData = data;
-			// console.log('JSON Data:', jsonData);
-
-			// Now you can use jsonData anywhere in your JavaScript file
-			// For example:
-			//displayData();
-			return useJsonDataCreateForm();
-		})
-		.catch(error => {
-			console.error('Error:', error);
-		});
-}
 
 //====================================================
 // ============== TABLE HEADER  ======================
@@ -853,9 +551,9 @@ if (display_tributary === "False" && display_type !== "Lake") {
 	document.write("</th>");
 	document.write("<th colspan='13'>");
 	if (display_type === "FloodStage" && display_tributary === "False") {
-		document.write("<div id='formsContainer'><div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/web_apps/board/public/board.php?display_type=FloodStage&display_tributary=False'>Switch to PHP Board</a></div></div>");
+		document.write("<div id='formsContainer'><div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=FloodStage&display_tributary=False&dev=True'>Switch to Dev Board</a></div></div>");
 	} else {
-		document.write("<div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/web_apps/board/public/board.php?display_type=LWRP&display_tributary=False'>Switch to PHP Board</a></div>");
+		document.write("<div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=LWRP&display_tributary=False&dev=True'>Switch to PHP Board</a></div>");
 	}
 	document.write("</th>");
 	document.write("</tr>");
@@ -871,9 +569,9 @@ if (display_tributary === "False" && display_type !== "Lake") {
 	document.write("<th rowspan='3' width='15%' style='font-size: 1.2em;'> LD Settings<br>[Tainter] [Roller]</th>");
 
 	if (display_type === "LWRP") {
-		document.write("<th colspan='2' rowspan='1'><a href='board_cda.html?display_type=FloodStage&display_tributary=False&dev=True'>Switch to FloodStage</a></th>");
+		document.write("<th colspan='2' rowspan='1'><a href='dev.html?display_type=FloodStage&display_tributary=False&dev=True'>Switch to FloodStage</a></th>");
 	} else if (display_type == "FloodStage") {
-		document.write("<th colspan='2' rowspan='1'><a href='board_cda.html?display_type=LWRP&display_tributary=False&dev=True'>Switch to LWRP</a></th>");
+		document.write("<th colspan='2' rowspan='1'><a href='dev.html?display_type=LWRP&display_tributary=False&dev=True'>Switch to LWRP</a></th>");
 	} else {
 		document.write("<th colspan='2' rowspan='1' width='8%'></th>");
 	}
@@ -912,13 +610,13 @@ if (display_tributary === "False" && display_type !== "Lake") {
 		document.write("<table id='board_cda'>");
 		document.write("<div class='Last_Modified_Tributary'>Last Modified:&nbsp;&nbsp" + currentDateTime + "</div>");
 		document.write("<div class='Last_Modified_Tributary'><a href='https://wm.mvs.ds.usace.army.mil/web_apps/board/public/board.php?display_type=LWRP&display_tributary=True'>Switch to PHP Board</a></div>");
-		document.write("<div class='Flood_Stage_Switch_Tributary'><a href='board_cda.html?display_type=FloodStage&display_tributary=True&dev=True'>Switch to FloodStage</a></div>");
+		document.write("<div class='Flood_Stage_Switch_Tributary'><a href='dev.html?display_type=FloodStage&display_tributary=True&dev=True'>Switch to FloodStage</a></div>");
 		document.write("</table>");
 	} else if (display_type == "FloodStage") {
 		document.write("<table id='board_cda'>");
 		document.write("<div class='Last_Modified_Tributary'>Last Modified:&nbsp;&nbsp" + currentDateTime + "</div>");
 		document.write("<div class='Last_Modified_Tributary'><a href='https://wm.mvs.ds.usace.army.mil/web_apps/board/public/board.php?display_type=FloodStage&display_tributary=True'>Switch to PHP Board</a></div>");
-		document.write("<div class='Flood_Stage_Switch_Tributary'><a href='board_cda.html?display_type=LWRP&display_tributary=True&dev=True'>Switch to LWRP</a></div>");
+		document.write("<div class='Flood_Stage_Switch_Tributary'><a href='dev.html?display_type=LWRP&display_tributary=True&dev=True'>Switch to LWRP</a></div>");
 		document.write("</table>");
 	} else {
 		console.error();
@@ -1031,7 +729,7 @@ if (display_type === "Lake") {
 // ============== CREATE TABLE =======================
 //====================================================
 // Function to create and populate the table
-async function createTable(dataArray) {
+async function createTable(dataArray, setBaseUrl, display_type, display_tributary, jsonFileURL) {
 	// Create a table element
 	const table = document.createElement('table');
 	table.setAttribute('id', 'board_cda');
@@ -1085,7 +783,7 @@ async function createTable(dataArray) {
 		basinCell.style.textAlign = "left"; // Align text to the left
 		headerRow.appendChild(basinCell);
 
-		for (const data of arrayElement.gages) {
+		for (const data of arrayElement[`assigned-locations`]) {
 			const currentDateTime = new Date();
 			const subtractedDateTime = subtractHoursFromDate(currentDateTime, 2);
 			// console.log('currentDateTime:', currentDateTime);
@@ -1094,25 +792,15 @@ async function createTable(dataArray) {
 			// GET GAGEZERO
 			var stageFloodLevel = data.flood['constant-value'];
 			// console.log("stageFloodLevel = ", stageFloodLevel);
-			// console.log("stageFloodLevel =", typeof stageFloodLevel);
-
-			if (data.ngvd29) {
-				var stage29GageZero = data.ngvd29['constant-value'];
-				// console.log("stage29GageZero = ", stage29GageZero);
-				// console.log("stage29GageZero =", typeof stage29GageZero);
-			}
 
 			var elevation = data.metadata['elevation'];
 			// console.log("elevation = ", elevation);
-			// console.log("elevation =", typeof elevation);
 
-			var stage29FloodLevel = stageFloodLevel + stage29GageZero;
+			var stage29FloodLevel = stageFloodLevel + 0;
 			// console.log("stage29FloodLevel = ", stage29FloodLevel);
-			// console.log("stage29FloodLevel =", typeof stage29FloodLevel);
 
 			var elevFloodLevel = elevation + stageFloodLevel;
 			// console.log("elevFloodLevel = ", elevFloodLevel);
-			// console.log("elevFloodLevel =", typeof elevFloodLevel);
 
 			// Setup flood level variable
 			let flood_level = null;
@@ -1127,22 +815,29 @@ async function createTable(dataArray) {
 			} else {
 				flood_level = 909;
 			}
+			// console.log("flood_level = ", flood_level);
 
+			let lwrpLevel = null;
 			if (data.lwrp) {
-				var lwrpLevel = data.lwrp['constant-value'];
-				// console.log("lwrpLevel = ", lwrpLevel);
+				lwrpLevel = data.lwrp['constant-value'];
+			} else {
+				lwrpLevel = 909;
 			}
+			// console.log("lwrpLevel = ", lwrpLevel);
 
+			let bankfullLevel = null;
 			if (data.bankfull) {
-				var bankfullLevel = data.bankfull['constant-value'];
-				// console.log("bankfullLevel = ", bankfullLevel);
+				bankfullLevel = data.bankfull['constant-value'];
+			} else {
+				bankfullLevel = 909;
 			}
+			// console.log("bankfullLevel = ", bankfullLevel);
 
 
 			//==============================================================================================================================================
 			// RIVER
 			//==============================================================================================================================================
-			if (data.display_board === "True" && display_type !== "Lake") {
+			if (display_type !== "Lake") {
 				// Create a new row for each gage data entry
 				const row = table.insertRow();
 
@@ -1157,14 +852,12 @@ async function createTable(dataArray) {
 					// Initialize riverMileCellInnerHTML as an empty string
 					let riverMileCellInnerHTML = "--";
 
-					// Check if the 'river_mile_hard_coded' property in data is a valid number
-					if (!isNaN(parseFloat(data.river_mile_hard_coded)) && Number.isInteger(parseFloat(data.river_mile_hard_coded))) {
-						data.river_mile_hard_coded = data.river_mile_hard_coded + '.0';
-					}
-
 					// Update the inner HTML of the cell with data, preserving HTML
-					riverMileCellInnerHTML = "<span class='hard_coded'>" + parseFloat(data.river_mile_hard_coded).toFixed(1) + "</span>";
-					// console.log("riverMileCellInnerHTML =", riverMileCellInnerHTML);
+					riverMileCellInnerHTML = "<span>" +
+						(data['river-mile'] && Array.isArray(data['river-mile']) && data['river-mile'][0] && data['river-mile'][0]['published-station']
+							? data['river-mile'][0]['published-station']
+							: "--")
+						+ "</span>";
 					riverMileCell.innerHTML = riverMileCellInnerHTML;
 				})();
 
@@ -1180,7 +873,7 @@ async function createTable(dataArray) {
 					let publicNameCellInnerHTML = "--";
 
 					// Update the inner HTML of the cell with data, preserving HTML
-					publicNameCellInnerHTML = "<span title='" + data.tsid_stage_rev + "'>" + data.location_id.split('-')[0] + "</span>";
+					publicNameCellInnerHTML = "<span title='" + data[`location-id`] + "'>" + data[`metadata`][`public-name`] + "</span>";
 					// console.log("publicNameCellInnerHTML = ", publicNameCellInnerHTML);
 					publicNameCell.innerHTML = publicNameCellInnerHTML;
 				})();
@@ -1202,14 +895,12 @@ async function createTable(dataArray) {
 					let stageDeltaCellInnerHTML = "--";
 
 					let tsidStage = null;
-					if (data.location_id === "Alton-Mississippi") {
-						tsidStage = data.tsid_stage_29
-					} else if (data.location_id === "Nav TW-Kaskaskia") {
-						tsidStage = data.tsid_stage_rev
-					} else if (data.display_stage_29 === true) {
-						tsidStage = data.tsid_stage_29
+					if (data[`location_id`] === "Alton-Mississippi") {
+						tsidStage = data[`tsid-stage`][`assigned-time-series`][0][`timeseries-id`];
+					} else if (data[`location_id`] === "Nav TW-Kaskaskia") {
+						tsidStage = data[`tsid-stage`][`assigned-time-series`][0][`timeseries-id`];
 					} else {
-						tsidStage = data.tsid_stage_rev
+						tsidStage = data[`tsid-stage`][`assigned-time-series`][0][`timeseries-id`];
 					}
 					// console.log("tsidStage = ", tsidStage);
 
@@ -1217,9 +908,9 @@ async function createTable(dataArray) {
 						// Fetch the time series data from the API using the determined query string
 						let urlStage = null;
 						if (cda === "public") {
-							urlStage = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+							urlStage = setBaseUrl + `timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
 						} else if (cda === "internal") {
-							urlStage = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+							urlStage = setBaseUrl + `timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
 						} else {
 
 						}
@@ -1358,15 +1049,20 @@ async function createTable(dataArray) {
 					if (tsidStage !== null) {
 						// console.log("tsidStage:", tsidStage);
 
-						if (data.tsid_stage_nws_3_day_forecast !== null) {
+						let tsid_stage_nws_3_day_forecast = null;
+						if (data && data[`tsid-nws-forecast`] && data[`tsid-nws-forecast`][`assigned-time-series`]?.length) {
+							tsid_stage_nws_3_day_forecast = data[`tsid-nws-forecast`][`assigned-time-series`][0][`timeseries-id`];
+						}
+
+						if (tsid_stage_nws_3_day_forecast !== null) {
 							// console.log("The last two characters are not '29'");
 
 							// Fetch the time series data from the API using the determined query string
 							let urlNWS = null;
 							if (cda === "public") {
-								urlNWS = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${data.tsid_stage_nws_3_day_forecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+								urlNWS = setBaseUrl + `timeseries?name=${tsid_stage_nws_3_day_forecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
 							} else if (cda === "internal") {
-								urlNWS = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${data.tsid_stage_nws_3_day_forecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+								urlNWS = setBaseUrl + `timeseries?name=${tsid_stage_nws_3_day_forecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
 							} else {
 								urlNWS = null;
 							}
@@ -1442,7 +1138,7 @@ async function createTable(dataArray) {
 											nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + "-" + "</span>";
 										}
 
-										fetchAndLogNwsData(data.tsid_stage_nws_3_day_forecast, forecastTimeCell);
+										fetchAndLogNwsData(tsid_stage_nws_3_day_forecast, forecastTimeCell);
 									} else {
 										nwsDayOneCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
 										nwsDayTwoCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
@@ -1477,20 +1173,21 @@ async function createTable(dataArray) {
 					let crestDateCellInnerHTML = "";
 
 					// Get tsid
-					const tsidCrest = data.tsid_crest;
-					// console.log("tsidCrest = ", tsidCrest);
+					let tsidCrest = null;
+					if (data && data[`tsid-nws-forecast`] && data[`tsid-nws-forecast`][`assigned-time-series`]?.length) {
+						tsidCrest = data[`tsid-nws-forecast`][`assigned-time-series`][0][`timeseries-id`];
+					}
 
 					// Prepare time to send to CDA
 					const { currentDateTimeMidNightISO, currentDateTimePlus4DaysMidNightISO } = generateDateTimeStrings(currentDateTime, currentDateTimePlus14Days);
-
 
 					if (tsidCrest !== null) {
 						// Fetch the time series data from the API using the determined query string
 						let urlCrest = null;
 						if (cda === "public") {
-							urlCrest = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+							urlCrest = setBaseUrl + `timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
 						} else if (cda === "internal") {
-							urlCrest = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+							urlCrest = setBaseUrl + `timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
 						} else {
 							urlCrest = null;
 						}
@@ -1517,7 +1214,7 @@ async function createTable(dataArray) {
 										entry[0] = formatNWSDate(entry[0]); // Update timestamp
 									});
 
-									console.log("crest = ", crest);
+									// console.log("crest = ", crest);
 
 									const lastNonNullCrestValue = getLastNonNullValue(crest);
 
@@ -1526,20 +1223,12 @@ async function createTable(dataArray) {
 										var valueLastCrest = parseFloat(lastNonNullCrestValue.value).toFixed(2);
 										var qualityCodeLastCrest = lastNonNullCrestValue.qualityCode;
 
-										const c_count = calculateCCount(tsidCrest);
-
-										const formattedLastCrestValueTimeStamp = formatTimestampToString(timestampLastCrest);
-
-										const timeStampDateCrestObject = new Date(timestampLastCrest);
-
-										var floodClass = determineStageClass(valueLastCrest, flood_level);
-
 										if (valueLastCrest === null) {
 											crestCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
 										} else if (valueLastCrest === undefined) {
 											crestCellInnerHTML = "<span>" + "" + "</span>";
 										} else {
-											crestCellInnerHTML = "<span class='" + floodClass + "' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + valueLastCrest + "</span>";
+											crestCellInnerHTML = "<span style='font-weight: bold; color: darkorange; font-size: 1.5em;' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + valueLastCrest + "</span>";
 										}
 										crestCell.innerHTML = crestCellInnerHTML;
 
@@ -1548,7 +1237,7 @@ async function createTable(dataArray) {
 										} else if (valueLastCrest === undefined) {
 											crestDateCellInnerHTML = "<span>" + "" + "</span>";
 										} else {
-											crestDateCellInnerHTML = "<span class='" + floodClass + "' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + timestampLastCrest.substring(0, 5) + "</span>";
+											crestDateCellInnerHTML = "<span style='font-weight: bold; font-size: 1.5em;' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + timestampLastCrest.substring(0, 5) + "</span>";
 										}
 										crestDateCell.innerHTML = crestDateCellInnerHTML;
 									} else {
@@ -1595,9 +1284,9 @@ async function createTable(dataArray) {
 
 						let urlTainter = null;
 						if (cda === "public") {
-							urlTainter = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+							urlTainter = setBaseUrl + `timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
 						} else if (cda === "internal") {
-							urlTainter = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+							urlTainter = setBaseUrl + `timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
 						}
 						fetch(urlTainter, {
 							method: 'GET',
@@ -3746,4 +3435,168 @@ async function createTable(dataArray) {
 	// Append the table to the element with the ID "tableContainer"
 	const tableContainer = document.getElementById('tableContainer'); // Replace with the actual container ID
 	tableContainer.appendChild(table);
+}
+
+// ******************************************************
+// ******* Hard Coded Nws Forecast Time *****************
+// ******************************************************
+
+async function fetchDataFromNwsForecastsOutput(setJsonFileBaseUrl) {
+	let url = null;
+	url = 'https://wm.mvs.ds.usace.army.mil/php_data_api/public/json/exportNwsForecasts2Json.json';
+	// console.log("url: ", url);
+
+	try {
+		const response = await fetch(url);
+		if (!response.ok) {
+			throw new Error('Network response was not ok');
+		}
+		const data = await response.json();
+		return data;
+	} catch (error) {
+		console.error('Error fetching data:', error);
+		throw error; // Propagate the error further if needed
+	}
+}
+
+function filterDataByTsid(NwsOutput, cwms_ts_id) {
+	const filteredData = NwsOutput.filter(item => {
+		return item !== null && item.cwms_ts_id_day1 === cwms_ts_id;
+	});
+
+	return filteredData;
+}
+
+async function fetchAndLogNwsData(nwsForecastTsid, forecastTimeCell, setJsonFileBaseUrl) {
+	try {
+		const NwsOutput = await fetchDataFromNwsForecastsOutput(setJsonFileBaseUrl);
+		// console.log('NwsOutput:', NwsOutput);
+
+		const filteredData = filterDataByTsid(NwsOutput, nwsForecastTsid);
+		// console.log("Filtered NwsOutput Data for", nwsForecastTsid + ":", filteredData);
+
+		// Update the HTML element with filtered data
+		updateNwsForecastTimeHTML(filteredData, forecastTimeCell);
+
+		// Further processing of ROutput data as needed
+	} catch (error) {
+		// Handle errors from fetchDataFromROutput
+		console.error('Failed to fetch data:', error);
+	}
+}
+
+function updateNwsForecastTimeHTML(filteredData, forecastTimeCell) {
+	const locationData = filteredData.find(item => item !== null); // Find the first non-null item
+	if (!locationData) {
+		forecastTimeCell.innerHTML = ''; // Handle case where no valid data is found
+		return;
+	}
+
+	const entryDate = locationData.data_entry_date_cst1;
+
+	// Parse the entry date string
+	const dateParts = entryDate.split('-'); // Split by hyphen
+	const day = dateParts[0]; // Day part
+	const monthAbbreviation = dateParts[1]; // Month abbreviation (e.g., JUL)
+	const year = dateParts[2].substring(0, 2); // Last two digits of the year (e.g., 24)
+
+	// Map month abbreviation to month number
+	const months = {
+		'JAN': '01', 'FEB': '02', 'MAR': '03', 'APR': '04',
+		'MAY': '05', 'JUN': '06', 'JUL': '07', 'AUG': '08',
+		'SEP': '09', 'OCT': '10', 'NOV': '11', 'DEC': '12'
+	};
+
+	const month = months[monthAbbreviation]; // Get numeric month
+
+	// Parse time parts
+	const timeParts = entryDate.split(' ')[1].split('.'); // Split time part by period
+	const hours = timeParts[0]; // Hours part
+	const minutes = timeParts[1]; // Minutes part
+
+	// Determine period (AM/PM)
+	const period = timeParts[3] === 'PM' ? 'PM' : 'AM';
+
+	// Construct formatted date and time
+	const formattedDateTime = `${month}-${day}-${year} ${hours}:${minutes} ${period}`;
+
+	// Update the HTML content
+	forecastTimeCell.innerHTML = `<div class="hard_coded_php" title="Uses PHP exportNwsForecasts2Json.json Output, No Cloud Option Yet">${formattedDateTime}</div>`;
+}
+
+async function fetchInBatches(urls) {
+	const results = [];
+
+	// Loop over urls array in chunks
+	for (let i = 0; i < urls.length; i += BATCH_SIZE) {
+		const batch = urls.slice(i, i + BATCH_SIZE);
+
+		// Fetch all URLs in the current batch concurrently
+		const batchPromises = batch.map(url =>
+			fetch(url)
+				.then(response => {
+					if (response.status === 404) return null; // Skip if not found
+					if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+					return response.json();
+				})
+				.catch(error => {
+					console.error(`Problem with the fetch operation for stage TSID data at ${url}:`, error);
+					return null; // Return null on error to prevent batch failure
+				})
+		);
+
+		// Wait for all requests in the batch to complete and store results
+		const batchResults = await Promise.all(batchPromises);
+		results.push(...batchResults);
+	}
+
+	return results;
+}
+/******************************************************************************
+ *                            SUPPORT CDA FUNCTIONS                           *
+ ******************************************************************************/
+function filterByLocationCategory(array, category) {
+	return array.filter(item =>
+		item['location-category'] &&
+		item['location-category']['office-id'] === category['office-id'] &&
+		item['location-category']['id'] === category['id']
+	);
+}
+
+function subtractDaysFromDate(date, daysToSubtract) {
+	return new Date(date.getTime() - (daysToSubtract * 24 * 60 * 60 * 1000));
+}
+
+function addDaysFromDate(date, daysToSubtract) {
+	return new Date(date.getTime() + (daysToSubtract * 24 * 60 * 60 * 1000));
+}
+
+async function fetchAdditionalLocationGroupOwnerData(locationId, setBaseUrl, setLocationGroupOwner, office) {
+	const additionalDataUrl = `${setBaseUrl}location/group/${setLocationGroupOwner}?office=${office}&category-id=${office}`;
+
+	console.log("additionalDataUrl: ", additionalDataUrl);
+
+	return fetch(additionalDataUrl, {
+		method: 'GET'
+	})
+		.then(response => {
+			// If response is not OK, log the status and return null
+			if (!response.ok) {
+				console.warn(`Response not ok for ${locationId}: Status ${response.status}`);
+				return null;
+			}
+			return response.json();
+		})
+		.then(data => {
+			// If data is not null, log the fetched data
+			if (data) {
+				// console.log(`Fetched additional data for ${locationId}:`, data);
+			}
+			return data;
+		})
+		.catch(error => {
+			// Catch any errors and log them
+			console.error(`Error fetching additional data for ${locationId}:`, error);
+			return null; // Return null in case of error
+		});
 }

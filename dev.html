@@ -4,18 +4,18 @@
 <head>
     <!-- Refresh the page every 300 seconds (5 minutes) -->
     <meta http-equiv="Refresh" content="300">
-    
+
     <!-- Define character encoding -->
     <meta charset="UTF-8">
-    
+
     <!-- Ensure the page is responsive on different screen sizes -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>Board</title>
-    
+
+    <title>Board Dev</title>
+
     <!-- Link to external CSS file for styling -->
     <link href="css/style.css" rel="stylesheet" type="text/css" media="all" />
-    
+
     <!-- Include JavaScript libraries for date/time handling and chart rendering -->
     <script src="js/libraries/moment.min.js"></script>
     <script src="js/libraries/moment-timezone-with-data.js"></script>
@@ -50,6 +50,16 @@
         // Retrieve and log development mode setting
         const dev = urlParams.get('dev') || 'False';
         console.log('dev: ', dev);
+
+        var type = urlParams.get('type');
+        console.log('type: ', type);
+
+        // Retrieve and log development mode setting
+        const office = urlParams.get('office') || 'MVS';
+        console.log('office: ', office);
+
+        var json = urlParams.get('json') || "true";
+        console.log('json: ', json);
 
         // Set board title based on display type and tributary setting
         let boardTitle = null;
