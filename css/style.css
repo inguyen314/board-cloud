@@ -38,7 +38,7 @@
 
 .hard_coded {
 	color: #333; /* Base text color */
-	text-shadow: 0 0 3px darkorange;
+	/* text-shadow: 0 0 3px darkorange; */
 }
 .hard_coded_php {
 	color: purple; /* Base text color */
@@ -46,7 +46,7 @@
 }
 .hard_coded_php_late {
 	color: #333; /* Base text color */
-	text-shadow: 0 0 5px gray;
+	/* text-shadow: 0 0 5px gray; */
 }
 /**************************************************************************/
 /*WAR ROOM DISPLAY*/
@@ -366,7 +366,7 @@ body {
 	border: 1px solid #373737;
 	font-weight:bold;
 	display: inline-block;
-    width: 70px;
+    width: 100px;
 	text-align: center;
 	float:none;
 	margin-left: 0.1em;
@@ -381,7 +381,7 @@ body {
 	border: 1px solid white;
 	font-weight:bold;
 	display: inline-block;
-    width: 70px;
+    width: 100px;
 	text-align: center;
 	float:none;
 	margin-left: 0.1em;
@@ -393,7 +393,7 @@ body {
 	border: 1px solid #373737;
 	font-weight:bold;
 	display: inline-block;
-    width: 70px;
+    width: 100px;
 	text-align: center;
 	float:none;
 	margin-right: 0em;

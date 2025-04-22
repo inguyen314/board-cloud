@@ -245,7 +245,11 @@ function updateCrestHTML2(filteredData, crestCell) {
             : "";
         // Extract only the date part from crest_date_time
         const crestDate = locationData.crest_date_time ? locationData.crest_date_time.split(' ')[0] : '';
-        const crestOption = locationData.option === "CG" ? "Cresting" : locationData.option;
+        const crestOption = locationData.option === null || locationData.option === undefined
+            ? "="
+            : locationData.option === "CG"
+                ? "Cresting"
+                : locationData.option;
         crestCell.innerHTML = `Crest: <div style="color: lightgray;" class="hard_coded_php" title="Uses PHP Json Output, No Cloud Option to Access Custom Schema Yet!">${crestOption} ${crestValue} | ${crestDate}</div>`;
     } else {
         crestCell.innerHTML = `Crest: <div style="color: lightgray;" class="hard_coded_php" title="Uses PHP Json Output, No Cloud Option to Access Custom Schema Yet!"></div>`;

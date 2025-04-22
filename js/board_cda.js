@@ -868,7 +868,7 @@ if (display_tributary === "False" && display_type !== "Lake") {
 		"<br>Levels</th>");
 	document.write("<th rowspan='3' width='5%' style='font-size: 1.2em;'>24hr<br>Change</th>");
 	document.write("<th colspan='6' style='font-size: 1.2em;'>National Weather Service River Forcast</th>");
-	document.write("<th rowspan='3' width='15%' style='font-size: 1.2em;'> LD Settings<br>[Tainter] [Roller]</th>");
+	document.write("<th rowspan='3' width='15%' style='font-size: 1.0em;'> LD Settings<br><span class='Board_Tainter' style='background-color: transparent; border: 1px solid transparent;'>Tainter</span><span class='Board_Roller' style='background-color: transparent; border: 1px solid transparent;'>Roller</span></th>");
 
 	if (display_type === "LWRP") {
 		document.write("<th colspan='2' rowspan='1'><a href='board_cda.html?display_type=FloodStage&display_tributary=False&dev=True'>Switch to FloodStage</a></th>");
