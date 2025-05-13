@@ -6711,6 +6711,21 @@
                             "attribute": 1
                         }
                     ]
+                },
+                "tsid-gaged-outflow-lake": {
+                    "office-id": "MVS",
+                    "id": "Gaged-Outflow-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Lk Shelbyville-Kaskaskia"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Shelbyville TW-Kaskaskia.Flow.Inst.30Minutes.0.RatingUSGS",
+                            "attribute": 1
+                        }
+                    ]
                 }
             },
             {
@@ -7121,6 +7136,21 @@
                         {
                             "office-id": "MVS",
                             "timeseries-id": "Carlyle Lk TW-Kaskaskia.Conc-DO.Inst.15Minutes.0.lrgsShef-raw",
+                            "attribute": 1
+                        }
+                    ]
+                },
+                "tsid-gaged-outflow-lake": {
+                    "office-id": "MVS",
+                    "id": "Gaged-Outflow-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Carlyle Lk-Kaskaskia"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Carlyle-Kaskaskia.Flow.Inst.15Minutes.0.RatingUSGS",
                             "attribute": 1
                         }
                     ]
@@ -7675,6 +7705,21 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "cfs",
                     "seasonal-values": []
+                },
+                "tsid-gaged-outflow-lake": {
+                    "office-id": "MVS",
+                    "id": "Gaged-Outflow-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Rend Lk-Big Muddy"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Rend Lk-Big Muddy.Flow.Inst.30Minutes.0.RatingCOE",
+                            "attribute": 1
+                        }
+                    ]
                 }
             },
             {
@@ -8310,6 +8355,21 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "cfs",
                     "seasonal-values": []
+                },
+                "tsid-gaged-outflow-lake": {
+                    "office-id": "MVS",
+                    "id": "Gaged-Outflow-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Wappapello Lk-St Francis"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Iron Bridge-St Francis.Flow.Inst.30Minutes.0.RatingUSGS",
+                            "attribute": 1
+                        }
+                    ]
                 }
             },
             {
@@ -8722,6 +8782,36 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "cfs",
                     "seasonal-values": []
+                },
+                "tsid-gaged-outflow-lake": {
+                    "office-id": "MVS",
+                    "id": "Gaged-Outflow-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Mark Twain Lk-Salt"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Norton Bridge-Salt.Flow.Inst.15Minutes.0.RatingUSGS",
+                            "attribute": 1
+                        }
+                    ]
+                },
+                "tsid-re-reg-lake": {
+                    "office-id": "MVS",
+                    "id": "Re-Reg-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Mark Twain Lk-Salt"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "ReReg Pool-Salt.Stage.Inst.15Minutes.0.29",
+                            "attribute": 1
+                        }
+                    ]
                 }
             },
             {

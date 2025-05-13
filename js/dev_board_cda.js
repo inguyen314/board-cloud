@@ -72,6 +72,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const setTimeseriesGroup9 = "Gate-Total-Lake-Test"; // Controlled Outflow
 		const setTimeseriesGroup10 = "Forecast-Lake"; // Lake Forecast
 		const setTimeseriesGroup11 = "Conc-DO-Lake";
+		const setTimeseriesGroup12 = "Gaged-Outflow-Lake";
+		const setTimeseriesGroup13 = "Re-Reg-Lake";
 
 		const categoryApiUrl = `${setBaseUrl}location/group?office=${office}&group-office-id=${office}&category-office-id=${office}&category-id=${setLocationCategory}`;
 
@@ -101,6 +103,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const lwrpMap = new Map();
 		const bankfullMap = new Map();
 		const doMap = new Map();
+		const gagedOutflowMap = new Map();
+		const reRegLakeTsidMap = new Map();
 
 		// Promises
 		const stageTsidPromises = [];
@@ -128,6 +132,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const lwrpPromises = [];
 		const bankfullPromises = [];
 		const doPromises = [];
+		const gagedOutflowPromises = [];
+		const reRegLakePromises = [];
 
 		const apiPromises = [];
 
@@ -215,7 +221,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 				...eocPhase2Promises,
 				...lwrpPromises,
 				...bankfullPromises,
-				...doPromises
+				...doPromises,
+				...gagedOutflowPromises,
+				...reRegLakePromises
 			]))
 			.then(() => {
 				// Merge fetched data into locations
@@ -246,6 +254,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 						loc['lwrp'] = eocPhase1Map.get(loc['location-id']);
 						loc['bankfull'] = bankfullMap.get(loc['location-id']);
 						loc['tsid-do-lake'] = doMap.get(loc['location-id']);
+						loc['tsid-gaged-outflow-lake'] = gagedOutflowMap.get(loc['location-id']);
+						loc['tsid-re-reg-lake'] = reRegLakeTsidMap.get(loc['location-id']);
 					});
 				});
 
@@ -577,6 +587,22 @@ document.addEventListener('DOMContentLoaded', async function () {
 				fetch(tsidDoUrl)
 					.then(res => res.ok ? res.json() : null)
 					.then(data => data && doMap.set(locationId, data))
+					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
+			);
+
+			const tsidGagedOutflowUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup12}?office=${office}&category-id=${locationId}`;
+			gagedOutflowPromises.push(
+				fetch(tsidGagedOutflowUrl)
+					.then(res => res.ok ? res.json() : null)
+					.then(data => data && gagedOutflowMap.set(locationId, data))
+					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
+			);
+
+			const reReglakeUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup13}?office=${office}&category-id=${locationId}`;
+			reRegLakePromises.push(
+				fetch(reReglakeUrl)
+					.then(res => res.ok ? res.json() : null)
+					.then(data => data && reRegLakeTsidMap.set(locationId, data))
 					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
 			);
 		}
@@ -1355,27 +1381,14 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						gagedOutflowCell.style.backgroundColor = '#404040';
 						gagedOutflowCell.style.color = 'lightgray';
 
-						// Initialize gagedOutflowCellInnerHTML as an empty string
-						let gagedOutflowCellInnerHTML = '--';
+						let gagedOutflowInnerTextHTML = 'Gaged Outflow:  ';
 
-						let tsid = null;
-						if (data.display_stage_29 === true) {
-							tsid = data.tsid_gaged_outflow_board
-						} else {
-							tsid = data.tsid_gaged_outflow_board
-						}
+						const gagedOutflowTsid = location?.['tsid-gaged-outflow-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						// console.log("gagedOutflowTsid: ", gagedOutflowTsid);
 
-						if (tsid !== null) {
-							// Fetch the time series data from the API using the determined query string
-							let url = null;
-							if (cda === "public") {
-								url = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-							} else if (cda === "internal") {
-								url = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-							} else {
+						if (gagedOutflowTsid !== null) {
+							const url = `${setBaseUrl}timeseries?name=${gagedOutflowTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
-							}
-							// console.log("url = ", url);
 							fetch(url, {
 								method: 'GET',
 								headers: {
@@ -1383,81 +1396,77 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 								}
 							})
 								.then(response => {
-									// Check if the response is ok
 									if (!response.ok) {
-										// If not, throw an error
 										throw new Error('Network response was not ok');
 									}
-									// If response is ok, parse it as JSON
 									return response.json();
 								})
 								.then(data => {
-									// console.log("data:", data);
-
-									// Convert timestamps in the JSON object
 									data.values.forEach(entry => {
-										entry[0] = formatNWSDate(entry[0]); // Update timestamp
+										entry[0] = formatNWSDate(entry[0]);
 									});
 
-									// console.log("data formatted = ", data);
+									// console.log("data: ", data);
 
-									// Get the last non-null value from the stage data
-									const lastNonNullValue = getLastNonNullValue(data);
+									const c_count = calculateCCount(gagedOutflowTsid);
+									// console.log("c_count: ", c_count);
+
+									const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
 									// console.log("lastNonNullValue:", lastNonNullValue);
 
-									// Check if a non-null value was found
-									if (lastNonNullValue !== null) {
-										// Extract timestamp, value, and quality code from the last non-null value
-										var timestampLast = lastNonNullValue.timestamp;
-										var valueLast = lastNonNullValue.value;
-										var qualityCodeLast = lastNonNullValue.qualityCode;
-										// console.log("timestampLast:", timestampLast);
-										// console.log("timestampLast:", typeof (timestampLast));
-										// console.log("valueLast:", valueLast);
-										// console.log("qualityCodeLast:", qualityCodeLast);
-									} else {
-										// If no non-null valueLast is found, log a message
-										console.log("No non-null valueLast found.");
+									let valueLast = null;
+									let timestampLast = null;
+
+									if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+										timestampLast = lastNonNullValue.current6am.timestamp;
+										valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(0);
+									}
+									// console.log("valueLast:", valueLast);
+									// console.log("timestampLast:", timestampLast);
+
+									let value24HoursLast = null;
+									let timestamp24HoursLast = null;
+
+									if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+										timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
+										value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(0);
 									}
 
-									const c_count = calculateCCount(tsid);
-									// console.log("c_count:", c_count);
+									// console.log("value24HoursLast:", value24HoursLast);
+									// console.log("timestamp24HoursLast:", timestamp24HoursLast);
 
-									const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
-									// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
+									let delta_24 = null;
 
-									// Check if a non-null value was found
-									if (lastNonNull24HoursValue !== null) {
-										// Extract timestamp, value, and quality code from the last non-null value
-										var timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
-										var value24HoursLast = lastNonNull24HoursValue.value;
-										var qualityCode24HoursLast = lastNonNull24HoursValue.qualityCode;
-
-										// console.log("timestamp24HoursLast:", timestamp24HoursLast);
-										// console.log("value24HoursLast:", value24HoursLast);
-										// console.log("qualityCode24HoursLast:", qualityCode24HoursLast);
+									// Check if the values are numbers and not null/undefined
+									if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
+										delta_24 = (valueLast - value24HoursLast).toFixed(0);
 									} else {
-										// If no non-null valueLast is found, log a message
-										console.log("No non-null valueLast found.");
+										delta_24 = "--";  // or set to "-1" or something else if you prefer
 									}
-
-									// Calculate the 24 hours change between first and last value
-									const delta_24 = valueLast - value24HoursLast;
 									// console.log("delta_24:", delta_24);
 
-									if (valueLast !== null || valueLast !== undefined) {
-										gagedOutflowCellInnerHTML = "<span>"
-											+ "Gaged Outflow: " + valueLast.toFixed(0) + " (" + delta_24.toFixed(0) + ")"
-											+ "</span>";
+									// Make sure delta_24 is a valid number before calling parseFloat
+									if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
+										delta_24 = parseFloat(delta_24).toFixed(0);
 									} else {
-										gagedOutflowCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>"
+										delta_24 = "--";
 									}
-									gagedOutflowCell.innerHTML = gagedOutflowCellInnerHTML;
+
+									let gagedOutflowInnerHTML;
+									if (valueLast === null) {
+										gagedOutflowInnerHTML = gagedOutflowInnerTextHTML + "<span class='missing'>-M-</span>";
+									} else {
+										gagedOutflowInnerHTML = gagedOutflowInnerTextHTML + `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${data.units}</span>`;
+									}
+
+									gagedOutflowCell.innerHTML = gagedOutflowInnerHTML;
 								})
 								.catch(error => {
-									// Catch and log any errors that occur during fetching or processing
 									console.error("Error fetching or processing data:", error);
+									gagedOutflowCell.innerHTML = 'N/A';
 								});
+						} else {
+							gagedOutflowCell.innerHTML = '';
 						}
 					})();
 
@@ -1568,523 +1577,506 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 				// ======= ROW 3 ======= (ONLY FOR MARKTWAIN, REREG, SCHD, GENERATION)
 				// ====================================================================================
 
-				// (() => {
-				// 	if (data.location_id.split('-')[0] === "Mark Twain Lk") {
-				// 		// Create and add the second new row
-				// 		const row3 = table.insertRow();
-
-				// 		// ======= BLANK =======
-				// 		if ("blank" === "blank") {
-				// 			// Create a new table cell for lake name in the second row
-				// 			const blankCell3 = row3.insertCell(0);
-				// 			blankCell3.colSpan = 1;
-				// 			blankCell3.classList.add('Font_15');
-				// 			blankCell3.style.color = 'white';
-
-				// 			// Initialize lakeCellInnerHTML as an empty string for the second row
-				// 			let blankCell3InnerHTML = '--';
-
-				// 			// Update the inner HTML of the cell with data for the second row, preserving HTML
-				// 			blankCell3InnerHTML = "-"; // Replace with the actual data for the second lake
-				// 			// console.log('blankCell3InnerHTML =', blankCell3InnerHTML);
-				// 			blankCell3.innerHTML = blankCell3InnerHTML;
-				// 		}
-
-				// 		// ======= REREG =======
-				// 		if ("rereg" === "rereg") {
-				// 			// Create a new table cell for lake name
-				// 			const reregCell = row3.insertCell(1);
-				// 			reregCell.colSpan = 2;
-				// 			reregCell.classList.add('Font_15');
-				// 			reregCell.style.width = '10%';
-				// 			reregCell.style.backgroundColor = '#404040';
-				// 			reregCell.style.color = 'lightgray';
-
-				// 			// Initialize doCellInnerHTML as an empty string
-				// 			let reregCellInnerHTML = '--';
-
-				// 			let tsid = null;
-				// 			if (data.display_stage_29 === true) {
-				// 				tsid = data.tsid_rereg_board
-				// 			} else {
-				// 				tsid = data.tsid_rereg_board
-				// 			}
-
-				// 			if (tsid !== null) {
-				// 				// Fetch the time series data from the API using the determined query string
-				// 				let url = null;
-				// 				if (cda === "public") {
-				// 					url = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 				} else if (cda === "internal") {
-				// 					url = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 				} else {
-
-				// 				}
-				// 				// console.log("url = ", url);
-				// 				fetch(url, {
-				// 					method: 'GET',
-				// 					headers: {
-				// 						'Accept': 'application/json;version=2'
-				// 					}
-				// 				})
-				// 					.then(response => {
-				// 						// Check if the response is ok
-				// 						if (!response.ok) {
-				// 							// If not, throw an error
-				// 							throw new Error('Network response was not ok');
-				// 						}
-				// 						// If response is ok, parse it as JSON
-				// 						return response.json();
-				// 					})
-				// 					.then(data => {
-				// 						// console.log("data:", data);
-
-				// 						// Convert timestamps in the JSON object
-				// 						data.values.forEach(entry => {
-				// 							entry[0] = formatNWSDate(entry[0]); // Update timestamp
-				// 						});
-
-				// 						// console.log("data formatted = ", data);
-
-				// 						// Get the last non-null value from the stage data
-				// 						const lastNonNullValue = getLastNonNullValue(data);
-				// 						// console.log("lastNonNullValue:", lastNonNullValue);
-
-				// 						// Check if a non-null value was found
-				// 						if (lastNonNullValue !== null) {
-				// 							// Extract timestamp, value, and quality code from the last non-null value
-				// 							var timestampLast = lastNonNullValue.timestamp;
-				// 							var valueLast = lastNonNullValue.value;
-				// 							var qualityCodeLast = lastNonNullValue.qualityCode;
-				// 							// console.log("timestampLast:", timestampLast);
-				// 							// console.log("timestampLast:", typeof (timestampLast));
-				// 							// console.log("valueLast:", valueLast);
-				// 							// console.log("qualityCodeLast:", qualityCodeLast);
-				// 						} else {
-				// 							// If no non-null valueLast is found, log a message
-				// 							console.log("No non-null valueLast found.");
-				// 						}
-
-				// 						const c_count = calculateCCount(tsid);
-				// 						// console.log("c_count:", c_count);
-
-				// 						const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
-				// 						// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
-
-				// 						// Check if a non-null value was found
-				// 						if (lastNonNull24HoursValue !== null) {
-				// 							// Extract timestamp, value, and quality code from the last non-null value
-				// 							var timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
-				// 							var value24HoursLast = lastNonNull24HoursValue.value;
-				// 							var qualityCode24HoursLast = lastNonNull24HoursValue.qualityCode;
-
-				// 							// console.log("timestamp24HoursLast:", timestamp24HoursLast);
-				// 							// console.log("value24HoursLast:", value24HoursLast);
-				// 							// console.log("qualityCode24HoursLast:", qualityCode24HoursLast);
-				// 						} else {
-				// 							// If no non-null valueLast is found, log a message
-				// 							console.log("No non-null valueLast found.");
-				// 						}
-
-				// 						// Calculate the 24 hours change between first and last value
-				// 						const delta_24 = valueLast - value24HoursLast;
-				// 						// console.log("delta_24:", delta_24);
-
-				// 						if (valueLast !== null || valueLast !== undefined) {
-				// 							reregCellInnerHTML = "<span>"
-				// 								+ "Re-Reg Pool: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")" + " ft"
-				// 								+ "</span>";
-				// 						} else {
-				// 							reregCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>"
-				// 						}
-				// 						reregCell.innerHTML = reregCellInnerHTML;
-				// 					})
-				// 					.catch(error => {
-				// 						// Catch and log any errors that occur during fetching or processing
-				// 						console.error("Error fetching or processing data:", error);
-				// 					});
-				// 			}
-				// 		}
-
-				// 		// ======= SCHD =======
-				// 		if ("schd" === "schd") {
-				// 			// Create a new table cell for lake name
-				// 			const schdCell = row3.insertCell(2);
-				// 			schdCell.colSpan = 1;
-				// 			schdCell.classList.add('Font_15');
-				// 			schdCell.style.width = '10%';
-				// 			schdCell.style.backgroundColor = '#404040';
-				// 			schdCell.style.color = 'lightgray';
-
-				// 			// Initialize doCellInnerHTML as an empty string
-				// 			let schdCellInnerHTML = '--';
-
-				// 			// try {
-				// 			// 	const ROutput = await fetchDataFromROutput();
-				// 			// 	// console.log('ROutput:', ROutput);
-
-				// 			// 	const filteredData = filterDataByLocationId(ROutput, data.location_id);
-				// 			// 	// console.log("Filtered Data for", data.location_id + ":", filteredData);
-
-				// 			// 	// // Update the HTML element with filtered data
-				// 			// 	updateSchdHTML(filteredData, schdCell);
-
-				// 			// 	// Further processing of ROutput data as needed
-				// 			// } catch (error) {
-				// 			// 	// Handle errors from fetchDataFromROutput
-				// 			// 	console.error('Failed to fetch data:', error);
-				// 			// }
-				// 		}
-
-				// 		// ======= REREG DO 1 =======
-				// 		if ("reregdo" === "reregdo") {
-				// 			// Create a new table cell for lake name
-				// 			const reregDoCell = row3.insertCell(3);
-				// 			reregDoCell.colSpan = 2;
-				// 			reregDoCell.classList.add('Font_15');
-				// 			reregDoCell.style.width = '10%';
-				// 			reregDoCell.style.backgroundColor = '#404040';
-				// 			reregDoCell.style.color = 'lightgray';
-
-				// 			// Initialize doCellInnerHTML as an empty string
-				// 			let reregDoCellInnerHTML = '--';
-
-				// 			let tsid = null;
-				// 			if (data.display_stage_29 === true) {
-				// 				tsid = data.tsid_rereg_do
-				// 			} else {
-				// 				tsid = data.tsid_rereg_do
-				// 			}
-
-				// 			if (tsid !== null) {
-				// 				// Fetch the time series data from the API using the determined query string
-				// 				let url = null;
-				// 				if (cda === "public") {
-				// 					url = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 				} else if (cda === "internal") {
-				// 					url = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 				} else {
-
-				// 				}
-				// 				// console.log("url = ", url);
-				// 				fetch(url, {
-				// 					method: 'GET',
-				// 					headers: {
-				// 						'Accept': 'application/json;version=2'
-				// 					}
-				// 				})
-				// 					.then(response => {
-				// 						// Check if the response is ok
-				// 						if (!response.ok) {
-				// 							// If not, throw an error
-				// 							throw new Error('Network response was not ok');
-				// 						}
-				// 						// If response is ok, parse it as JSON
-				// 						return response.json();
-				// 					})
-				// 					.then(data => {
-				// 						// console.log("data:", data);
-
-				// 						// Convert timestamps in the JSON object
-				// 						data.values.forEach(entry => {
-				// 							entry[0] = formatNWSDate(entry[0]); // Update timestamp
-				// 						});
-
-				// 						// console.log("data formatted = ", data);
-
-				// 						// Get the last non-null value from the stage data
-				// 						const lastNonNullValue = getLastNonNullValue(data);
-				// 						// console.log("lastNonNullValue:", lastNonNullValue);
-
-				// 						// Check if a non-null value was found
-				// 						if (lastNonNullValue !== null) {
-				// 							// Extract timestamp, value, and quality code from the last non-null value
-				// 							var timestampLast = lastNonNullValue.timestamp;
-				// 							var valueLast = lastNonNullValue.value;
-				// 							var qualityCodeLast = lastNonNullValue.qualityCode;
-				// 							// console.log("timestampLast:", timestampLast);
-				// 							// console.log("timestampLast:", typeof (timestampLast));
-				// 							// console.log("valueLast:", valueLast);
-				// 							// console.log("qualityCodeLast:", qualityCodeLast);
-				// 						} else {
-				// 							// If no non-null valueLast is found, log a message
-				// 							// console.log("No non-null valueLast found.");
-				// 						}
-
-				// 						const c_count = calculateCCount(tsid);
-				// 						// console.log("c_count:", c_count);
-
-				// 						const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
-				// 						// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
-
-				// 						// Check if a non-null value was found
-				// 						if (lastNonNull24HoursValue !== null) {
-				// 							// Extract timestamp, value, and quality code from the last non-null value
-				// 							var timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
-				// 							var value24HoursLast = lastNonNull24HoursValue.value;
-				// 							var qualityCode24HoursLast = lastNonNull24HoursValue.qualityCode;
-
-				// 							// console.log("timestamp24HoursLast:", timestamp24HoursLast);
-				// 							// console.log("value24HoursLast:", value24HoursLast);
-				// 							// console.log("qualityCode24HoursLast:", qualityCode24HoursLast);
-				// 						} else {
-				// 							// If no non-null valueLast is found, log a message
-				// 							console.log("No non-null valueLast found.");
-				// 						}
-
-				// 						// Calculate the 24 hours change between first and last value
-				// 						const delta_24 = valueLast - value24HoursLast;
-				// 						// console.log("delta_24:", delta_24);
-
-				// 						if (valueLast !== null && valueLast !== undefined) {
-				// 							reregDoCellInnerHTML = "<span>"
-				// 								+ "DO1: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")"
-				// 								+ "</span>";
-				// 						} else {
-				// 							if ([10, 11, 12, 1, 2, 3].includes(currentMonth)) {
-				// 								reregDoCellInnerHTML = "DO1: " + "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
-				// 							} else {
-				// 								reregDoCellInnerHTML = "DO1: " + "<span class='missing'>" + "-M-" + "</span>"
-				// 							}
-				// 						}
-				// 						reregDoCell.innerHTML = reregDoCellInnerHTML;
-				// 					})
-				// 					.catch(error => {
-				// 						// Catch and log any errors that occur during fetching or processing
-				// 						console.error("Error fetching or processing data:", error);
-				// 					});
-				// 			}
-				// 		}
-
-				// 		// ======= REREG DO 2 =======
-				// 		if ("reregdo" === "reregdo") {
-				// 			// Create a new table cell for lake name
-				// 			const reregDoCell2 = row3.insertCell(4);
-				// 			reregDoCell2.colSpan = 1;
-				// 			reregDoCell2.classList.add('Font_15');
-				// 			reregDoCell2.style.width = '10%';
-				// 			reregDoCell2.style.backgroundColor = '#404040';
-				// 			reregDoCell2.style.color = 'lightgray';
-
-				// 			// Initialize doCellInnerHTML as an empty string
-				// 			let reregDoCell2InnerHTML = '--';
-
-				// 			let tsid = null;
-				// 			if (data.display_stage_29 === true) {
-				// 				tsid = data.tsid_rereg_do2
-				// 			} else {
-				// 				tsid = data.tsid_rereg_do2
-				// 			}
-
-				// 			if (tsid !== null) {
-				// 				// Fetch the time series data from the API using the determined query string
-				// 				let url = null;
-				// 				if (cda === "public") {
-				// 					url = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 				} else if (cda === "internal") {
-				// 					url = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 				} else {
-
-				// 				}
-				// 				// console.log("url = ", url);
-				// 				fetch(url, {
-				// 					method: 'GET',
-				// 					headers: {
-				// 						'Accept': 'application/json;version=2'
-				// 					}
-				// 				})
-				// 					.then(response => {
-				// 						// Check if the response is ok
-				// 						if (!response.ok) {
-				// 							// If not, throw an error
-				// 							throw new Error('Network response was not ok');
-				// 						}
-				// 						// If response is ok, parse it as JSON
-				// 						return response.json();
-				// 					})
-				// 					.then(data => {
-				// 						// console.log("data:", data);
-
-				// 						// Convert timestamps in the JSON object
-				// 						data.values.forEach(entry => {
-				// 							entry[0] = formatNWSDate(entry[0]); // Update timestamp
-				// 						});
-
-				// 						// console.log("data formatted = ", data);
-
-				// 						// Get the last non-null value from the stage data
-				// 						const lastNonNullValue = getLastNonNullValue(data);
-				// 						// console.log("lastNonNullValue:", lastNonNullValue);
-
-				// 						// Check if a non-null value was found
-				// 						if (lastNonNullValue !== null) {
-				// 							// Extract timestamp, value, and quality code from the last non-null value
-				// 							var timestampLast = lastNonNullValue.timestamp;
-				// 							var valueLast = lastNonNullValue.value;
-				// 							var qualityCodeLast = lastNonNullValue.qualityCode;
-				// 							// console.log("timestampLast:", timestampLast);
-				// 							// console.log("timestampLast:", typeof (timestampLast));
-				// 							// console.log("valueLast:", valueLast);
-				// 							// console.log("qualityCodeLast:", qualityCodeLast);
-				// 						} else {
-				// 							// If no non-null valueLast is found, log a message
-				// 							console.log("No non-null valueLast found.");
-				// 						}
-
-				// 						const c_count = calculateCCount(tsid);
-				// 						// console.log("c_count:", c_count);
-
-				// 						const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
-				// 						// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
-
-				// 						// Check if a non-null value was found
-				// 						if (lastNonNull24HoursValue !== null) {
-				// 							// Extract timestamp, value, and quality code from the last non-null value
-				// 							var timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
-				// 							var value24HoursLast = lastNonNull24HoursValue.value;
-				// 							var qualityCode24HoursLast = lastNonNull24HoursValue.qualityCode;
-
-				// 							// console.log("timestamp24HoursLast:", timestamp24HoursLast);
-				// 							// console.log("value24HoursLast:", value24HoursLast);
-				// 							// console.log("qualityCode24HoursLast:", qualityCode24HoursLast);
-				// 						} else {
-				// 							// If no non-null valueLast is found, log a message
-				// 							console.log("No non-null valueLast found.");
-				// 						}
-
-				// 						// Calculate the 24 hours change between first and last value
-				// 						const delta_24 = valueLast - value24HoursLast;
-				// 						// console.log("delta_24:", delta_24);
-
-				// 						if (valueLast !== null && valueLast !== undefined) {
-				// 							reregDoCell2InnerHTML = "<span>"
-				// 								+ "DO2: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")"
-				// 								+ "</span>";
-				// 						} else {
-				// 							if ([10, 11, 12, 1, 2, 3].includes(currentMonth)) {
-				// 								reregDoCell2InnerHTML = "DO2: "
-				// 									+ "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
-				// 							} else {
-				// 								reregDoCell2InnerHTML = "DO2: "
-				// 									+ "<span class='missing'>-M-</span>";
-				// 							}
-				// 						}
-				// 						reregDoCell2.innerHTML = reregDoCell2InnerHTML;
-				// 					})
-				// 					.catch(error => {
-				// 						// Catch and log any errors that occur during fetching or processing
-				// 						console.error("Error fetching or processing data:", error);
-				// 					});
-				// 			}
-				// 		}
-
-				// 		// ======= GENERATION =======
-				// 		if ("gen" === "gen") {
-				// 			// Create a new table cell for lake name
-				// 			const genCell = row3.insertCell(5);
-				// 			genCell.colSpan = 1;
-				// 			genCell.classList.add('Font_15');
-				// 			genCell.style.width = '10%';
-				// 			genCell.style.backgroundColor = '#404040';
-				// 			genCell.style.color = 'lightgray';
-
-				// 			// Initialize doCellInnerHTML as an empty string
-				// 			let genCellInnerHTML = '';
-
-				// 			genCell.innerHTML = genCellInnerHTML;
-
-				// 			// // Make an AJAX request to the PHP script, passing all the variables
-				// 			// var urlGen = `https://coe-mvsuwa04mvs.mvs.usace.army.mil/php_data_api/public/get_generation2.php`;
-				// 			// // console.log("urlGen: " , urlGen);
-
-				// 			// fetch(urlGen)
-				// 			// 	.then(response => response.json())
-				// 			// 	.then(gen => {
-				// 			// 		// Log the stage to the console
-				// 			// 		// console.log("gen: ", gen);
-
-				// 			// 		// Extract lower and upper flow limits
-				// 			// 		const genValueRereg = parseFloat(gen[0].value_rereg);
-				// 			// 		const genDateTimeRereg = gen[0].date_time_rereg;
-				// 			// 		const genLocationIdRereg = gen[0].location_id_rereg;
-				// 			// 		// console.log("genValueRereg: ", genValueRereg);
-				// 			// 		// console.log("genValueRereg: ", typeof genValueRereg);
-				// 			// 		// console.log("genDateTimeRereg: ", genDateTimeRereg);
-				// 			// 		// console.log("genLocationIdRereg: ", genLocationIdRereg);
-
-
-				// 			// 		if (gen !== null && gen[0].value !== null) {
-				// 			// 			const gen_date_time = gen[0].date_time;
-				// 			// 			// console.log("gen_date_time = ", gen_date_time);
-				// 			// 			var dateParts = gen_date_time.split(" ");
-				// 			// 			var date = dateParts[0];
-				// 			// 			var time = dateParts[1];
-				// 			// 			var [month, day, year] = date.split("-");
-				// 			// 			var [hours, minutes] = time.split(":");
-				// 			// 			var gen_date_time_formatted = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00`);
-				// 			// 			// console.log("gen_date_time_formatted", gen_date_time_formatted);
-				// 			// 			// console.log("gen_date_time_formatted: ", typeof gen_date_time_formatted);
-
-				// 			// 			// Get the current date as a Date object
-				// 			// 			const currentDate = new Date();
-				// 			// 			// Subtract 2 hours (2 * 60 * 60 * 1000 milliseconds)
-				// 			// 			const currentDateStageMinusTwoHours = new Date(currentDate.getTime() - (2 * 60 * 60 * 1000));
-				// 			// 			// Subtract 2 hours (2 * 60 * 60 * 1000 milliseconds)
-				// 			// 			const currentDateStageMinusOneDay = new Date(currentDate.getTime() - (24 * 60 * 60 * 1000));
-
-				// 			// 			// console.log("currentDateStage:", currentDate);
-				// 			// 			// console.log("currentDateStageMinusTwoHours:", currentDateStageMinusTwoHours);
-				// 			// 			// console.log("currentDateStageMinusOneDay:", currentDateStageMinusOneDay);
-
-				// 			// 			// Calculate the time difference in hours
-				// 			// 			const timeDifferenceInMilliseconds = currentDate.getTime() - gen_date_time_formatted.getTime();
-				// 			// 			const timeDifferenceInHours = timeDifferenceInMilliseconds / (1000 * 60 * 60);
-
-				// 			// 			// console.log("Time Difference (in hours):", timeDifferenceInHours);
-				// 			// 			// console.log("Time Difference (in hours):", typeof timeDifferenceInHours);
-
-				// 			// 			// Gen Class
-				// 			// 			if (timeDifferenceInHours <= 2) {
-				// 			// 				// console.log("Generating Now");
-				// 			// 				var myGenClass = "Gen_Now";
-				// 			// 			} else if (timeDifferenceInHours > 24) {
-				// 			// 				// console.log("No Generating");
-				// 			// 				var myGenClass = "Gen_No";
-				// 			// 			} else {
-				// 			// 				// console.log("Generating Within 24Hours");
-				// 			// 				var myGenClass = "Gen";
-				// 			// 			}
-
-				// 			// 			if (timeDifferenceInHours < 2) {
-				// 			// 				genCellInnerHTML = "<span class='" + myGenClass + "' style='float: left; padding-left: 15px; align-items: center; display: flex;' title='" + parseFloat(gen[0].delta).toFixed(1) + " delta ft : " + gen[0].date_time + " Hours: " + timeDifferenceInHours.toFixed(0) + "'><img src='images/yes3.png' width='30' height='30'>&nbsp;Generating Now</span>";
-				// 			// 			} else if (timeDifferenceInHours > 24) {
-				// 			// 				genCellInnerHTML = "<span class='" + myGenClass + "' style='float: left; padding-left: 15px; align-items: center; display: flex;' title='" + parseFloat(gen[0].delta).toFixed(1) + " delta ft : " + gen[0].date_time + " Hours: " + timeDifferenceInHours.toFixed(0) + "'>" + "<a href='https://wm.mvs.ds.usace.army.mil/web_apps/plot_macro/public/plot_macro.php?basin=Mark%20Twain&cwms_ts_id=Mark%20Twain%20Lk%20TW-Salt.Stage.Inst.15Minutes.0.29&cwms_ts_id_2=ReReg%20Pool-Salt.Stage.Inst.15Minutes.0.29&start_day=4&end_day=0' target='_blank' style='color: #ccc;'>No Generating</a>" + "</span>";
-				// 			// 			} else {
-				// 			// 				genCellInnerHTML = "<span class='" + myGenClass + "' style='float: left; padding-left: 15px; align-items: center; display: flex;' title='" + parseFloat(gen[0].delta).toFixed(1) + " delta ft : " + gen[0].date_time + " Hours: " + timeDifferenceInHours.toFixed(0) + "'><img src='images/yes3.png' width='30' height='30'>&nbsp;Generated " + timeDifferenceInHours.toFixed(0) + " Hrs Ago" + "</span>";
-				// 			// 			}
-				// 			// 		} else {
-				// 			// 			// If not gen in the past 24 hours. Determine of you need to gen. If Rereg below 521.5ft
-				// 			// 			if (genValueRereg > 521.5) {
-				// 			// 				genCellInnerHTML = "<span style='float: left; padding-left: 15px; align-items: center; display: flex;' title='No Gen in past 24 hours'>";
-				// 			// 				genCellInnerHTML += "<a href='https://wm.mvs.ds.usace.army.mil/web_apps/plot_macro/public/plot_macro.php?basin=Mark%20Twain&cwms_ts_id=Mark%20Twain%20Lk%20TW-Salt.Stage.Inst.15Minutes.0.29&cwms_ts_id_2=ReReg%20Pool-Salt.Stage.Inst.15Minutes.0.29&start_day=4&end_day=0' target='_blank' style='color: #ccc;'>No Generating</a>";
-				// 			// 				genCellInnerHTML += "</span>";
-				// 			// 			} else {
-				// 			// 				genCellInnerHTML = "<span style='float: left; padding-left: 15px; align-items: center; display: flex;' title='Rereg below 521.5ft'> <img src='images/call.png' width='25' height='25'>&nbsp;Call Rereg</span>";
-				// 			// 			}
-				// 			// 		}
-
-				// 			// 		// Set the combined value to the cell, preserving HTML
-				// 			// 		// console.log("genCellInnerHTML = ", genCellInnerHTML);
-
-				// 			// 		// Set the HTML inside the cell once the fetch is complete
-				// 			// 		genCell.innerHTML = genCellInnerHTML;
-				// 			// 	})
-				// 			// 	.catch(error => {
-				// 			// 		console.error('Error:', error);
-				// 			// 	});
-				// 		}
-				// 	}
-				// })();
+				(() => {
+					if (location['metadata']['public-name'] === "Mark Twain Pool") {
+						// Create and add the second new row
+						const row3 = table.insertRow();
+
+						// ======= BLANK =======
+						(() => {
+							// Create a new table cell for lake name in the second row
+							const blankCell3 = row3.insertCell(0);
+							blankCell3.colSpan = 1;
+							blankCell3.classList.add('Font_15');
+							blankCell3.style.color = 'white';
+
+							// Initialize lakeCellInnerHTML as an empty string for the second row
+							let blankCell3InnerHTML = '';
+
+							// Update the inner HTML of the cell with data for the second row, preserving HTML
+							blankCell3InnerHTML = "..."; // Replace with the actual data for the second lake
+							// console.log('blankCell3InnerHTML =', blankCell3InnerHTML);
+							blankCell3.innerHTML = blankCell3InnerHTML;
+						})();
+
+						// ======= REREG =======
+						(() => {
+							// Create a new table cell for lake name
+							const reregCell = row3.insertCell(1);
+							reregCell.colSpan = 2;
+							reregCell.classList.add('Font_15');
+							reregCell.style.width = '10%';
+							reregCell.style.backgroundColor = '#404040';
+							reregCell.style.color = 'lightgray';
+
+							let reregInnerTextHTML = 'Gaged Outflow:  ';
+
+							const gagedOutflowTsid = location?.['tsid-re-reg-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+							// console.log("gagedOutflowTsid: ", gagedOutflowTsid);
+
+							if (gagedOutflowTsid !== null) {
+								const url = `${setBaseUrl}timeseries?name=${gagedOutflowTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+								fetch(url, {
+									method: 'GET',
+									headers: {
+										'Accept': 'application/json;version=2'
+									}
+								})
+									.then(response => {
+										if (!response.ok) {
+											throw new Error('Network response was not ok');
+										}
+										return response.json();
+									})
+									.then(data => {
+										data.values.forEach(entry => {
+											entry[0] = formatNWSDate(entry[0]);
+										});
+
+										// console.log("data: ", data);
+
+										const c_count = calculateCCount(gagedOutflowTsid);
+										// console.log("c_count: ", c_count);
+
+										const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
+										// console.log("lastNonNullValue:", lastNonNullValue);
+
+										let valueLast = null;
+										let timestampLast = null;
+
+										if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+											timestampLast = lastNonNullValue.current6am.timestamp;
+											valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
+										}
+										// console.log("valueLast:", valueLast);
+										// console.log("timestampLast:", timestampLast);
+
+										let value24HoursLast = null;
+										let timestamp24HoursLast = null;
+
+										if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+											timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
+											value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(2);
+										}
+
+										// console.log("value24HoursLast:", value24HoursLast);
+										// console.log("timestamp24HoursLast:", timestamp24HoursLast);
+
+										let delta_24 = null;
+
+										// Check if the values are numbers and not null/undefined
+										if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
+											delta_24 = (valueLast - value24HoursLast).toFixed(2);
+										} else {
+											delta_24 = "--";  // or set to "-1" or something else if you prefer
+										}
+										// console.log("delta_24:", delta_24);
+
+										// Make sure delta_24 is a valid number before calling parseFloat
+										if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
+											delta_24 = parseFloat(delta_24).toFixed(2);
+										} else {
+											delta_24 = "--";
+										}
+
+										let gagedOutflowInnerHTML;
+										if (valueLast === null) {
+											gagedOutflowInnerHTML = reregInnerTextHTML + "<span class='missing'>-M-</span>";
+										} else {
+											gagedOutflowInnerHTML = reregInnerTextHTML + `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${data.units}</span>`;
+										}
+
+										reregCell.innerHTML = gagedOutflowInnerHTML;
+									})
+									.catch(error => {
+										console.error("Error fetching or processing data:", error);
+										reregCell.innerHTML = 'N/A';
+									});
+							} else {
+								reregCell.innerHTML = '';
+							}
+						})();
+
+						// // ======= SCHD =======
+						// (() => {
+						// 	// Create a new table cell for lake name
+						// 	const schdCell = row3.insertCell(2);
+						// 	schdCell.colSpan = 1;
+						// 	schdCell.classList.add('Font_15');
+						// 	schdCell.style.width = '10%';
+						// 	schdCell.style.backgroundColor = '#404040';
+						// 	schdCell.style.color = 'lightgray';
+
+						// 	// Initialize doCellInnerHTML as an empty string
+						// 	let schdCellInnerHTML = '--';
+
+						// 	// try {
+						// 	// 	const ROutput = await fetchDataFromROutput();
+						// 	// 	// console.log('ROutput:', ROutput);
+
+						// 	// 	const filteredData = filterDataByLocationId(ROutput, data.location_id);
+						// 	// 	// console.log("Filtered Data for", data.location_id + ":", filteredData);
+
+						// 	// 	// // Update the HTML element with filtered data
+						// 	// 	updateSchdHTML(filteredData, schdCell);
+
+						// 	// 	// Further processing of ROutput data as needed
+						// 	// } catch (error) {
+						// 	// 	// Handle errors from fetchDataFromROutput
+						// 	// 	console.error('Failed to fetch data:', error);
+						// 	// }
+						// })();
+
+						// // ======= REREG DO 1 =======
+						// (() => {
+						// 	// Create a new table cell for lake name
+						// 	const reregDoCell = row3.insertCell(3);
+						// 	reregDoCell.colSpan = 2;
+						// 	reregDoCell.classList.add('Font_15');
+						// 	reregDoCell.style.width = '10%';
+						// 	reregDoCell.style.backgroundColor = '#404040';
+						// 	reregDoCell.style.color = 'lightgray';
+
+						// 	// Initialize doCellInnerHTML as an empty string
+						// 	let reregDoCellInnerHTML = '--';
+
+						// 	let tsid = null;
+						// 	if (data.display_stage_29 === true) {
+						// 		tsid = data.tsid_rereg_do
+						// 	} else {
+						// 		tsid = data.tsid_rereg_do
+						// 	}
+
+						// 	if (tsid !== null) {
+						// 		// Fetch the time series data from the API using the determined query string
+						// 		let url = null;
+						// 		if (cda === "public") {
+						// 			url = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+						// 		} else if (cda === "internal") {
+						// 			url = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+						// 		} else {
+
+						// 		}
+						// 		// console.log("url = ", url);
+						// 		fetch(url, {
+						// 			method: 'GET',
+						// 			headers: {
+						// 				'Accept': 'application/json;version=2'
+						// 			}
+						// 		})
+						// 			.then(response => {
+						// 				// Check if the response is ok
+						// 				if (!response.ok) {
+						// 					// If not, throw an error
+						// 					throw new Error('Network response was not ok');
+						// 				}
+						// 				// If response is ok, parse it as JSON
+						// 				return response.json();
+						// 			})
+						// 			.then(data => {
+						// 				// console.log("data:", data);
+
+						// 				// Convert timestamps in the JSON object
+						// 				data.values.forEach(entry => {
+						// 					entry[0] = formatNWSDate(entry[0]); // Update timestamp
+						// 				});
+
+						// 				// console.log("data formatted = ", data);
+
+						// 				// Get the last non-null value from the stage data
+						// 				const lastNonNullValue = getLastNonNullValue(data);
+						// 				// console.log("lastNonNullValue:", lastNonNullValue);
+
+						// 				// Check if a non-null value was found
+						// 				if (lastNonNullValue !== null) {
+						// 					// Extract timestamp, value, and quality code from the last non-null value
+						// 					var timestampLast = lastNonNullValue.timestamp;
+						// 					var valueLast = lastNonNullValue.value;
+						// 					var qualityCodeLast = lastNonNullValue.qualityCode;
+						// 					// console.log("timestampLast:", timestampLast);
+						// 					// console.log("timestampLast:", typeof (timestampLast));
+						// 					// console.log("valueLast:", valueLast);
+						// 					// console.log("qualityCodeLast:", qualityCodeLast);
+						// 				} else {
+						// 					// If no non-null valueLast is found, log a message
+						// 					// console.log("No non-null valueLast found.");
+						// 				}
+
+						// 				const c_count = calculateCCount(tsid);
+						// 				// console.log("c_count:", c_count);
+
+						// 				const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
+						// 				// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
+
+						// 				// Check if a non-null value was found
+						// 				if (lastNonNull24HoursValue !== null) {
+						// 					// Extract timestamp, value, and quality code from the last non-null value
+						// 					var timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+						// 					var value24HoursLast = lastNonNull24HoursValue.value;
+						// 					var qualityCode24HoursLast = lastNonNull24HoursValue.qualityCode;
+
+						// 					// console.log("timestamp24HoursLast:", timestamp24HoursLast);
+						// 					// console.log("value24HoursLast:", value24HoursLast);
+						// 					// console.log("qualityCode24HoursLast:", qualityCode24HoursLast);
+						// 				} else {
+						// 					// If no non-null valueLast is found, log a message
+						// 					console.log("No non-null valueLast found.");
+						// 				}
+
+						// 				// Calculate the 24 hours change between first and last value
+						// 				const delta_24 = valueLast - value24HoursLast;
+						// 				// console.log("delta_24:", delta_24);
+
+						// 				if (valueLast !== null && valueLast !== undefined) {
+						// 					reregDoCellInnerHTML = "<span>"
+						// 						+ "DO1: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")"
+						// 						+ "</span>";
+						// 				} else {
+						// 					if ([10, 11, 12, 1, 2, 3].includes(currentMonth)) {
+						// 						reregDoCellInnerHTML = "DO1: " + "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
+						// 					} else {
+						// 						reregDoCellInnerHTML = "DO1: " + "<span class='missing'>" + "-M-" + "</span>"
+						// 					}
+						// 				}
+						// 				reregDoCell.innerHTML = reregDoCellInnerHTML;
+						// 			})
+						// 			.catch(error => {
+						// 				// Catch and log any errors that occur during fetching or processing
+						// 				console.error("Error fetching or processing data:", error);
+						// 			});
+						// 	}
+						// })();
+
+						// // ======= REREG DO 2 =======
+						// (() => {
+						// 	// Create a new table cell for lake name
+						// 	const reregDoCell2 = row3.insertCell(4);
+						// 	reregDoCell2.colSpan = 1;
+						// 	reregDoCell2.classList.add('Font_15');
+						// 	reregDoCell2.style.width = '10%';
+						// 	reregDoCell2.style.backgroundColor = '#404040';
+						// 	reregDoCell2.style.color = 'lightgray';
+
+						// 	// Initialize doCellInnerHTML as an empty string
+						// 	let reregDoCell2InnerHTML = '--';
+
+						// 	let tsid = null;
+						// 	if (data.display_stage_29 === true) {
+						// 		tsid = data.tsid_rereg_do2
+						// 	} else {
+						// 		tsid = data.tsid_rereg_do2
+						// 	}
+
+						// 	if (tsid !== null) {
+						// 		// Fetch the time series data from the API using the determined query string
+						// 		let url = null;
+						// 		if (cda === "public") {
+						// 			url = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+						// 		} else if (cda === "internal") {
+						// 			url = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+						// 		} else {
+
+						// 		}
+						// 		// console.log("url = ", url);
+						// 		fetch(url, {
+						// 			method: 'GET',
+						// 			headers: {
+						// 				'Accept': 'application/json;version=2'
+						// 			}
+						// 		})
+						// 			.then(response => {
+						// 				// Check if the response is ok
+						// 				if (!response.ok) {
+						// 					// If not, throw an error
+						// 					throw new Error('Network response was not ok');
+						// 				}
+						// 				// If response is ok, parse it as JSON
+						// 				return response.json();
+						// 			})
+						// 			.then(data => {
+						// 				// console.log("data:", data);
+
+						// 				// Convert timestamps in the JSON object
+						// 				data.values.forEach(entry => {
+						// 					entry[0] = formatNWSDate(entry[0]); // Update timestamp
+						// 				});
+
+						// 				// console.log("data formatted = ", data);
+
+						// 				// Get the last non-null value from the stage data
+						// 				const lastNonNullValue = getLastNonNullValue(data);
+						// 				// console.log("lastNonNullValue:", lastNonNullValue);
+
+						// 				// Check if a non-null value was found
+						// 				if (lastNonNullValue !== null) {
+						// 					// Extract timestamp, value, and quality code from the last non-null value
+						// 					var timestampLast = lastNonNullValue.timestamp;
+						// 					var valueLast = lastNonNullValue.value;
+						// 					var qualityCodeLast = lastNonNullValue.qualityCode;
+						// 					// console.log("timestampLast:", timestampLast);
+						// 					// console.log("timestampLast:", typeof (timestampLast));
+						// 					// console.log("valueLast:", valueLast);
+						// 					// console.log("qualityCodeLast:", qualityCodeLast);
+						// 				} else {
+						// 					// If no non-null valueLast is found, log a message
+						// 					console.log("No non-null valueLast found.");
+						// 				}
+
+						// 				const c_count = calculateCCount(tsid);
+						// 				// console.log("c_count:", c_count);
+
+						// 				const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
+						// 				// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
+
+						// 				// Check if a non-null value was found
+						// 				if (lastNonNull24HoursValue !== null) {
+						// 					// Extract timestamp, value, and quality code from the last non-null value
+						// 					var timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+						// 					var value24HoursLast = lastNonNull24HoursValue.value;
+						// 					var qualityCode24HoursLast = lastNonNull24HoursValue.qualityCode;
+
+						// 					// console.log("timestamp24HoursLast:", timestamp24HoursLast);
+						// 					// console.log("value24HoursLast:", value24HoursLast);
+						// 					// console.log("qualityCode24HoursLast:", qualityCode24HoursLast);
+						// 				} else {
+						// 					// If no non-null valueLast is found, log a message
+						// 					console.log("No non-null valueLast found.");
+						// 				}
+
+						// 				// Calculate the 24 hours change between first and last value
+						// 				const delta_24 = valueLast - value24HoursLast;
+						// 				// console.log("delta_24:", delta_24);
+
+						// 				if (valueLast !== null && valueLast !== undefined) {
+						// 					reregDoCell2InnerHTML = "<span>"
+						// 						+ "DO2: " + valueLast.toFixed(2) + " (" + delta_24.toFixed(2) + ")"
+						// 						+ "</span>";
+						// 				} else {
+						// 					if ([10, 11, 12, 1, 2, 3].includes(currentMonth)) {
+						// 						reregDoCell2InnerHTML = "DO2: "
+						// 							+ "<img src='images/loading7.gif' style='width: 20px; height: 20px;'>";
+						// 					} else {
+						// 						reregDoCell2InnerHTML = "DO2: "
+						// 							+ "<span class='missing'>-M-</span>";
+						// 					}
+						// 				}
+						// 				reregDoCell2.innerHTML = reregDoCell2InnerHTML;
+						// 			})
+						// 			.catch(error => {
+						// 				// Catch and log any errors that occur during fetching or processing
+						// 				console.error("Error fetching or processing data:", error);
+						// 			});
+						// 	}
+						// })();
+
+						// // ======= GENERATION =======
+						// if ("gen" === "gen") {
+						// 	// Create a new table cell for lake name
+						// 	const genCell = row3.insertCell(5);
+						// 	genCell.colSpan = 1;
+						// 	genCell.classList.add('Font_15');
+						// 	genCell.style.width = '10%';
+						// 	genCell.style.backgroundColor = '#404040';
+						// 	genCell.style.color = 'lightgray';
+
+						// 	// Initialize doCellInnerHTML as an empty string
+						// 	let genCellInnerHTML = '';
+
+						// 	genCell.innerHTML = genCellInnerHTML;
+
+						// 	// // Make an AJAX request to the PHP script, passing all the variables
+						// 	// var urlGen = `https://coe-mvsuwa04mvs.mvs.usace.army.mil/php_data_api/public/get_generation2.php`;
+						// 	// // console.log("urlGen: " , urlGen);
+
+						// 	// fetch(urlGen)
+						// 	// 	.then(response => response.json())
+						// 	// 	.then(gen => {
+						// 	// 		// Log the stage to the console
+						// 	// 		// console.log("gen: ", gen);
+
+						// 	// 		// Extract lower and upper flow limits
+						// 	// 		const genValueRereg = parseFloat(gen[0].value_rereg);
+						// 	// 		const genDateTimeRereg = gen[0].date_time_rereg;
+						// 	// 		const genLocationIdRereg = gen[0].location_id_rereg;
+						// 	// 		// console.log("genValueRereg: ", genValueRereg);
+						// 	// 		// console.log("genValueRereg: ", typeof genValueRereg);
+						// 	// 		// console.log("genDateTimeRereg: ", genDateTimeRereg);
+						// 	// 		// console.log("genLocationIdRereg: ", genLocationIdRereg);
+
+
+						// 	// 		if (gen !== null && gen[0].value !== null) {
+						// 	// 			const gen_date_time = gen[0].date_time;
+						// 	// 			// console.log("gen_date_time = ", gen_date_time);
+						// 	// 			var dateParts = gen_date_time.split(" ");
+						// 	// 			var date = dateParts[0];
+						// 	// 			var time = dateParts[1];
+						// 	// 			var [month, day, year] = date.split("-");
+						// 	// 			var [hours, minutes] = time.split(":");
+						// 	// 			var gen_date_time_formatted = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00`);
+						// 	// 			// console.log("gen_date_time_formatted", gen_date_time_formatted);
+						// 	// 			// console.log("gen_date_time_formatted: ", typeof gen_date_time_formatted);
+
+						// 	// 			// Get the current date as a Date object
+						// 	// 			const currentDate = new Date();
+						// 	// 			// Subtract 2 hours (2 * 60 * 60 * 1000 milliseconds)
+						// 	// 			const currentDateStageMinusTwoHours = new Date(currentDate.getTime() - (2 * 60 * 60 * 1000));
+						// 	// 			// Subtract 2 hours (2 * 60 * 60 * 1000 milliseconds)
+						// 	// 			const currentDateStageMinusOneDay = new Date(currentDate.getTime() - (24 * 60 * 60 * 1000));
+
+						// 	// 			// console.log("currentDateStage:", currentDate);
+						// 	// 			// console.log("currentDateStageMinusTwoHours:", currentDateStageMinusTwoHours);
+						// 	// 			// console.log("currentDateStageMinusOneDay:", currentDateStageMinusOneDay);
+
+						// 	// 			// Calculate the time difference in hours
+						// 	// 			const timeDifferenceInMilliseconds = currentDate.getTime() - gen_date_time_formatted.getTime();
+						// 	// 			const timeDifferenceInHours = timeDifferenceInMilliseconds / (1000 * 60 * 60);
+
+						// 	// 			// console.log("Time Difference (in hours):", timeDifferenceInHours);
+						// 	// 			// console.log("Time Difference (in hours):", typeof timeDifferenceInHours);
+
+						// 	// 			// Gen Class
+						// 	// 			if (timeDifferenceInHours <= 2) {
+						// 	// 				// console.log("Generating Now");
+						// 	// 				var myGenClass = "Gen_Now";
+						// 	// 			} else if (timeDifferenceInHours > 24) {
+						// 	// 				// console.log("No Generating");
+						// 	// 				var myGenClass = "Gen_No";
+						// 	// 			} else {
+						// 	// 				// console.log("Generating Within 24Hours");
+						// 	// 				var myGenClass = "Gen";
+						// 	// 			}
+
+						// 	// 			if (timeDifferenceInHours < 2) {
+						// 	// 				genCellInnerHTML = "<span class='" + myGenClass + "' style='float: left; padding-left: 15px; align-items: center; display: flex;' title='" + parseFloat(gen[0].delta).toFixed(1) + " delta ft : " + gen[0].date_time + " Hours: " + timeDifferenceInHours.toFixed(0) + "'><img src='images/yes3.png' width='30' height='30'>&nbsp;Generating Now</span>";
+						// 	// 			} else if (timeDifferenceInHours > 24) {
+						// 	// 				genCellInnerHTML = "<span class='" + myGenClass + "' style='float: left; padding-left: 15px; align-items: center; display: flex;' title='" + parseFloat(gen[0].delta).toFixed(1) + " delta ft : " + gen[0].date_time + " Hours: " + timeDifferenceInHours.toFixed(0) + "'>" + "<a href='https://wm.mvs.ds.usace.army.mil/web_apps/plot_macro/public/plot_macro.php?basin=Mark%20Twain&cwms_ts_id=Mark%20Twain%20Lk%20TW-Salt.Stage.Inst.15Minutes.0.29&cwms_ts_id_2=ReReg%20Pool-Salt.Stage.Inst.15Minutes.0.29&start_day=4&end_day=0' target='_blank' style='color: #ccc;'>No Generating</a>" + "</span>";
+						// 	// 			} else {
+						// 	// 				genCellInnerHTML = "<span class='" + myGenClass + "' style='float: left; padding-left: 15px; align-items: center; display: flex;' title='" + parseFloat(gen[0].delta).toFixed(1) + " delta ft : " + gen[0].date_time + " Hours: " + timeDifferenceInHours.toFixed(0) + "'><img src='images/yes3.png' width='30' height='30'>&nbsp;Generated " + timeDifferenceInHours.toFixed(0) + " Hrs Ago" + "</span>";
+						// 	// 			}
+						// 	// 		} else {
+						// 	// 			// If not gen in the past 24 hours. Determine of you need to gen. If Rereg below 521.5ft
+						// 	// 			if (genValueRereg > 521.5) {
+						// 	// 				genCellInnerHTML = "<span style='float: left; padding-left: 15px; align-items: center; display: flex;' title='No Gen in past 24 hours'>";
+						// 	// 				genCellInnerHTML += "<a href='https://wm.mvs.ds.usace.army.mil/web_apps/plot_macro/public/plot_macro.php?basin=Mark%20Twain&cwms_ts_id=Mark%20Twain%20Lk%20TW-Salt.Stage.Inst.15Minutes.0.29&cwms_ts_id_2=ReReg%20Pool-Salt.Stage.Inst.15Minutes.0.29&start_day=4&end_day=0' target='_blank' style='color: #ccc;'>No Generating</a>";
+						// 	// 				genCellInnerHTML += "</span>";
+						// 	// 			} else {
+						// 	// 				genCellInnerHTML = "<span style='float: left; padding-left: 15px; align-items: center; display: flex;' title='Rereg below 521.5ft'> <img src='images/call.png' width='25' height='25'>&nbsp;Call Rereg</span>";
+						// 	// 			}
+						// 	// 		}
+
+						// 	// 		// Set the combined value to the cell, preserving HTML
+						// 	// 		// console.log("genCellInnerHTML = ", genCellInnerHTML);
+
+						// 	// 		// Set the HTML inside the cell once the fetch is complete
+						// 	// 		genCell.innerHTML = genCellInnerHTML;
+						// 	// 	})
+						// 	// 	.catch(error => {
+						// 	// 		console.error('Error:', error);
+						// 	// 	});
+						// })();
+					}
+				})();
 
 				// ====================================================================================
 				// ======= ROW 4 ======= (NOTE)
