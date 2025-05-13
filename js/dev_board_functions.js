@@ -1282,7 +1282,8 @@ function fetchAndUpdateStageMidnightTd(stageTd, DeltaTd, tsidStage, flood_level,
             fetch(urlStage, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json;version=2'
+                    "Accept": "application/json;version=2", // Ensuring the correct version is used
+                    "cache-control": "no-cache"
                 }
             })
                 .then(response => {
@@ -1333,6 +1334,101 @@ function fetchAndUpdateStageMidnightTd(stageTd, DeltaTd, tsidStage, flood_level,
                     }
 
                     // console.log("delta_24:", delta_24);
+
+                    // Make sure delta_24 is a valid number before calling parseFloat
+                    if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
+                        delta_24 = parseFloat(delta_24).toFixed(2);
+                    } else {
+                        delta_24 = "--";
+                    }
+
+                    let innerHTMLStage;
+                    if (valueLast === null) {
+                        innerHTMLStage = "<span class='missing'>-M-</span>";
+                    } else {
+                        const floodClass = determineStageClass(valueLast, flood_level);
+                        innerHTMLStage = `<span class='${floodClass}' title='${timestampLast}'>${valueLast}</span>`;
+                    }
+
+                    stageTd.innerHTML = innerHTMLStage;
+                    DeltaTd.innerHTML = delta_24;
+
+                    resolve({ stageTd: valueLast, deltaTd: delta_24 });
+
+                })
+                .catch(error => {
+                    console.error("Error fetching or processing data:", error);
+                    reject(error);
+                });
+        } else {
+            resolve({ stageTd: null, deltaTd: null });
+        }
+    });
+}
+
+function fetchAndUpdateStageTd(stageTd, DeltaTd, tsidStage, flood_level, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl) {
+    return new Promise((resolve, reject) => {
+        if (tsidStage !== null) {
+            const urlStage = `${setBaseUrl}timeseries?name=${tsidStage}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+            // console.log("urlStage = ", urlStage);
+            fetch(urlStage, {
+                method: 'GET',
+                headers: {
+                    "Accept": "application/json;version=2", // Ensuring the correct version is used
+                    "cache-control": "no-cache"
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(stage => {
+                    stage.values.forEach(entry => {
+                        entry[0] = formatNWSDate(entry[0]);
+                    });
+                    // console.log("stage:", stage);
+
+                    const c_count = calculateCCount(tsidStage);
+
+                    const lastNonNullValue = getLastNonNullValue(stage);
+                    // console.log("lastNonNullValue:", lastNonNullValue);
+
+                    let valueLast = null;
+                    let timestampLast = null;
+
+                    if (lastNonNullValue !== null) {
+                        timestampLast = lastNonNullValue.timestamp;
+                        valueLast = parseFloat(lastNonNullValue.value).toFixed(2);
+                    }
+                    // console.log("valueLast:", valueLast);
+                    // console.log("timestampLast:", timestampLast);
+
+                    let value24HoursLast = null;
+                    let timestamp24HoursLast = null;
+
+                    const lastNonNull24HoursValue = getLastNonNull24HoursValue(stage, c_count);
+                    // console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
+
+                    if (lastNonNull24HoursValue !== null) {
+                        timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+                        value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(2);
+                    }
+                    // console.log("value24HoursLast:", value24HoursLast);
+                    // console.log("timestamp24HoursLast:", timestamp24HoursLast);
+
+                    let delta_24 = null;
+
+                    // Check if the values are numbers and not null/undefined
+                    if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
+                        delta_24 = (valueLast - value24HoursLast).toFixed(2);
+                    } else {
+                        delta_24 = "--";  // or set to "-1" or something else if you prefer
+                    }
+
+                    console.log("delta_24:", delta_24);
 
                     // Make sure delta_24 is a valid number before calling parseFloat
                     if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
@@ -1439,7 +1535,8 @@ function fetchAndUpdateStorageTd(consrTd, floodTd, tsidStorage, currentDateTimeI
             fetch(urlStorage, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json;version=2'
+                    "Accept": "application/json;version=2", // Ensuring the correct version is used
+                    "cache-control": "no-cache"
                 }
             })
                 .then(response => {
@@ -1528,7 +1625,8 @@ function fetchAndUpdatePrecipTd(precipTd, tsid, currentDateTimeIso, currentDateT
         fetch(urlPrecip, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json;version=2'
+                "Accept": "application/json;version=2", // Ensuring the correct version is used
+                "cache-control": "no-cache"
             }
         })
             .then(response => {
@@ -1641,7 +1739,8 @@ function fetchAndUpdateYesterdayInflowTd(precipCell, tsid, currentDateTimeMinus2
         fetch(urlPrecip, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json;version=2'
+                "Accept": "application/json;version=2", // Ensuring the correct version is used
+                "cache-control": "no-cache"
             }
         })
             .then(response => {
@@ -1723,7 +1822,8 @@ function fetchAndUpdateControlledOutflowTd(tsid, isoDateTodayStr, isoDatePlus1St
             fetch(urlForecast, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json;version=2'
+                    "Accept": "application/json;version=2", // Ensuring the correct version is used
+                    "cache-control": "no-cache"
                 }
             })
                 .then(response => {
@@ -1758,7 +1858,8 @@ function fetchAndUpdateForecastTd(tsid, isoDateTodayStr, isoDatePlus1Str, isoDat
             fetch(urlForecast, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json;version=2'
+                    "Accept": "application/json;version=2", // Ensuring the correct version is used
+                    "cache-control": "no-cache"
                 }
             })
                 .then(response => {
@@ -1819,7 +1920,8 @@ function fetchAndUpdateCrestPoolForecastTd(stageTd, DeltaTd, tsidStage, currentD
             fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Accept': 'application/json;version=2'
+                    "Accept": "application/json;version=2", // Ensuring the correct version is used
+                    "cache-control": "no-cache"
                 }
             })
                 .then(response => {

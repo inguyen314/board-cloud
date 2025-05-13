@@ -953,7 +953,7 @@ if (display_type === "Lake") {
 		// Use th instead of td for the header cell
 		var headerCell = document.createElement('th');
 		headerCell.colSpan = 8;
-		headerCell.innerHTML = "<div class='Last_Modified'>Last Modified:&nbsp;&nbsp" + currentDateTime + " <a href='https://wm.mvs.ds.usace.army.mil/web_apps/board/public/board.php?display_type=Lake&display_tributary=False'>Switch to PHP Board</a></div>";
+		headerCell.innerHTML = "<div class='Last_Modified'>Last Modified:&nbsp;&nbsp" + currentDateTime + " <a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=Lake&display_tributary=False&dev=True&json=false'>Switch Board with Cloud Lake Sheet</a></div>";
 		row2.appendChild(headerCell);
 
 		// Row 3

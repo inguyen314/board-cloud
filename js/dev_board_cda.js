@@ -771,7 +771,7 @@ if (display_type === "Lake") {
 		var headerCell = document.createElement('th');
 		headerCell.colSpan = 8;
 		headerCell.classList.add('Font_10');
-		headerCell.innerHTML = "<div id='board_title'>MVS LAKE DATA</div>";
+		headerCell.innerHTML = "<div id='board_title'>MVS LAKE DATA (WITH CLOUD LAKE SHEET)</div>";
 		row1.appendChild(headerCell);
 
 		// Row 2
@@ -780,7 +780,7 @@ if (display_type === "Lake") {
 		// Use th instead of td for the header cell
 		var headerCell = document.createElement('th');
 		headerCell.colSpan = 8;
-		headerCell.innerHTML = "<div class='Last_Modified'>Last Modified:&nbsp;&nbsp" + currentDateTime + " <a href='https://wm.mvs.ds.usace.army.mil/web_apps/board/public/board.php?display_type=Lake&display_tributary=False'>Switch to PHP Board</a></div>";
+		headerCell.innerHTML = "<div class='Last_Modified'>Last Modified:&nbsp;&nbsp" + currentDateTime + " <a href='https://wm.mvs.ds.usace.army.mil/mvs/board/index.html?display_type=Lake&display_tributary=False&dev=True'>Switch to Original Board</a></div>";
 		row2.appendChild(headerCell);
 
 		// Row 3
@@ -1006,7 +1006,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						row.appendChild(lakeTd);
 					})();
 
-					// 02-Midnight Level and 03-Delta Level
+					// 02-Current Level and 03-Delta Level
 					(() => {
 						const stageTd = document.createElement('td');
 						const deltaTd = document.createElement('td');
@@ -1021,7 +1021,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const stageTsid = location?.['tsid-stage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
 						if (stageTsid) {
-							fetchAndUpdateStageMidnightTd(stageTd, deltaTd, stageTsid, floodValue, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl);
+							fetchAndUpdateStageTd(stageTd, deltaTd, stageTsid, floodValue, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl);
 						}
 
 						row.appendChild(stageTd);
@@ -1153,6 +1153,8 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									eveningControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
 									if (location['metadata'][`public-name`] === "Rend Pool") {
 										// TODO: what is the midnight outflow for Rend?
+										midnightControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
+									} else {
 										midnightControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
 									}
 								})
@@ -1640,7 +1642,6 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							const blankCell3 = row3.insertCell(0);
 							blankCell3.colSpan = 1;
 							blankCell3.classList.add('Font_15');
-							blankCell3.style.color = 'white';
 
 							// Initialize lakeCellInnerHTML as an empty string for the second row
 							let blankCell3InnerHTML = '';
