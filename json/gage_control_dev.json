@@ -6725,6 +6725,20 @@
                             "timeseries-id": "Shelbyville TW-Kaskaskia.Conc-DO.Inst.15Minutes.0.lrgsShef-raw"
                         }
                     ]
+                },
+                "tsid-note-lake": {
+                    "office-id": "MVS",
+                    "id": "Note-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Lk Shelbyville-Kaskaskia"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Lk Shelbyville-Kaskaskia.Stage.Inst.~1Day.0.lakerep-rev-crest-note"
+                        }
+                    ]
                 }
             },
             {
@@ -7150,6 +7164,21 @@
                         {
                             "office-id": "MVS",
                             "timeseries-id": "Carlyle Lk TW-Kaskaskia.Conc-DO.Inst.15Minutes.0.lrgsShef-raw"
+                        }
+                    ]
+                },
+                "tsid-note-lake": {
+                    "office-id": "MVS",
+                    "id": "Note-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Carlyle Lk-Kaskaskia"
+                    },
+                    "description": "Webrep and Lake Sheet",
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Carlyle Lk-Kaskaskia.Stage.Inst.~1Day.0.lakerep-rev-crest-note"
                         }
                     ]
                 }
@@ -7716,6 +7745,20 @@
                             "office-id": "MVS",
                             "timeseries-id": "Rend Lk-Big Muddy.Flow.Inst.30Minutes.0.RatingCOE",
                             "attribute": 1
+                        }
+                    ]
+                },
+                "tsid-note-lake": {
+                    "office-id": "MVS",
+                    "id": "Note-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Rend Lk-Big Muddy"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Rend Lk-Big Muddy.Stage.Inst.~1Day.0.lakerep-rev-crest-note"
                         }
                     ]
                 }
@@ -8368,6 +8411,20 @@
                             "attribute": 1
                         }
                     ]
+                },
+                "tsid-note-lake": {
+                    "office-id": "MVS",
+                    "id": "Note-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Wappapello Lk-St Francis"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Wappapello Lk-St Francis.Stage.Inst.~1Day.0.lakerep-rev-crest-note"
+                        }
+                    ]
                 }
             },
             {
@@ -8871,6 +8928,20 @@
                         {
                             "office-id": "MVS",
                             "timeseries-id": "Mark Twain Lk-Salt.Flow-Turb.Ave.~1Day.1Day.lakerep-rev-test"
+                        }
+                    ]
+                },
+                "tsid-note-lake": {
+                    "office-id": "MVS",
+                    "id": "Note-Lake",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Mark Twain Lk-Salt"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Mark Twain Lk-Salt.Stage.Inst.~1Day.0.lakerep-rev-crest-note"
                         }
                     ]
                 }

@@ -2165,28 +2165,28 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 				// ======= ROW 5 ======= (BLANK WHITE BLOCK)
 				// ====================================================================================
 
-				// (() => {
-				// 	// Create and add the second new row
-				// 	const row5 = table.insertRow();
+				(() => {
+					// Create and add the second new row
+					const row5 = table.insertRow();
 
-				// 	// ======= BLANK =======
-				// 	if ("blank" === "blank") {
-				// 		// Create a new table cell for lake name in the second row
-				// 		const blankCell5 = row5.insertCell(0);
-				// 		blankCell5.colSpan = 8;
-				// 		blankCell5.classList.add('Font_15');
-				// 		blankCell5.style.color = 'white';
-				// 		blankCell5.style.height = '20px'; // Add this line to set the height
+					// ======= BLANK =======
+					if ("blank" === "blank") {
+						// Create a new table cell for lake name in the second row
+						const blankCell5 = row5.insertCell(0);
+						blankCell5.colSpan = 8;
+						blankCell5.classList.add('Font_15');
+						blankCell5.style.color = 'white';
+						blankCell5.style.height = '20px'; // Add this line to set the height
 
-				// 		// Initialize lakeCellInnerHTML as an empty string for the second row
-				// 		let blankCell5InnerHTML = '--';
+						// Initialize lakeCellInnerHTML as an empty string for the second row
+						let blankCell5InnerHTML = '--';
 
-				// 		// Update the inner HTML of the cell with data for the second row, preserving HTML
-				// 		blankCell5InnerHTML = ""; // Replace with the actual data for the second lake
-				// 		// console.log('blankCell5InnerHTML =', blankCell5InnerHTML);
-				// 		blankCell5.innerHTML = blankCell5InnerHTML;
-				// 	}
-				// })();
+						// Update the inner HTML of the cell with data for the second row, preserving HTML
+						blankCell5InnerHTML = "..."; // Replace with the actual data for the second lake
+						// console.log('blankCell5InnerHTML =', blankCell5InnerHTML);
+						blankCell5.innerHTML = blankCell5InnerHTML;
+					}
+				})();
 			} else {
 				// Handle other display types if needed
 			}
