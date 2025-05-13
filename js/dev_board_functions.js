@@ -459,20 +459,20 @@ function submitAllForms() {
 // ============== CDA =====================
 //=========================================
 // Function to merge basinData with additional data
-function mergeDataCda(basinData, 
-    combinedFirstData, 
-    combinedSecondData, 
-    combinedThirdData, 
-    combinedForthData, 
-    combinedFifthData, 
-    combinedSixthData, 
-    combinedSeventhData, 
-    combinedEighthData, 
-    combinedNinethData, 
-    combinedTenthData, 
-    combinedEleventhData, 
-    combinedTwelfthData, 
-    combinedThirteenthData, 
+function mergeDataCda(basinData,
+    combinedFirstData,
+    combinedSecondData,
+    combinedThirdData,
+    combinedForthData,
+    combinedFifthData,
+    combinedSixthData,
+    combinedSeventhData,
+    combinedEighthData,
+    combinedNinethData,
+    combinedTenthData,
+    combinedEleventhData,
+    combinedTwelfthData,
+    combinedThirteenthData,
     combinedFourthteenthData) {
     // Clear allData before merging data
     allData = [];
@@ -1267,4 +1267,597 @@ function determineStageDateTimeClass(stage29_date_time_cst_formatted, currentDat
     }
     // console.log("myStage29DateTimeClass = ", myStage29DateTimeClass);
     return myStage29DateTimeClass;
+}
+
+function minusDaysToDate(date, days) {
+    return new Date(date.getTime() - (days * 24 * 60 * 60 * 1000));
+}
+
+function fetchAndUpdateStageMidnightTd(stageTd, DeltaTd, tsidStage, flood_level, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl) {
+    return new Promise((resolve, reject) => {
+        if (tsidStage !== null) {
+            const urlStage = `${setBaseUrl}timeseries?name=${tsidStage}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+            // console.log("urlStage = ", urlStage);
+            fetch(urlStage, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json;version=2'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(stage => {
+                    stage.values.forEach(entry => {
+                        entry[0] = formatNWSDate(entry[0]);
+                    });
+                    // console.log("stage:", stage);
+
+                    const c_count = calculateCCount(tsidStage);
+
+                    const lastNonNullValue = getLastNonNullMidnightValue(stage, stage.name, c_count);
+                    // console.log("lastNonNullValue:", lastNonNullValue);
+
+                    let valueLast = null;
+                    let timestampLast = null;
+
+                    if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+                        timestampLast = lastNonNullValue.current6am.timestamp;
+                        valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
+                    }
+                    // console.log("valueLast:", valueLast);
+                    // console.log("timestampLast:", timestampLast);
+
+                    let value24HoursLast = null;
+                    let timestamp24HoursLast = null;
+
+                    if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+                        timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
+                        value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(2);
+                    }
+
+                    // console.log("value24HoursLast:", value24HoursLast);
+                    // console.log("timestamp24HoursLast:", timestamp24HoursLast);
+
+                    let delta_24 = null;
+
+                    // Check if the values are numbers and not null/undefined
+                    if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
+                        delta_24 = (valueLast - value24HoursLast).toFixed(2);
+                    } else {
+                        delta_24 = "--";  // or set to "-1" or something else if you prefer
+                    }
+
+                    // console.log("delta_24:", delta_24);
+
+                    // Make sure delta_24 is a valid number before calling parseFloat
+                    if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
+                        delta_24 = parseFloat(delta_24).toFixed(2);
+                    } else {
+                        delta_24 = "--";
+                    }
+
+                    let innerHTMLStage;
+                    if (valueLast === null) {
+                        innerHTMLStage = "<span class='missing'>-M-</span>";
+                    } else {
+                        const floodClass = determineStageClass(valueLast, flood_level);
+                        innerHTMLStage = `<span class='${floodClass}' title='${timestampLast}'>${valueLast}</span>`;
+                    }
+
+                    stageTd.innerHTML = innerHTMLStage;
+                    DeltaTd.innerHTML = delta_24;
+
+                    resolve({ stageTd: valueLast, deltaTd: delta_24 });
+
+                })
+                .catch(error => {
+                    console.error("Error fetching or processing data:", error);
+                    reject(error);
+                });
+        } else {
+            resolve({ stageTd: null, deltaTd: null });
+        }
+    });
+}
+
+function getLastNonNullMidnightValue(data, tsid, c_count) {
+    if (!data || !Array.isArray(data.values)) {
+        return {
+            current6am: null,
+            valueCountRowsBefore: null
+        };
+    }
+
+    const parseTimestamp = (timestampStr) => {
+        if (typeof timestampStr !== 'string') {
+            // console.warn('Invalid timestampStr:', timestampStr);
+            return null;
+        }
+
+        // Assumes input format: "MM-DD-YYYY HH:mm"
+        const parts = timestampStr.split(' ');
+        if (parts.length !== 2) return null;
+
+        const [datePart, timePart] = parts;
+        const [month, day, year] = datePart.split('-');
+        if (!month || !day || !year || !timePart) return null;
+
+        const isoString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${timePart.padStart(5, '0')}:00Z`;
+        const date = new Date(isoString);
+        return isNaN(date.getTime()) ? null : date;
+    };
+
+    for (let i = data.values.length - 1; i >= 0; i--) {
+        const [timestampStr, value, qualityCode] = data.values[i];
+        const date = parseTimestamp(timestampStr);
+        if (!date) continue;
+
+        const adjustedHours = (date.getUTCHours() + 24) % 24;
+        const minutes = date.getUTCMinutes();
+
+        if (adjustedHours === 0 && minutes === 0 && value !== null) {
+            const result = {
+                current6am: {
+                    tsid,
+                    timestamp: timestampStr,
+                    value,
+                    qualityCode
+                },
+                valueCountRowsBefore: null
+            };
+
+            if (i - c_count >= 0) {
+                const [prevTs, prevVal, prevQual] = data.values[i - c_count];
+                result.valueCountRowsBefore = {
+                    tsid,
+                    timestamp: prevTs,
+                    value: prevVal,
+                    qualityCode: prevQual
+                };
+            }
+
+            return result;
+        }
+    }
+
+    return {
+        current6am: null,
+        valueCountRowsBefore: null
+    };
+}
+
+function fetchAndUpdateStorageTd(consrTd, floodTd, tsidStorage, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl, topOfConservationLevel, bottomOfConservationLevel, topOfFloodLevel, bottomOfFloodLevel) {
+    return new Promise((resolve, reject) => {
+        if (tsidStorage !== null) {
+            const urlStorage = `${setBaseUrl}timeseries?name=${tsidStorage}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+            fetch(urlStorage, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json;version=2'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(stage => {
+                    stage.values.forEach(entry => {
+                        entry[0] = formatNWSDate(entry[0]);
+                    });
+
+                    let dstOffsetHours = getDSTOffsetInHours();
+
+                    const c_count = calculateCCount(tsidStorage);
+
+                    const lastNonNullValue = getLastNonNullMidnightValue(stage, stage.name, c_count);
+
+                    let valueLast = null;
+                    let timestampLast = null;
+
+                    if (lastNonNullValue !== null) {
+                        timestampLast = lastNonNullValue.current6am.timestamp;
+                        valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
+                    }
+
+                    if (valueLast > 0.0 && topOfConservationLevel > 0.0 && bottomOfConservationLevel >= 0.0) {
+                        if (valueLast < bottomOfConservationLevel) {
+                            conservationStorageValue = "0.00%";
+                        } else if (valueLast > topOfConservationLevel) {
+                            conservationStorageValue = "100.00%";
+                        } else {
+                            const total = (valueLast - bottomOfConservationLevel) / (topOfConservationLevel - bottomOfConservationLevel) * 100;
+                            conservationStorageValue = total.toFixed(2) + "%";
+                        }
+                    } else {
+                        conservationStorageValue = "%";
+                    }
+
+                    if (valueLast > 0.0 && topOfFloodLevel > 0.0 && bottomOfFloodLevel >= 0.0) {
+                        if (valueLast < bottomOfFloodLevel) {
+                            floodStorageValue = "0.00%";
+                        } else if (valueLast > topOfFloodLevel) {
+                            floodStorageValue = "100.00%";
+                        } else {
+                            const total = ((valueLast) - (bottomOfFloodLevel)) / ((topOfFloodLevel) - (bottomOfFloodLevel)) * 100;
+                            floodStorageValue = total.toFixed(2) + "%";
+                        }
+                    } else {
+                        floodStorageValue = "%";
+                    }
+
+                    consrTd.innerHTML = conservationStorageValue !== null ? conservationStorageValue : "-";
+                    floodTd.innerHTML = floodStorageValue !== null ? floodStorageValue : "-";
+
+                    resolve({ consrTd: conservationStorageValue, floodTd: floodStorageValue });
+                })
+                .catch(error => {
+                    console.error("Error fetching or processing data:", error);
+                    reject(error);
+                });
+        } else {
+            resolve({ consrTd: null, floodTd: null });
+        }
+    });
+}
+
+function getDSTOffsetInHours() {
+    // Get the current date
+    const now = new Date();
+
+    // Get the current time zone offset in minutes (with DST, if applicable)
+    const currentOffset = now.getTimezoneOffset();
+
+    // Convert the offset from minutes to hours
+    const dstOffsetHours = currentOffset / 60;
+
+    return dstOffsetHours; // Returns the offset in hours (e.g., -5 or -6)
+}
+
+function fetchAndUpdatePrecipTd(precipTd, tsid, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl) {
+    if (tsid !== null) {
+        const urlPrecip = `${setBaseUrl}timeseries?name=${tsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+        fetch(urlPrecip, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json;version=2'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(precip => {
+                precip.values.forEach(entry => {
+                    entry[0] = formatNWSDate(entry[0]);
+                });
+
+                const lastNonNullPrecipValue = getLastNonNullValue(precip);
+
+                if (lastNonNullPrecipValue !== null) {
+                    var timestampPrecipLast = lastNonNullPrecipValue.timestamp;
+                    var valuePrecipLast = parseFloat(lastNonNullPrecipValue.value).toFixed(2);
+                    var qualityCodePrecipLast = lastNonNullPrecipValue.qualityCode;
+                }
+
+                const c_count = calculateCCount(tsid);
+
+                const lastNonNull6HoursPrecipValue = getLastNonNull6HoursValue(precip, c_count);
+                if (lastNonNull6HoursPrecipValue !== null) {
+                    var timestampPrecip6HoursLast = lastNonNull6HoursPrecipValue.timestamp;
+                    var valuePrecip6HoursLast = parseFloat(lastNonNull6HoursPrecipValue.value).toFixed(2);
+                    var qualityCodePrecip6HoursLast = lastNonNull6HoursPrecipValue.qualityCode;
+                }
+
+                const lastNonNull24HoursPrecipValue = getLastNonNull24HoursValue(precip, c_count);
+                if (lastNonNull24HoursPrecipValue !== null) {
+                    var timestampPrecip24HoursLast = lastNonNull24HoursPrecipValue.timestamp;
+                    var valuePrecip24HoursLast = parseFloat(lastNonNull24HoursPrecipValue.value).toFixed(2);
+                    var qualityCodePrecip24HoursLast = lastNonNull24HoursPrecipValue.qualityCode;
+                }
+
+                const precip_delta_6 = (valuePrecipLast - valuePrecip6HoursLast).toFixed(2);
+                const precip_delta_24 = (valuePrecipLast - valuePrecip24HoursLast).toFixed(2);
+
+                const formattedLastValueTimeStamp = formatTimestampToStringIOS(timestampPrecipLast);
+                const timeStampDateObject = new Date(timestampPrecipLast);
+                const timeStampDateObjectMinus24Hours = new Date(timestampPrecipLast - (24 * 60 * 60 * 1000));
+
+                let innerHTMLPrecip;
+                if (lastNonNullPrecipValue === null) {
+                    innerHTMLPrecip = "<table id='precip'>"
+                        + "<tr>"
+                        + "<td class='precip_missing' title='24 hr delta'>"
+                        + "-M-"
+                        + "</td>"
+                        + "</tr>"
+                        + "</table>";
+                } else {
+                    innerHTMLPrecip = "</table>"
+                        + "<span class='last_max_value'>"
+                        + valuePrecipLast
+                        + "</span>";
+                }
+                return precipTd.innerHTML += innerHTMLPrecip;
+            })
+            .catch(error => {
+                console.error("Error fetching or processing data:", error);
+            });
+    } else {
+        return precipTd.innerHTML = "";
+    }
+}
+
+function getLastNonNull6HoursValue(data, c_count) {
+    let nonNullCount = 0;
+    for (let i = data.values.length - 1; i >= 0; i--) {
+        if (data.values[i][1] !== null) {
+            nonNullCount++;
+            if (nonNullCount > (c_count / 4)) {
+                return {
+                    timestamp: data.values[i][0],
+                    value: data.values[i][1],
+                    qualityCode: data.values[i][2]
+                };
+            }
+        }
+    }
+    return null;
+}
+
+function formatTimestampToStringIOS(timestamp) {
+    if (!timestamp) return "Invalid date";
+
+    // Split the timestamp into date and time parts
+    const [datePart, timePart] = timestamp.split(" ");
+    const [day, month, year] = datePart.split("-").map(Number);
+    const [hours, minutes] = timePart.split(":").map(Number);
+
+    // Create a new Date object (Month is 0-based in JS)
+    const dateObj = new Date(Date.UTC(year, month - 1, day, hours, minutes));
+
+    if (isNaN(dateObj.getTime())) return "Invalid date";
+
+    // Format as "YYYY-MM-DD HH:mm"
+    return dateObj.toISOString().replace("T", " ").slice(0, 16);
+}
+
+function fetchAndUpdateYesterdayInflowTd(precipCell, tsid, currentDateTimeMinus2Hours, currentDateTime, currentDateTimeMinus30Hours, setBaseUrl) {
+    if (tsid !== null) {
+        // Fetch the time series data from the API using the determined query string
+        const urlPrecip = `${setBaseUrl}timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=${office}`;
+        // console.log("urlPrecip = ", urlPrecip);
+
+        fetch(urlPrecip, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json;version=2'
+            }
+        })
+            .then(response => {
+                // Check if the response is ok
+                if (!response.ok) {
+                    // If not, throw an error
+                    throw new Error('Network response was not ok');
+                }
+                // If response is ok, parse it as JSON
+                return response.json();
+            })
+            .then(precip => {
+                // Once data is fetched, log the fetched data structure
+                // console.log("precip: ", precip);
+
+                // Convert timestamps in the JSON object
+                precip.values.forEach(entry => {
+                    entry[0] = formatNWSDate(entry[0]); // Update timestamp
+                });
+
+                // Output the updated JSON object
+                // // console.log(JSON.stringify(precip, null, 2));
+
+                // console.log("precipFormatted = ", precip);
+
+                // Get the last non-null value from the stage data
+                const lastNonNullPrecipValue = getLastNonNullValue(precip);
+                // console.log("lastNonNullPrecipValue:", lastNonNullPrecipValue);
+
+                // Check if a non-null value was found
+                if (lastNonNullPrecipValue !== null) {
+                    // Extract timestamp, value, and quality code from the last non-null value
+                    var timestampPrecipLast = lastNonNullPrecipValue.timestamp;
+                    var valuePrecipLast = parseFloat(lastNonNullPrecipValue.value).toFixed(0);
+                    var qualityCodePrecipLast = lastNonNullPrecipValue.qualityCode;
+
+                    // Log the extracted valueLasts
+                    // console.log("timestampPrecipLast:", timestampPrecipLast);
+                    // console.log("valuePrecipLast:", valuePrecipLast);
+                    // console.log("qualityCodePrecipLast:", qualityCodePrecipLast);
+                } else {
+                    // If no non-null valueLast is found, log a message
+                    // console.log("No non-null valueLast found.");
+                }
+
+                if (lastNonNullPrecipValue === null) {
+                    innerHTMLPrecip = "<table id='precip'>"
+                        + "<tr>"
+                        + "<td class='precip_missing' title='24 hr delta'>"
+                        + "-M-"
+                        + "</td>"
+                        + "</tr>"
+                        + "</table>";
+                } else {
+                    innerHTMLPrecip = "</table>"
+                        // + "<span class='last_max_value' title='" + precip.name + ", Value = " + valuePrecipLast + ", Date Time = " + timestampPrecipLast + "'>"
+                        + "<span class='last_max_value'>"
+                        // + "<a href='../chart?office=" + office + "&cwms_ts_id=" + precip.name + "&lookback=4' target='_blank'>"
+                        + valuePrecipLast
+                        // + "</a>"
+                        + "</span>";
+                }
+                return precipCell.innerHTML += innerHTMLPrecip;
+            })
+            .catch(error => {
+                // Catch and log any errors that occur during fetching or processing
+                console.error("Error fetching or processing data:", error);
+            });
+    } else {
+        return precipCell.innerHTML = "";
+    }
+}
+
+function fetchAndUpdateControlledOutflowTd(tsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl) {
+    return new Promise((resolve, reject) => {
+        if (tsid !== null) {
+            const urlForecast = `${setBaseUrl}timeseries?name=${tsid}&begin=${isoDateTodayStr}&end=${isoDatePlus1Str}&office=${office}`;
+
+            fetch(urlForecast, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json;version=2'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data?.values?.length) {
+                        data.values.forEach(entry => {
+                            entry[0] = formatNWSDate(entry[0]);
+                        });
+                    }
+                    resolve(data);
+                })
+                .catch(error => {
+                    console.error("Error fetching or processing data:", error);
+                    reject(error);
+                });
+        } else {
+            resolve(null);
+        }
+    });
+}
+
+function fetchAndUpdateForecastTd(tsid, isoDateTodayStr, isoDatePlus1Str, isoDateTodayPlus6HoursStr, setBaseUrl) {
+    return new Promise((resolve, reject) => {
+        if (tsid !== null) {
+            const urlForecast = `${setBaseUrl}timeseries?name=${tsid}&begin=${isoDateTodayStr}&end=${isoDatePlus1Str}&office=${office}&version-date=${isoDateTodayPlus6HoursStr}`;
+
+            fetch(urlForecast, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json;version=2'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data?.values?.length) {
+                        data.values.forEach(entry => {
+                            entry[0] = formatNWSDate(entry[0]);
+                        });
+                    }
+                    resolve(data);
+                })
+                .catch(error => {
+                    console.error("Error fetching or processing data:", error);
+                    reject(error);
+                });
+        } else {
+            resolve(null);
+        }
+    });
+}
+
+function fetchAndUpdateCrestPoolForecastTd(stageTd, DeltaTd, tsidStage, currentDateTime, currentDateTimePlus7Days, setBaseUrl) {
+    function getTodayAtSixCentral() {
+        const today = new Date();
+        const utcOffset = today.getTimezoneOffset(); // Get the difference in minutes from UTC
+        const centralOffset = -6 * 60; // Central Time is UTC-6 (during daylight saving time, it will be UTC-5)
+
+        // Adjust if Daylight Saving Time is in effect (UTC-5)
+        const isDST = (utcOffset === 300); // 300 minutes = UTC-5
+        const offset = isDST ? -5 : -6;
+
+        // Create a new Date object with the time adjusted for Central Time
+        const centralTime = new Date(today);
+        centralTime.setHours(6, 0, 0, 0); // Set the time to 06:00:00.000
+        centralTime.setMinutes(centralTime.getMinutes() - (utcOffset + (offset * 60))); // Adjust to Central Time
+
+        // Format the date in the required format
+        const year = centralTime.getUTCFullYear();
+        const month = String(centralTime.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(centralTime.getUTCDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}T06:00:00.000Z`;
+    }
+
+    const dateAtSixCentral = getTodayAtSixCentral();
+    // console.log(dateAtSixCentral);
+
+    return new Promise((resolve, reject) => {
+        if (tsidStage !== null) {
+            const url = `${setBaseUrl}timeseries?name=${tsidStage}&begin=${currentDateTime.toISOString()}&end=${currentDateTimePlus7Days.toISOString()}&office=${office}&version-date=${dateAtSixCentral}`;
+
+            // console.log("url = ", url);
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json;version=2'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // console.log("data:", data);
+
+                    let valueLast = '';
+                    let valueLastDate = '';
+
+                    if (
+                        data &&
+                        Array.isArray(data.values) &&
+                        data.values.length > 0 &&
+                        Array.isArray(data.values[0])
+                    ) {
+                        const rawStage = data.values[0][1];
+                        const rawDate = data.values[0][0];
+
+                        valueLast = isFinite(rawStage) ? Number(rawStage).toFixed(2) : '';
+                        valueLastDate = rawDate ? formatNWSDate(rawDate).split(' ')[0] : '';
+                    }
+
+                    stageTd.innerHTML = valueLast;
+                    DeltaTd.innerHTML = valueLastDate;
+
+                    resolve({ stageTd: valueLast, deltaTd: valueLastDate });
+                })
+                .catch(error => {
+                    console.error("Error fetching or processing data:", error);
+                    reject(error);
+                });
+        } else {
+            resolve({ stageTd: null, deltaTd: null });
+        }
+    });
 }

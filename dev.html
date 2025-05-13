@@ -81,6 +81,7 @@
         // Set the document title based on the determined board title
         document.title = boardTitle;
 
+        let basin = null;
         // Define the basin variable based on the display type and tributary setting
         if (display_tributary === "False" && display_type !== "Lake") {
             basin = 'Mississippi'; // Default to Mississippi basin
@@ -106,15 +107,7 @@
     <!-- Include JavaScript files for board functionality -->
     <script type="text/javascript" src="js/dev_board_functions.js"></script>
     <script type="text/javascript" src="js/dev_board_setup.js"></script>
-
-    <script type="text/javascript">
-        // Conditionally load different JavaScript files based on the 'dev' parameter
-        if (dev !== null) {
-            document.write('<script type="text/javascript" src="js/dev_board_cda.js"><\/script>');
-        } else {
-            document.write('<script type="text/javascript" src="js/board_php.js"><\/script>');
-        }
-    </script>
+    <script type="text/javascript" src="js/dev_board_cda.js"></script>
 
     <!-- Container for the dynamically generated table -->
     <div id="tableContainer"></div>
