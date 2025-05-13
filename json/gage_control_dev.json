@@ -6697,7 +6697,7 @@
                     "attribute-units-id": "cfs",
                     "seasonal-values": []
                 },
-                "tsid-do": {
+                "tsid-do-lake": {
                     "office-id": "MVS",
                     "id": "Conc-DO-Lake",
                     "time-series-category": {
@@ -7110,7 +7110,7 @@
                     "attribute-units-id": "cfs",
                     "seasonal-values": []
                 },
-                "tsid-do": {
+                "tsid-do-lake": {
                     "office-id": "MVS",
                     "id": "Conc-DO-Lake",
                     "time-series-category": {

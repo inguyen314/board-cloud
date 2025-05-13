@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 						loc['eoc-phase-2'] = eocPhase1Map.get(loc['location-id']);
 						loc['lwrp'] = eocPhase1Map.get(loc['location-id']);
 						loc['bankfull'] = bankfullMap.get(loc['location-id']);
-						loc['tsid-do'] = doMap.get(loc['location-id']);
+						loc['tsid-do-lake'] = doMap.get(loc['location-id']);
 					});
 				});
 
@@ -955,6 +955,12 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const ConsrTd = document.createElement('td');
 						const FloodTd = document.createElement('td');
 
+						ConsrTd.classList.add('Font_20');
+						FloodTd.classList.add('Font_20');
+
+						ConsrTd.style.width = '7%';
+						FloodTd.style.width = '7%';
+
 						const topOfConservationLevel = location['top-of-conservation']?.['constant-value'] || null;
 						// console.log("topOfConservationLevel: ", topOfConservationLevel);
 
@@ -983,6 +989,9 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 					// 06-Precip
 					(() => {
 						const precipTd = document.createElement('td');
+						precipTd.style.width = "9%";
+						precipTd.classList.add('Font_20');
+
 						const precipLakeTsid = location?.['tsid-lake-precip']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
 						if (precipLakeTsid) {
@@ -997,6 +1006,9 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 					// 07-Yesterdays Inflow
 					(() => {
 						const yesterdayInflowTd = document.createElement('td');
+						yesterdayInflowTd.style.width = "9%";
+						yesterdayInflowTd.classList.add('Font_20');
+
 						const yesterdayInflowTsid = location?.['tsid-lake-inflow-yesterday']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
 						if (yesterdayInflowTsid) {
@@ -1012,6 +1024,12 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 					(() => {
 						let midnightControlledOutflowTd = document.createElement('td');
 						let eveningControlledOutflowTd = document.createElement('td');
+
+						midnightControlledOutflowTd.classList.add('Font_20');
+						eveningControlledOutflowTd.classList.add('Font_20');
+
+						midnightControlledOutflowTd.style.width = "8.5%";
+						eveningControlledOutflowTd.style.width = "8.5%";
 
 						midnightControlledOutflowTd.textContent = "";
 						eveningControlledOutflowTd.textContent = "";
@@ -1072,6 +1090,8 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 					// 10-Seasonal Rule Curve
 					(() => {
 						const seasonalRuleCurveTd = document.createElement('td');
+						seasonalRuleCurveTd.classList.add('Font_20');
+
 						// fetchAndLogSeasonalRuleCurveDataTd(location['location-id'], seasonalRuleCurveTd, setJsonFileBaseUrl);
 						const seasonalRuleCurveValue = location['seasonal-rule-curve'][`constant-value`];
 						if (seasonalRuleCurveValue) {
@@ -1207,7 +1227,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 					(() => {
 						// Create a new table cell for lake name
 						const blankblankCell = row2.insertCell(2);
-						blankblankCell.colSpan = 1;
+						blankblankCell.colSpan = 2;
 						blankblankCell.classList.add('Font_15');
 						blankblankCell.style.width = '10%';
 						blankblankCell.style.backgroundColor = '#404040';
@@ -1216,8 +1236,8 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						// Initialize twDoCellInnerHTML as an empty string
 						let blankblankCellInnerHTML = '--';
 
-						blankblankCellInnerHTML = "<span style='float: left; padding-left: 15px;'>" + "--" + "</span>";
-						blankblankCellInnerHTML += "<span style='float: left; padding-left: 15px; color: lightblue;'>" + "--" + "</span>";
+						blankblankCellInnerHTML = "<span style='float: left; padding-left: 15px;'>" + "" + "</span>";
+						blankblankCellInnerHTML += "<span style='float: left; padding-left: 15px; color: lightblue;'>" + "" + "</span>";
 
 						// Set the combined value to the cell, preserving HTML
 						// console.log("blankblankCellInnerHTML = ", blankblankCellInnerHTML);
@@ -1235,30 +1255,11 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						twDoCell.style.width = '10%';
 						twDoCell.style.backgroundColor = '#404040';
 						twDoCell.style.color = 'lightgray';
+						twDoCell.style.textAlign = 'center';
 
-						// Initialize twDoCellInnerHTML as an empty string
-						let twDoCellInnerHTML = '';
+						let twDoInnerHTML = 'TW DO:  ';
 
-						const doTsid = location?.['tsid-do']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-
-						function getTodayAtSixCentral() {
-							const today = new Date();
-							const utcOffset = today.getTimezoneOffset();
-							const isDST = (utcOffset === 300);
-							const offset = isDST ? -5 : -6;
-
-							const centralTime = new Date(today);
-							centralTime.setHours(6, 0, 0, 0);
-							centralTime.setMinutes(centralTime.getMinutes() - (utcOffset + (offset * 60)));
-
-							const year = centralTime.getUTCFullYear();
-							const month = String(centralTime.getUTCMonth() + 1).padStart(2, '0');
-							const day = String(centralTime.getUTCDate()).padStart(2, '0');
-
-							return `${year}-${month}-${day}T06:00:00.000Z`;
-						}
-
-						const dateAtSixCentral = getTodayAtSixCentral();
+						const doTsid = location?.['tsid-do-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
 						if (doTsid !== null) {
 							const url = `${setBaseUrl}timeseries?name=${doTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
@@ -1276,13 +1277,17 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									return response.json();
 								})
 								.then(data => {
+									data.values.forEach(entry => {
+										entry[0] = formatNWSDate(entry[0]);
+									});
+
 									// console.log("data: ", data);
 
 									const c_count = calculateCCount(doTsid);
 									// console.log("c_count: ", c_count);
 
 									const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
-									// console.log("lastNonNullValue:", lastNonNullValue);
+									console.log("lastNonNullValue:", lastNonNullValue);
 
 									let valueLast = null;
 									let timestampLast = null;
@@ -1324,9 +1329,9 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 
 									let innerHTML;
 									if (valueLast === null) {
-										innerHTML = "<span class='missing'>-M-</span>";
+										innerHTML = twDoInnerHTML + "<span class='missing'>-M-</span>";
 									} else {
-										innerHTML = `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${data.units}</span>`;
+										innerHTML = twDoInnerHTML + `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${data.units}</span>`;
 									}
 
 									twDoCell.innerHTML = innerHTML;
