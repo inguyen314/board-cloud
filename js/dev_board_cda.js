@@ -77,6 +77,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const setTimeseriesGroup14 = "Schedule";
 		const setTimeseriesGroup15 = "Conc-DO-Tw-Lake";
 		const setTimeseriesGroup16 = "Turbines-Lake-Test";
+		const setTimeseriesGroup17 = "Note-Lake";
 
 		const categoryApiUrl = `${setBaseUrl}location/group?office=${office}&group-office-id=${office}&category-office-id=${office}&category-id=${setLocationCategory}`;
 
@@ -111,6 +112,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const scheduleTsidMap = new Map();
 		const doTwLakeTsidMap = new Map();
 		const turbinesTsidMap = new Map();
+		const noteLakeTsidMap = new Map();
 
 		// Promises
 		const stageTsidPromises = [];
@@ -143,6 +145,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const schedulePromises = [];
 		const doTwLakePromises = [];
 		const turbinesPromises = [];
+		const noteLakePromises = [];
 
 		const apiPromises = [];
 
@@ -235,7 +238,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 				...reRegLakePromises,
 				...schedulePromises,
 				...doTwLakePromises,
-				...turbinesPromises
+				...turbinesPromises,
+				...noteLakePromises
 			]))
 			.then(() => {
 				// Merge fetched data into locations
@@ -271,6 +275,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 						loc['tsid-schedule-lake'] = scheduleTsidMap.get(loc['location-id']);
 						loc['tsid-do-tw-lake'] = doTwLakeTsidMap.get(loc['location-id']);
 						loc['tsid-turbines-lake'] = turbinesTsidMap.get(loc['location-id']);
+						loc['tsid-note-lake'] = noteLakeTsidMap.get(loc['location-id']);
 					});
 				});
 
@@ -642,6 +647,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 				fetch(tsidturbinesUrl)
 					.then(res => res.ok ? res.json() : null)
 					.then(data => data && turbinesTsidMap.set(locationId, data))
+					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
+			);
+
+			const tsidNoteUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup17}?office=${office}&category-id=${locationId}`;
+			noteLakePromises.push(
+				fetch(tsidNoteUrl)
+					.then(res => res.ok ? res.json() : null)
+					.then(data => data && noteLakeTsidMap.set(locationId, data))
 					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
 			);
 		}
@@ -2069,59 +2082,84 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 				// ======= ROW 4 ======= (NOTE)
 				// ====================================================================================
 
-				// (() => {
-				// 	// Create and add the second new row
-				// 	const row4 = table.insertRow();
+				(() => {
+					// Create and add the second new row
+					const row4 = table.insertRow();
 
-				// 	// ======= BLANK =======
-				// 	if ("blank" === "blank") {
-				// 		// Create a new table cell for lake name in the second row
-				// 		const blankCell4 = row4.insertCell(0);
-				// 		blankCell4.colSpan = 1;
-				// 		blankCell4.classList.add('Font_15');
-				// 		blankCell4.style.width = '15%';
+					// ======= BLANK =======
+					(() => {
+						// Create a new table cell for lake name in the second row
+						const blankCell4 = row4.insertCell(0);
+						blankCell4.colSpan = 1;
+						blankCell4.classList.add('Font_15');
+						blankCell4.style.width = '15%';
 
-				// 		// Initialize lakeCellInnerHTML as an empty string for the second row
-				// 		let blankCell4InnerHTML = '--';
+						// Initialize lakeCellInnerHTML as an empty string for the second row
+						let blankCell4InnerHTML = '--';
 
-				// 		// Update the inner HTML of the cell with data for the second row, preserving HTML
-				// 		blankCell4InnerHTML = " "; // Replace with the actual data for the second lake
-				// 		// console.log('blankCell4InnerHTML =', blankCell4InnerHTML);
-				// 		blankCell4.innerHTML = blankCell4InnerHTML;
-				// 	}
+						// Update the inner HTML of the cell with data for the second row, preserving HTML
+						blankCell4InnerHTML = "..."; // Replace with the actual data for the second lake
+						// console.log('blankCell4InnerHTML =', blankCell4InnerHTML);
+						blankCell4.innerHTML = blankCell4InnerHTML;
+					})();
 
-				// 	// ======= NOTE =======
-				// 	if ("note" === "note") {
-				// 		// Create a new table cell for lake name
-				// 		const noteCell = row4.insertCell(1);
-				// 		noteCell.colSpan = 7;
-				// 		noteCell.classList.add('Font_15');
-				// 		noteCell.style.width = '10%';
-				// 		noteCell.style.backgroundColor = 'lightyellow';
-				// 		noteCell.style.color = '#333333';
-				// 		noteCell.style.textAlign = 'left'; // Add this line to align content to the left
-				// 		noteCell.style.paddingLeft = '10px'; // Add this line to set left padding
+					// ======= NOTE =======
+					(() => {
+						// Create a new table cell for lake name
+						const noteCell = row4.insertCell(1);
+						noteCell.colSpan = 7;
+						noteCell.classList.add('Font_15');
+						noteCell.style.width = '10%';
+						noteCell.style.backgroundColor = 'lightyellow';
+						noteCell.style.color = '#333333';
+						noteCell.style.textAlign = 'left'; // Add this line to align content to the left
+						noteCell.style.paddingLeft = '10px'; // Add this line to set left padding
 
-				// 		// Initialize lakeCellInnerHTML as an empty string
-				// 		let noteCellInnerHTML = '';
+						let scheduleTextHTML = 'Note:  ';
 
-				// 		// try {
-				// 		// 	const ROutput = await fetchDataFromROutput();
-				// 		// 	// console.log('ROutput:', ROutput);
+						const noteTsid = location?.['tsid-note-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						// console.log("noteTsid: ", noteTsid);
 
-				// 		// 	const filteredData = filterDataByLocationId(ROutput, data.location_id);
-				// 		// 	// console.log("Filtered Data for", data.location_id + ":", filteredData);
+						if (noteTsid !== null) {
+							const url = `${setBaseUrl}timeseries/text?name=${noteTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
-				// 		// 	// // Update the HTML element with filtered data
-				// 		// 	updateNoteHTML(filteredData, noteCell);
+							fetch(url, {
+								method: 'GET',
+								headers: {
+									'Accept': 'application/json;version=2'
+								}
+							})
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(data => {
+									// console.log("data: ", data);
 
-				// 		// 	// Further processing of ROutput data as needed
-				// 		// } catch (error) {
-				// 		// 	// Handle errors from fetchDataFromROutput
-				// 		// 	console.error('Failed to fetch data:', error);
-				// 		// }
-				// 	}
-				// })();
+									const currentSchedule = data['regular-text-values'] && data['regular-text-values'].length > 0
+										? data['regular-text-values'][data['regular-text-values'].length - 1]['text-value']
+										: null;
+
+									let gagedOutflowInnerHTML;
+									if (currentSchedule === null) {
+										gagedOutflowInnerHTML = scheduleTextHTML + "<span class='missing'>-M-</span>";
+									} else {
+										gagedOutflowInnerHTML = scheduleTextHTML + `<span >${currentSchedule}</span>`;
+									}
+
+									noteCell.innerHTML = gagedOutflowInnerHTML;
+								})
+								.catch(error => {
+									console.error("Error fetching or processing data:", error);
+									noteCell.innerHTML = 'N/A';
+								});
+						} else {
+							noteCell.innerHTML = '';
+						}
+					})();
+				})();
 
 				// ====================================================================================
 				// ======= ROW 5 ======= (BLANK WHITE BLOCK)
