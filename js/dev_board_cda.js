@@ -958,8 +958,8 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						ConsrTd.classList.add('Font_20');
 						FloodTd.classList.add('Font_20');
 
-						ConsrTd.style.width = '7%';
-						FloodTd.style.width = '7%';
+						ConsrTd.style.width = '8.5%';
+						FloodTd.style.width = '8.5%';
 
 						const topOfConservationLevel = location['top-of-conservation']?.['constant-value'] || null;
 						// console.log("topOfConservationLevel: ", topOfConservationLevel);
@@ -1287,7 +1287,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									// console.log("c_count: ", c_count);
 
 									const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
-									console.log("lastNonNullValue:", lastNonNullValue);
+									// console.log("lastNonNullValue:", lastNonNullValue);
 
 									let valueLast = null;
 									let timestampLast = null;
@@ -1345,333 +1345,223 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						}
 					})();
 
-					// // ======= GAGED OUTFLOW =======
-					// if ("gagedoutflow" === "gagedoutflow") {
-					// 	// Create a new table cell for lake name
-					// 	const gagedOutflowCell = row2.insertCell(4);
-					// 	gagedOutflowCell.colSpan = 1;
-					// 	gagedOutflowCell.classList.add('Font_15');
-					// 	gagedOutflowCell.style.width = '10%';
-					// 	gagedOutflowCell.style.backgroundColor = '#404040';
-					// 	gagedOutflowCell.style.color = 'lightgray';
+					// ======= GAGED OUTFLOW =======
+					(() => {
+						// Create a new table cell for lake name
+						const gagedOutflowCell = row2.insertCell(4);
+						gagedOutflowCell.colSpan = 2;
+						gagedOutflowCell.classList.add('Font_15');
+						gagedOutflowCell.style.width = '10%';
+						gagedOutflowCell.style.backgroundColor = '#404040';
+						gagedOutflowCell.style.color = 'lightgray';
 
-					// 	// Initialize gagedOutflowCellInnerHTML as an empty string
-					// 	let gagedOutflowCellInnerHTML = '--';
+						// Initialize gagedOutflowCellInnerHTML as an empty string
+						let gagedOutflowCellInnerHTML = '--';
 
-					// 	let tsid = null;
-					// 	if (data.display_stage_29 === true) {
-					// 		tsid = data.tsid_gaged_outflow_board
-					// 	} else {
-					// 		tsid = data.tsid_gaged_outflow_board
-					// 	}
+						let tsid = null;
+						if (data.display_stage_29 === true) {
+							tsid = data.tsid_gaged_outflow_board
+						} else {
+							tsid = data.tsid_gaged_outflow_board
+						}
 
-					// 	if (tsid !== null) {
-					// 		// Fetch the time series data from the API using the determined query string
-					// 		let url = null;
-					// 		if (cda === "public") {
-					// 			url = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-					// 		} else if (cda === "internal") {
-					// 			url = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-					// 		} else {
+						if (tsid !== null) {
+							// Fetch the time series data from the API using the determined query string
+							let url = null;
+							if (cda === "public") {
+								url = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+							} else if (cda === "internal") {
+								url = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+							} else {
 
-					// 		}
-					// 		// console.log("url = ", url);
-					// 		fetch(url, {
-					// 			method: 'GET',
-					// 			headers: {
-					// 				'Accept': 'application/json;version=2'
-					// 			}
-					// 		})
-					// 			.then(response => {
-					// 				// Check if the response is ok
-					// 				if (!response.ok) {
-					// 					// If not, throw an error
-					// 					throw new Error('Network response was not ok');
-					// 				}
-					// 				// If response is ok, parse it as JSON
-					// 				return response.json();
-					// 			})
-					// 			.then(data => {
-					// 				// console.log("data:", data);
+							}
+							// console.log("url = ", url);
+							fetch(url, {
+								method: 'GET',
+								headers: {
+									'Accept': 'application/json;version=2'
+								}
+							})
+								.then(response => {
+									// Check if the response is ok
+									if (!response.ok) {
+										// If not, throw an error
+										throw new Error('Network response was not ok');
+									}
+									// If response is ok, parse it as JSON
+									return response.json();
+								})
+								.then(data => {
+									// console.log("data:", data);
 
-					// 				// Convert timestamps in the JSON object
-					// 				data.values.forEach(entry => {
-					// 					entry[0] = formatNWSDate(entry[0]); // Update timestamp
-					// 				});
+									// Convert timestamps in the JSON object
+									data.values.forEach(entry => {
+										entry[0] = formatNWSDate(entry[0]); // Update timestamp
+									});
 
-					// 				// console.log("data formatted = ", data);
+									// console.log("data formatted = ", data);
 
-					// 				// Get the last non-null value from the stage data
-					// 				const lastNonNullValue = getLastNonNullValue(data);
-					// 				// console.log("lastNonNullValue:", lastNonNullValue);
+									// Get the last non-null value from the stage data
+									const lastNonNullValue = getLastNonNullValue(data);
+									// console.log("lastNonNullValue:", lastNonNullValue);
 
-					// 				// Check if a non-null value was found
-					// 				if (lastNonNullValue !== null) {
-					// 					// Extract timestamp, value, and quality code from the last non-null value
-					// 					var timestampLast = lastNonNullValue.timestamp;
-					// 					var valueLast = lastNonNullValue.value;
-					// 					var qualityCodeLast = lastNonNullValue.qualityCode;
-					// 					// console.log("timestampLast:", timestampLast);
-					// 					// console.log("timestampLast:", typeof (timestampLast));
-					// 					// console.log("valueLast:", valueLast);
-					// 					// console.log("qualityCodeLast:", qualityCodeLast);
-					// 				} else {
-					// 					// If no non-null valueLast is found, log a message
-					// 					console.log("No non-null valueLast found.");
-					// 				}
+									// Check if a non-null value was found
+									if (lastNonNullValue !== null) {
+										// Extract timestamp, value, and quality code from the last non-null value
+										var timestampLast = lastNonNullValue.timestamp;
+										var valueLast = lastNonNullValue.value;
+										var qualityCodeLast = lastNonNullValue.qualityCode;
+										// console.log("timestampLast:", timestampLast);
+										// console.log("timestampLast:", typeof (timestampLast));
+										// console.log("valueLast:", valueLast);
+										// console.log("qualityCodeLast:", qualityCodeLast);
+									} else {
+										// If no non-null valueLast is found, log a message
+										console.log("No non-null valueLast found.");
+									}
 
-					// 				const c_count = calculateCCount(tsid);
-					// 				// console.log("c_count:", c_count);
+									const c_count = calculateCCount(tsid);
+									// console.log("c_count:", c_count);
 
-					// 				const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
-					// 				// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
+									const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
+									// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
 
-					// 				// Check if a non-null value was found
-					// 				if (lastNonNull24HoursValue !== null) {
-					// 					// Extract timestamp, value, and quality code from the last non-null value
-					// 					var timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
-					// 					var value24HoursLast = lastNonNull24HoursValue.value;
-					// 					var qualityCode24HoursLast = lastNonNull24HoursValue.qualityCode;
+									// Check if a non-null value was found
+									if (lastNonNull24HoursValue !== null) {
+										// Extract timestamp, value, and quality code from the last non-null value
+										var timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+										var value24HoursLast = lastNonNull24HoursValue.value;
+										var qualityCode24HoursLast = lastNonNull24HoursValue.qualityCode;
 
-					// 					// console.log("timestamp24HoursLast:", timestamp24HoursLast);
-					// 					// console.log("value24HoursLast:", value24HoursLast);
-					// 					// console.log("qualityCode24HoursLast:", qualityCode24HoursLast);
-					// 				} else {
-					// 					// If no non-null valueLast is found, log a message
-					// 					console.log("No non-null valueLast found.");
-					// 				}
+										// console.log("timestamp24HoursLast:", timestamp24HoursLast);
+										// console.log("value24HoursLast:", value24HoursLast);
+										// console.log("qualityCode24HoursLast:", qualityCode24HoursLast);
+									} else {
+										// If no non-null valueLast is found, log a message
+										console.log("No non-null valueLast found.");
+									}
 
-					// 				// Calculate the 24 hours change between first and last value
-					// 				const delta_24 = valueLast - value24HoursLast;
-					// 				// console.log("delta_24:", delta_24);
+									// Calculate the 24 hours change between first and last value
+									const delta_24 = valueLast - value24HoursLast;
+									// console.log("delta_24:", delta_24);
 
-					// 				if (valueLast !== null || valueLast !== undefined) {
-					// 					gagedOutflowCellInnerHTML = "<span>"
-					// 						+ "Gaged Outflow: " + valueLast.toFixed(0) + " (" + delta_24.toFixed(0) + ")"
-					// 						+ "</span>";
-					// 				} else {
-					// 					gagedOutflowCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>"
-					// 				}
-					// 				gagedOutflowCell.innerHTML = gagedOutflowCellInnerHTML;
-					// 			})
-					// 			.catch(error => {
-					// 				// Catch and log any errors that occur during fetching or processing
-					// 				console.error("Error fetching or processing data:", error);
-					// 			});
-					// 	}
+									if (valueLast !== null || valueLast !== undefined) {
+										gagedOutflowCellInnerHTML = "<span>"
+											+ "Gaged Outflow: " + valueLast.toFixed(0) + " (" + delta_24.toFixed(0) + ")"
+											+ "</span>";
+									} else {
+										gagedOutflowCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>"
+									}
+									gagedOutflowCell.innerHTML = gagedOutflowCellInnerHTML;
+								})
+								.catch(error => {
+									// Catch and log any errors that occur during fetching or processing
+									console.error("Error fetching or processing data:", error);
+								});
+						}
+					})();
 
-					// 	// // Create an object to hold all the properties you want to pass
-					// 	// const gagedOutflowToSend = {
-					// 	// 	cwms_ts_id: encodeURIComponent(data.tsid_gaged_outflow_board),
-					// 	// };
-					// 	// // console.log("gagedOutflowToSend: " + gagedOutflowToSend);
+					// ======= SEASONAL RULE CURVE DELTA =======
+					(() => {
+						// Create a new table cell for lake name
+						const curveDeltaCell = row2.insertCell(5);
+						curveDeltaCell.colSpan = 1;
+						curveDeltaCell.classList.add('Font_15');
+						curveDeltaCell.style.width = '10%';
+						curveDeltaCell.style.backgroundColor = '#404040';
+						curveDeltaCell.style.color = 'lightgray';
 
-					// 	// const gagedOutflowLocationToSend = {
-					// 	// 	location_id: encodeURIComponent(data.location_id),
-					// 	// };
-					// 	// // console.log("gagedOutflowLocationToSend: " + gagedOutflowLocationToSend);
+						const stageTsid = location?.['tsid-stage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
-					// 	// // Convert the object into a query string
-					// 	// const gagedOutflowQueryString = Object.keys(gagedOutflowToSend).map(key => key + '=' + gagedOutflowToSend[key]).join('&');
-					// 	// // console.log("gagedOutflowQueryString: " + gagedOutflowQueryString);
+						if (stageTsid !== null) {
+							const url = `${setBaseUrl}timeseries?name=${stageTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
-					// 	// const lowerUpperFlowLimitQueryString = Object.keys(gagedOutflowToSend).map(key => key + '=' + gagedOutflowToSend[key]).join('&');
-					// 	// // console.log("lowerUpperFlowLimitQueryString: " + lowerUpperFlowLimitQueryString);
+							fetch(url, {
+								method: 'GET',
+								headers: {
+									'Accept': 'application/json;version=2'
+								}
+							})
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(data => {
+									data.values.forEach(entry => {
+										entry[0] = formatNWSDate(entry[0]);
+									});
 
-					// 	// const bankfullFlowLimitQueryString = Object.keys(gagedOutflowLocationToSend).map(key => key + '=' + gagedOutflowLocationToSend[key]).join('&');
-					// 	// // console.log("bankfullFlowLimitQueryString: " + bankfullFlowLimitQueryString);
+									// console.log("data: ", data);
 
-					// 	// // Make an AJAX request to the PHP script, passing all the variables
-					// 	// var urlGagedOutFlow = `https://coe-mvsuwa04mvs.mvs.usace.army.mil/php_data_api/public/get_level.php?${gagedOutflowQueryString}`;
-					// 	// // console.log("urlGagedOutFlow: " , urlGagedOutFlow);
+									const c_count = calculateCCount(stageTsid);
+									// console.log("c_count: ", c_count);
 
-					// 	// var urlLowerUpperFlowLimit = `https://coe-mvsuwa04mvs.mvs.usace.army.mil/php_data_api/public/get_lower_upper_flow_limit_by_tsid.php?${lowerUpperFlowLimitQueryString}`;
-					// 	// // console.log("urlLowerUpperFlowLimit: " , urlLowerUpperFlowLimit);
+									const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
+									// console.log("lastNonNullValue:", lastNonNullValue);
 
-					// 	// var urlBankfullFlowLimit = `https://coe-mvsuwa04mvs.mvs.usace.army.mil/php_data_api/public/get_bankfull_by_location_id.php?${bankfullFlowLimitQueryString}`;
-					// 	// // console.log("urlBankfullFlowLimit: " , urlBankfullFlowLimit);
+									let valueLast = null;
+									let timestampLast = null;
 
-					// 	// async function fetchGagedOutflow() {
-					// 	// 	try {
-					// 	// 		const response = await fetch(urlGagedOutFlow);
-					// 	// 		const gaged_outflow = await response.json();
-					// 	// 		return gaged_outflow;
-					// 	// 	} catch (error) {
-					// 	// 		console.error("Error fetching data:", error);
-					// 	// 		throw error; // Propagate the error to the caller
-					// 	// 	}
-					// 	// }
+									if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+										timestampLast = lastNonNullValue.current6am.timestamp;
+										valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
+									}
+									// console.log("valueLast:", valueLast);
+									// console.log("timestampLast:", timestampLast);
 
-					// 	// async function fetchLowerUpperFlowLimit() {
-					// 	// 	try {
-					// 	// 		const response = await fetch(urlLowerUpperFlowLimit);
-					// 	// 		const lower_upper_flow_limit = await response.json();
-					// 	// 		return lower_upper_flow_limit;
-					// 	// 	} catch (error) {
-					// 	// 		console.error("Error fetching data:", error);
-					// 	// 		throw error; // Propagate the error to the caller
-					// 	// 	}
-					// 	// }
+									let value24HoursLast = null;
+									let timestamp24HoursLast = null;
 
-					// 	// async function fetchBankfullFlowLimit() {
-					// 	// 	try {
-					// 	// 		const response = await fetch(urlBankfullFlowLimit);
-					// 	// 		const bankfull_flow_limit = await response.json();
-					// 	// 		return bankfull_flow_limit;
-					// 	// 	} catch (error) {
-					// 	// 		console.error("Error fetching data:", error);
-					// 	// 		throw error; // Propagate the error to the caller
-					// 	// 	}
-					// 	// }
+									if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+										timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
+										value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(2);
+									}
 
-					// 	// // Call the asynchronous functions
-					// 	// Promise.all([fetchGagedOutflow(), fetchLowerUpperFlowLimit(), fetchBankfullFlowLimit()])
-					// 	// 	.then(([gaged_outflow, lower_upper_flow_limit, bankfull_flow_limit]) => {
-					// 	// 		if (gaged_outflow && lower_upper_flow_limit && bankfull_flow_limit) {
+									// console.log("value24HoursLast:", value24HoursLast);
+									// console.log("timestamp24HoursLast:", timestamp24HoursLast);
 
-					// 	// 			// console.log("gaged_outflow = ", gaged_outflow);
-					// 	// 			// console.log("lower_upper_flow_limit = ", lower_upper_flow_limit);
-					// 	// 			// console.log("bankfull_flow_limit = ", bankfull_flow_limit);
+									let delta_24 = null;
 
-					// 	// 			// Extract lower and upper flow limits
-					// 	// 			const lowerFlowLimit = parseFloat(lower_upper_flow_limit[0].constant_level);
-					// 	// 			const upperFlowLimit = parseFloat(lower_upper_flow_limit[1].constant_level);
-					// 	// 			const bankfullFlowLimit = parseFloat(bankfull_flow_limit.constant_level);
+									// Check if the values are numbers and not null/undefined
+									if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
+										delta_24 = (valueLast - value24HoursLast).toFixed(2);
+									} else {
+										delta_24 = "--";  // or set to "-1" or something else if you prefer
+									}
+									// console.log("delta_24:", delta_24);
 
-					// 	// 			// Extract lower and upper flow limit units
-					// 	// 			const lowerFlowLimitUnit = lower_upper_flow_limit[0].level_unit;
-					// 	// 			const upperFlowLimitUnit = lower_upper_flow_limit[1].level_unit;
-					// 	// 			const bankfullFlowLimitUnit = bankfull_flow_limit.level_unit;
+									// Make sure delta_24 is a valid number before calling parseFloat
+									if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
+										delta_24 = parseFloat(delta_24).toFixed(2);
+									} else {
+										delta_24 = "--";
+									}
 
-					// 	// 			// Now you can use lowerFlowLimit and upperFlowLimit as needed
-					// 	// 			// console.log("lowerFlowLimit: ", lowerFlowLimit);
-					// 	// 			// console.log("upperFlowLimit: ", upperFlowLimit);
-					// 	// 			// console.log("bankfullFlowLimit: ", bankfullFlowLimit);
+									const seasonalRuleCurveValue = location['seasonal-rule-curve'][`constant-value`];
 
-					// 	// 			const gaged_outflow_value = parseFloat(gaged_outflow.value);
-					// 	// 			// console.log("gaged_outflow_value: ", gaged_outflow_value);
+									const delta = valueLast - seasonalRuleCurveValue;
+									const deltaRuleCurve = (delta > 0 ? '+' : '') + delta.toFixed(2);
 
-					// 	// 			const gaged_outflow_date_time_cst = gaged_outflow.date_time_cst;
-					// 	// 			// console.log("gaged_outflow_date_time_cst = ", gaged_outflow_date_time_cst);
-					// 	// 			var dateParts = gaged_outflow_date_time_cst.split(" ");
-					// 	// 			var date = dateParts[0];
-					// 	// 			var time = dateParts[1];
-					// 	// 			var [month, day, year] = date.split("-");
-					// 	// 			var [hours, minutes] = time.split(":");
-					// 	// 			var gaged_outflow_date_time_cst_formatted = new Date(`${year}-${month}-${day}T${hours}:${minutes}:00`);
-					// 	// 			// console.log("gaged_outflow_date_time_cst_formatted", gaged_outflow_date_time_cst_formatted);
-					// 	// 			// console.log("gaged_outflow_date_time_cst_formatted: ", typeof gaged_outflow_date_time_cst_formatted);
 
-					// 	// 			// Get the current date as a Date object
-					// 	// 			const currentDate = new Date();
-					// 	// 			// Subtract 2 hours (2 * 60 * 60 * 1000 milliseconds)
-					// 	// 			const currentDateStageMinusTwoHours = new Date(currentDate.getTime() - (2 * 60 * 60 * 1000));
-					// 	// 			// Subtract 2 hours (2 * 60 * 60 * 1000 milliseconds)
-					// 	// 			const currentDateStageMinusOneDay = new Date(currentDate.getTime() - (24 * 60 * 60 * 1000));
+									let innerHTML;
+									if (valueLast === null) {
+										innerHTML = "<span class='missing'>-M-</span>";
+									} else {
+										innerHTML = `<span>${deltaRuleCurve}</span>`;
+									}
 
-					// 	// 			// console.log("currentDateStage:", currentDate);
-					// 	// 			// console.log("currentDateStageMinusTwoHours:", currentDateStageMinusTwoHours);
-					// 	// 			// console.log("currentDateStageMinusOneDay:", currentDateStageMinusOneDay);
-
-					// 	// 			// Lower Upper Limit Class
-					// 	// 			if (gaged_outflow_value > bankfullFlowLimit) {
-					// 	// 				// console.log("Bankfull Flow Above Limit");
-					// 	// 				var myFlowLimitClass = "Bankfull_Limit";
-					// 	// 			} else {
-					// 	// 				// console.log("Bankfull Flow Within Limit");
-					// 	// 				var myFlowLimitClass = "--";
-					// 	// 			}
-
-					// 	// 			// CHECK DATA LATE
-					// 	// 			if (gaged_outflow_date_time_cst_formatted < currentDateStageMinusOneDay) { 					// MISSING
-					// 	// 				gagedOutflowCellInnerHTML = "<span style='float: left; padding-left: 15px;'>" + "</span>";
-					// 	// 			} else if (gaged_outflow_date_time_cst_formatted < currentDateStageMinusTwoHours) { 		// LATE
-					// 	// 				gagedOutflowCellInnerHTML = "<span style='float: left; padding-left: 15px;'>Gaged Outflow: " + "</span>";
-					// 	// 				gagedOutflowCellInnerHTML += "<span id='flashingSpan' class='" + myFlowLimitClass + "' style='float: left; padding-left: 15px; font-style: italic;' title='" + gaged_outflow.cwms_ts_id + " " + gaged_outflow_date_time_cst_formatted + " Lower Limit: " + lowerFlowLimit.toFixed(0) + " " + lowerFlowLimitUnit + " Upper Limit: " + upperFlowLimit.toFixed(0) + " " + upperFlowLimitUnit + "'>" + parseFloat(gaged_outflow.value).toFixed(0) + " (" + parseFloat(gaged_outflow.delta_24).toFixed(0) + ") " + gaged_outflow.unit_id + "</span>";
-					// 	// 			} else { 																					// CURRENT
-					// 	// 				gagedOutflowCellInnerHTML = "<span style='float: left; padding-left: 15px;'>Gaged Outflow: " + "</span>";
-					// 	// 				gagedOutflowCellInnerHTML += "<span id='flashingSpan' class='" + myFlowLimitClass + "' style='float: left; padding-left: 15px;' title='" + gaged_outflow.cwms_ts_id + " " + gaged_outflow_date_time_cst_formatted + " Lower Limit: " + lowerFlowLimit.toFixed(0) + " " + lowerFlowLimitUnit + " Upper Limit: " + upperFlowLimit.toFixed(0) + " " + upperFlowLimitUnit + " Bankfull = " + bankfullFlowLimit.toFixed(0) + " " + bankfullFlowLimitUnit + "'>" + parseFloat(gaged_outflow.value).toFixed(0) + " (" + parseFloat(gaged_outflow.delta_24).toFixed(0) + ") " + gaged_outflow.unit_id + "</span>";
-					// 	// 			}
-
-					// 	// 			// Set the combined value to the cell, preserving HTML
-					// 	// 			// console.log("gagedOutflowCellInnerHTML = ", gagedOutflowCellInnerHTML);
-
-					// 	// 			// Set the HTML inside the cell once the fetch is complete
-					// 	// 			gagedOutflowCell.innerHTML = gagedOutflowCellInnerHTML;
-					// 	// 		} else {
-					// 	// 			console.log("No data fetched from either LWRP or stage API");
-					// 	// 		}
-					// 	// 	})
-					// 	// 	.catch((error) => {
-					// 	// 		console.error("Error:", error);
-					// 	// 	});
-					// }
-
-					// // ======= SEASONAL RULE CURVE DELTA =======
-					// if ("ruledelta" === "ruledelta") {
-					// 	// Create a new table cell for lake name
-					// 	const curveDeltaCell = row2.insertCell(5);
-					// 	curveDeltaCell.colSpan = 1;
-					// 	curveDeltaCell.classList.add('Font_15');
-					// 	curveDeltaCell.style.width = '10%';
-					// 	curveDeltaCell.style.backgroundColor = '#404040';
-					// 	curveDeltaCell.style.color = 'lightgray';
-
-					// 	// Initialize twDoCellInnerHTML as an empty string
-					// 	let curveDeltaCellInnerHTML = '--';
-
-					// 	// async function fetchStage29() {
-					// 	// 	try {
-					// 	// 		const response = await fetch(urlStage29);
-					// 	// 		const stage29 = await response.json();
-					// 	// 		return stage29;
-					// 	// 	} catch (error) {
-					// 	// 		console.error("Error fetching data:", error);
-					// 	// 		throw error; // Propagate the error to the caller
-					// 	// 	}
-					// 	// }
-
-					// 	// async function fetchRuleCurve() {
-					// 	// 	try {
-					// 	// 		const response = await fetch(urlRuleCurve);
-					// 	// 		const rule_curve = await response.json();
-					// 	// 		return rule_curve;
-					// 	// 	} catch (error) {
-					// 	// 		console.error("Error fetching data:", error);
-					// 	// 		throw error; // Propagate the error to the caller
-					// 	// 	}
-					// 	// }
-
-					// 	// // Call the asynchronous functions
-					// 	// Promise.all([fetchStage29(), fetchRuleCurve()])
-					// 	// 	.then(([stage29, rule_curve]) => {
-					// 	// 		if (stage29 && rule_curve) {
-
-					// 	// 			// console.log("stage29 = ", stage29);
-					// 	// 			// console.log("rule_curve = ", rule_curve);
-
-					// 	// 			let deltaRuleCurve = parseFloat(stage29.value).toFixed(2) - parseFloat(rule_curve[0].lev).toFixed(2);
-					// 	// 			// console.log("deltaRuleCurve = ", deltaRuleCurve);
-
-					// 	// 			// Add "+" for positive and "-" for negative values
-					// 	// 			const deltaRuleCurveFormatted = deltaRuleCurve.toFixed(2) >= 0 ? `+${deltaRuleCurve.toFixed(2)}` : deltaRuleCurve.toFixed(2);
-					// 	// 			// console.log("deltaRuleCurveFormatted = ", deltaRuleCurveFormatted);
-
-					// 	// 			curveDeltaCellInnerHTML = "<span style='color: lightblue;' title='" + "Rule Curve Delta Compare to Current Pool Level" + "'>" + deltaRuleCurveFormatted + "</span>";
-
-					// 	// 			// Set the combined value to the cell, preserving HTML
-					// 	// 			// console.log("curveDeltaCellInnerHTML = ", curveDeltaCellInnerHTML);
-
-					// 	// 			// Set the HTML inside the cell once the fetch is complete
-					// 	// 			curveDeltaCell.innerHTML = curveDeltaCellInnerHTML;
-					// 	// 		} else {
-					// 	// 			console.log("No data fetched from API");
-					// 	// 		}
-					// 	// 	})
-					// 	// 	.catch((error) => {
-					// 	// 		console.error("Error:", error);
-					// 	// 	});
-					// }
+									curveDeltaCell.innerHTML = innerHTML;
+								})
+								.catch(error => {
+									console.error("Error fetching or processing data:", error);
+									twDoCell.innerHTML = 'N/A';
+								});
+						} else {
+							twDoCell.innerHTML = '';
+						}
+					})();
 				})();
 
 				// ====================================================================================
