@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const setTimeseriesGroup11 = "Conc-DO-Lake";
 		const setTimeseriesGroup12 = "Gaged-Outflow-Lake";
 		const setTimeseriesGroup13 = "Re-Reg-Lake";
+		const setTimeseriesGroup14 = "Schedule";
 
 		const categoryApiUrl = `${setBaseUrl}location/group?office=${office}&group-office-id=${office}&category-office-id=${office}&category-id=${setLocationCategory}`;
 
@@ -105,6 +106,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const doMap = new Map();
 		const gagedOutflowMap = new Map();
 		const reRegLakeTsidMap = new Map();
+		const scheduleTsidMap = new Map();
 
 		// Promises
 		const stageTsidPromises = [];
@@ -134,6 +136,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const doPromises = [];
 		const gagedOutflowPromises = [];
 		const reRegLakePromises = [];
+		const schedulePromises = [];
 
 		const apiPromises = [];
 
@@ -223,7 +226,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 				...bankfullPromises,
 				...doPromises,
 				...gagedOutflowPromises,
-				...reRegLakePromises
+				...reRegLakePromises,
+				...schedulePromises
 			]))
 			.then(() => {
 				// Merge fetched data into locations
@@ -256,6 +260,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 						loc['tsid-do-lake'] = doMap.get(loc['location-id']);
 						loc['tsid-gaged-outflow-lake'] = gagedOutflowMap.get(loc['location-id']);
 						loc['tsid-re-reg-lake'] = reRegLakeTsidMap.get(loc['location-id']);
+						loc['tsid-schedule-lake'] = scheduleTsidMap.get(loc['location-id']);
 					});
 				});
 
@@ -603,6 +608,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 				fetch(reReglakeUrl)
 					.then(res => res.ok ? res.json() : null)
 					.then(data => data && reRegLakeTsidMap.set(locationId, data))
+					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
+			);
+
+			const schedulelakeUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup14}?office=${office}&category-id=${locationId}`;
+			schedulePromises.push(
+				fetch(schedulelakeUrl)
+					.then(res => res.ok ? res.json() : null)
+					.then(data => data && scheduleTsidMap.set(locationId, data))
 					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
 			);
 		}
@@ -1609,7 +1622,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							reregCell.style.backgroundColor = '#404040';
 							reregCell.style.color = 'lightgray';
 
-							let reregInnerTextHTML = 'Gaged Outflow:  ';
+							let reregInnerTextHTML = 'Re-Reg Pool:  ';
 
 							const gagedOutflowTsid = location?.['tsid-re-reg-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 							// console.log("gagedOutflowTsid: ", gagedOutflowTsid);
@@ -1698,35 +1711,60 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							}
 						})();
 
-						// // ======= SCHD =======
-						// (() => {
-						// 	// Create a new table cell for lake name
-						// 	const schdCell = row3.insertCell(2);
-						// 	schdCell.colSpan = 1;
-						// 	schdCell.classList.add('Font_15');
-						// 	schdCell.style.width = '10%';
-						// 	schdCell.style.backgroundColor = '#404040';
-						// 	schdCell.style.color = 'lightgray';
+						// ======= SCHD =======
+						(() => {
+							// Create a new table cell for lake name
+							const schdCell = row3.insertCell(2);
+							schdCell.colSpan = 1;
+							schdCell.classList.add('Font_15');
+							schdCell.style.width = '10%';
+							schdCell.style.backgroundColor = '#404040';
+							schdCell.style.color = 'lightgray';
 
-						// 	// Initialize doCellInnerHTML as an empty string
-						// 	let schdCellInnerHTML = '--';
+							let scheduleTextHTML = 'Schedule:  ';
 
-						// 	// try {
-						// 	// 	const ROutput = await fetchDataFromROutput();
-						// 	// 	// console.log('ROutput:', ROutput);
+							const scheduleTsid = location?.['tsid-schedule-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+							// console.log("scheduleTsid: ", scheduleTsid);
 
-						// 	// 	const filteredData = filterDataByLocationId(ROutput, data.location_id);
-						// 	// 	// console.log("Filtered Data for", data.location_id + ":", filteredData);
+							if (scheduleTsid !== null) {
+								const url = `${setBaseUrl}timeseries/text?name=${scheduleTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
-						// 	// 	// // Update the HTML element with filtered data
-						// 	// 	updateSchdHTML(filteredData, schdCell);
+								fetch(url, {
+									method: 'GET',
+									headers: {
+										'Accept': 'application/json;version=2'
+									}
+								})
+									.then(response => {
+										if (!response.ok) {
+											throw new Error('Network response was not ok');
+										}
+										return response.json();
+									})
+									.then(data => {
+										console.log("data: ", data);
 
-						// 	// 	// Further processing of ROutput data as needed
-						// 	// } catch (error) {
-						// 	// 	// Handle errors from fetchDataFromROutput
-						// 	// 	console.error('Failed to fetch data:', error);
-						// 	// }
-						// })();
+										const currentSchedule = data['regular-text-values'] && data['regular-text-values'].length > 0
+											? data['regular-text-values'][data['regular-text-values'].length - 1]['text-value']
+											: null;
+
+										let gagedOutflowInnerHTML;
+										if (currentSchedule === null) {
+											gagedOutflowInnerHTML = scheduleTextHTML + "<span class='missing'>-M-</span>";
+										} else {
+											gagedOutflowInnerHTML = scheduleTextHTML + `<span >${currentSchedule}</span>`;
+										}
+
+										schdCell.innerHTML = gagedOutflowInnerHTML;
+									})
+									.catch(error => {
+										console.error("Error fetching or processing data:", error);
+										schdCell.innerHTML = 'N/A';
+									});
+							} else {
+								schdCell.innerHTML = '';
+							}
+						})();
 
 						// // ======= REREG DO 1 =======
 						// (() => {

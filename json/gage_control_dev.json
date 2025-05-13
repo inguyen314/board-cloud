@@ -8812,6 +8812,20 @@
                             "attribute": 1
                         }
                     ]
+                },
+                "tsid-schedule-lake": {
+                    "office-id": "MVS",
+                    "id": "Schedule",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Mark Twain Lk-Salt"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Mark Twain Lk-Salt.Stage.Inst.~1Day.0.lakerep-rev-schedule"
+                        }
+                    ]
                 }
             },
             {
