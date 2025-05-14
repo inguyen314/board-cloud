@@ -1223,7 +1223,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									.then(data => {
 										const value = data?.values?.[0]?.[1];
 										if (value !== null && value !== undefined) {
-											midnightControlledOutflowTd.textContent = "<span title='" + "(Total outflow from the first row of the gate settings widget.) " + data.name + "'>" + value.toFixed(0) + "</span>";
+											midnightControlledOutflowTd.innerHTML = "<span title='" + "(Total outflow from the first row of the gate settings widget.) " + data.name + "'>" + value.toFixed(0) + "</span>";
 											if (flowUpperLimit !== null && value > flowUpperLimit) {
 												midnightControlledOutflowTd.style.color = 'red';
 											} else {
