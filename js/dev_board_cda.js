@@ -1322,7 +1322,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const crestTd = row2.insertCell(1);
 						crestTd.colSpan = 2;
 						crestTd.classList.add('Font_15');
-						crestTd.style.width = '10%';
+						crestTd.style.width = '22%';
 						crestTd.style.backgroundColor = '#404040';
 						crestTd.style.color = 'lightgray';
 						crestTd.style.textAlign = 'left';
@@ -1357,7 +1357,8 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							fetch(url, {
 								method: 'GET',
 								headers: {
-									'Accept': 'application/json;version=2'
+									"Accept": "application/json;version=2", // Ensuring the correct version is used
+									"cache-control": "no-cache"
 								}
 							})
 								.then(response => {
@@ -1396,10 +1397,14 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									} else if (valueLastQualityCode === 9) {
 										label = "Crested";
 									} else {
-										label = " ";
+										label = null;
 									}
 
-									crestTd.innerHTML = crestCellInnerHTML + label;
+									if (label !== null) {
+										crestTd.innerHTML = crestCellInnerHTML + label;
+									} else {
+										crestTd.innerHTML = "";
+									}
 								})
 								.catch(error => {
 									console.error("Error fetching or processing data:", error);
@@ -1416,7 +1421,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const blankblankCell = row2.insertCell(2);
 						blankblankCell.colSpan = 2;
 						blankblankCell.classList.add('Font_15');
-						blankblankCell.style.width = '10%';
+						blankblankCell.style.width = '17%';
 						blankblankCell.style.backgroundColor = '#404040';
 						blankblankCell.style.color = 'lightgray';
 
@@ -1439,7 +1444,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const twDoCell = row2.insertCell(3);
 						twDoCell.colSpan = 2;
 						twDoCell.classList.add('Font_15');
-						twDoCell.style.width = '10%';
+						twDoCell.style.width = '18%';
 						twDoCell.style.backgroundColor = '#404040';
 						twDoCell.style.color = 'lightgray';
 						twDoCell.style.textAlign = 'center';
@@ -1522,7 +1527,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									if (valueLast === null) {
 										innerHTM = "<span class='missing'>-M-</span>";
 									} else {
-										innerHTM = `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${unitLast}</span>`;
+										innerHTM = `<span title='${timestampLast}'>Tw Do: ${valueLast} (${delta_24}) ${unitLast}</span>`;
 									}
 
 									twDoCell.innerHTML = innerHTM;
@@ -1542,7 +1547,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const gagedOutflowCell = row2.insertCell(4);
 						gagedOutflowCell.colSpan = 2;
 						gagedOutflowCell.classList.add('Font_15');
-						gagedOutflowCell.style.width = '10%';
+						gagedOutflowCell.style.width = '17%';
 						gagedOutflowCell.style.backgroundColor = '#404040';
 						gagedOutflowCell.style.color = 'lightgray';
 
@@ -1643,7 +1648,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const curveDeltaCell = row2.insertCell(5);
 						curveDeltaCell.colSpan = 1;
 						curveDeltaCell.classList.add('Font_15');
-						curveDeltaCell.style.width = '10%';
+						curveDeltaCell.style.width = "11%";
 						curveDeltaCell.style.backgroundColor = '#404040';
 						curveDeltaCell.style.color = 'lightgray';
 
@@ -1755,6 +1760,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							const blankCell3 = row3.insertCell(0);
 							blankCell3.colSpan = 1;
 							blankCell3.classList.add('Font_15');
+							blankCell3.style.width = "15%";
 
 							// Initialize lakeCellInnerHTML as an empty string for the second row
 							let blankCell3InnerHTML = '';
@@ -1771,7 +1777,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							const reregCell = row3.insertCell(1);
 							reregCell.colSpan = 2;
 							reregCell.classList.add('Font_15');
-							reregCell.style.width = '10%';
+							reregCell.style.width = '22%';
 							reregCell.style.backgroundColor = '#404040';
 							reregCell.style.color = 'lightgray';
 
@@ -1870,7 +1876,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							const schdCell = row3.insertCell(2);
 							schdCell.colSpan = 1;
 							schdCell.classList.add('Font_15');
-							schdCell.style.width = '10%';
+							schdCell.style.width = '8.5%';
 							schdCell.style.backgroundColor = '#404040';
 							schdCell.style.color = 'lightgray';
 
@@ -1880,7 +1886,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							// console.log("scheduleTsid: ", scheduleTsid);
 
 							if (scheduleTsid !== null) {
-								const url = `${setBaseUrl}timeseries/text?name=${scheduleTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+								const url = `${setBaseUrl}timeseries/text?name=${scheduleTsid}&begin=${currentDateTimeMinus24HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
 								fetch(url, {
 									method: 'GET',
@@ -1924,6 +1930,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							// Create a new table cell for lake name in the second row
 							const blankCell33 = row3.insertCell(3);
 							blankCell33.colSpan = 1;
+							blankCell33.style.width = "8.5%";
 							blankCell33.classList.add('Font_15');
 							blankCell33.style.backgroundColor = '#404040';
 							blankCell33.style.color = 'lightgray';
@@ -1943,7 +1950,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							const reregDoCell = row3.insertCell(4);
 							reregDoCell.colSpan = 2;
 							reregDoCell.classList.add('Font_15');
-							reregDoCell.style.width = '10%';
+							reregDoCell.style.width = '18%';
 							reregDoCell.style.backgroundColor = '#404040';
 							reregDoCell.style.color = 'lightgray';
 
@@ -2023,7 +2030,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										if (valueLast === null) {
 											innerHTM = "<span class='missing'>-M-</span>";
 										} else {
-											innerHTM = `<span title='${timestampLast}'>ReReg Do: ${valueLast} (${delta_24}) ${unitLast}</span>`;
+											innerHTM = `<span title='${timestampLast}'>Do: ${valueLast} (${delta_24}) ${unitLast}</span>`;
 										}
 
 										reregDoCell.innerHTML = innerHTM;
@@ -2043,7 +2050,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							const reregDoCell2 = row3.insertCell(5);
 							reregDoCell2.colSpan = 2;
 							reregDoCell2.classList.add('Font_15');
-							reregDoCell2.style.width = '10%';
+							reregDoCell2.style.width = '17%';
 							reregDoCell2.style.backgroundColor = '#404040';
 							reregDoCell2.style.color = 'lightgray';
 
@@ -2123,7 +2130,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										if (valueLast === null) {
 											innerHTM = "<span class='missing'>-M-</span>";
 										} else {
-											innerHTM = `<span title='${timestampLast}'>ReReg Do2: ${valueLast} (${delta_24}) ${unitLast}</span>`;
+											innerHTM = `<span title='${timestampLast}'>Do2: ${valueLast} (${delta_24}) ${unitLast}</span>`;
 										}
 
 										reregDoCell2.innerHTML = innerHTM;
@@ -2143,7 +2150,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							const genCell = row3.insertCell(6);
 							genCell.colSpan = 1;
 							genCell.classList.add('Font_15');
-							genCell.style.width = '10%';
+							genCell.style.width = '11%';
 							genCell.style.backgroundColor = '#404040';
 							genCell.style.color = 'lightgray';
 
@@ -2153,7 +2160,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							// console.log("turbinesTsid: ", turbinesTsid);
 
 							if (turbinesTsid !== null) {
-								const url = `${setBaseUrl}timeseries?name=${turbinesTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+								const url = `${setBaseUrl}timeseries?name=${turbinesTsid}&begin=${currentDateTimeMinus24HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
 								fetch(url, {
 									method: 'GET',
@@ -2225,7 +2232,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const noteCell = row4.insertCell(1);
 						noteCell.colSpan = 9;
 						noteCell.classList.add('Font_15');
-						noteCell.style.width = '10%';
+						noteCell.style.width = '85%';
 						noteCell.style.backgroundColor = 'lightyellow';
 						noteCell.style.color = '#333333';
 						noteCell.style.textAlign = 'left'; // Add this line to align content to the left
@@ -2286,10 +2293,11 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 					const row5 = table.insertRow();
 
 					// ======= BLANK =======
-					if ("blank" === "blank") {
+					(() => {
 						// Create a new table cell for lake name in the second row
 						const blankCell5 = row5.insertCell(0);
 						blankCell5.colSpan = 10;
+						blankCell5.style.width = '100%';
 						blankCell5.classList.add('Font_15');
 						blankCell5.style.color = 'white';
 						blankCell5.style.height = '20px'; // Add this line to set the height
@@ -2301,7 +2309,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						blankCell5InnerHTML = "..."; // Replace with the actual data for the second lake
 						// console.log('blankCell5InnerHTML =', blankCell5InnerHTML);
 						blankCell5.innerHTML = blankCell5InnerHTML;
-					}
+					})();
 				})();
 			} else {
 				// Handle other display types if needed
