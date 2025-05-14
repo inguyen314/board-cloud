@@ -1385,15 +1385,15 @@ function fetchAndUpdateStageTd(stageTd, DeltaTd, tsidStage, flood_level, current
                     }
                     return response.json();
                 })
-                .then(stage => {
-                    stage.values.forEach(entry => {
+                .then(data => {
+                    data.values.forEach(entry => {
                         entry[0] = formatNWSDate(entry[0]);
                     });
-                    // console.log("stage:", stage);
+                    // console.log("data:", data);
 
                     const c_count = calculateCCount(tsidStage);
 
-                    const lastNonNullValue = getLastNonNullValue(stage);
+                    const lastNonNullValue = getLastNonNullValue(data);
                     // console.log("lastNonNullValue:", lastNonNullValue);
 
                     let valueLast = null;
@@ -1409,7 +1409,7 @@ function fetchAndUpdateStageTd(stageTd, DeltaTd, tsidStage, flood_level, current
                     let value24HoursLast = null;
                     let timestamp24HoursLast = null;
 
-                    const lastNonNull24HoursValue = getLastNonNull24HoursValue(stage, c_count);
+                    const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
                     // console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
 
                     if (lastNonNull24HoursValue !== null) {
@@ -1442,11 +1442,19 @@ function fetchAndUpdateStageTd(stageTd, DeltaTd, tsidStage, flood_level, current
                         innerHTMLStage = "<span class='missing'>-M-</span>";
                     } else {
                         const floodClass = determineStageClass(valueLast, flood_level);
-                        innerHTMLStage = `<span class='${floodClass}' title='${timestampLast}'>${valueLast}</span>`;
+                        innerHTMLStage = `<span class='${floodClass}' title='${data.name + " " + timestampLast}'>${valueLast}</span>`;
+                    }
+
+                    let innerHTMLDelta;
+                    if (value24HoursLast === null) {
+                        innerHTMLDelta = "<span class='missing'>-M-</span>";
+                    } else {
+                        const floodClass = determineStageClass(valueLast, flood_level);
+                        innerHTMLDelta = `<span title='${data.name + " " + value24HoursLast + " " + timestamp24HoursLast}'>${delta_24}</span>`;
                     }
 
                     stageTd.innerHTML = innerHTMLStage;
-                    DeltaTd.innerHTML = delta_24;
+                    DeltaTd.innerHTML = innerHTMLDelta;
 
                     resolve({ stageTd: valueLast, deltaTd: delta_24 });
 
@@ -1527,82 +1535,80 @@ function getLastNonNullMidnightValue(data, tsid, c_count) {
     };
 }
 
-function fetchAndUpdateStorageTd(consrTd, floodTd, tsidStorage, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl, topOfConservationLevel, bottomOfConservationLevel, topOfFloodLevel, bottomOfFloodLevel) {
-    return new Promise((resolve, reject) => {
-        if (tsidStorage !== null) {
-            const urlStorage = `${setBaseUrl}timeseries?name=${tsidStorage}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+async function fetchAndUpdateStorageTd(consrTd, floodTd, tsidStorage, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl, topOfConservationLevel, bottomOfConservationLevel, topOfFloodLevel, bottomOfFloodLevel) {
+    if (!tsidStorage) {
+        consrTd.innerHTML = "-";
+        floodTd.innerHTML = "-";
+        return { consrTd: null, floodTd: null };
+    }
 
-            fetch(urlStorage, {
-                method: 'GET',
-                headers: {
-                    "Accept": "application/json;version=2", // Ensuring the correct version is used
-                    "cache-control": "no-cache"
-                }
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(stage => {
-                    stage.values.forEach(entry => {
-                        entry[0] = formatNWSDate(entry[0]);
-                    });
+    const urlStorage = `${setBaseUrl}timeseries?name=${tsidStorage}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
-                    let dstOffsetHours = getDSTOffsetInHours();
+    try {
+        const response = await fetch(urlStorage, {
+            method: 'GET',
+            headers: {
+                "Accept": "application/json;version=2",
+                "cache-control": "no-cache"
+            }
+        });
 
-                    const c_count = calculateCCount(tsidStorage);
-
-                    const lastNonNullValue = getLastNonNullMidnightValue(stage, stage.name, c_count);
-
-                    let valueLast = null;
-                    let timestampLast = null;
-
-                    if (lastNonNullValue !== null) {
-                        timestampLast = lastNonNullValue.current6am.timestamp;
-                        valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
-                    }
-
-                    if (valueLast > 0.0 && topOfConservationLevel > 0.0 && bottomOfConservationLevel >= 0.0) {
-                        if (valueLast < bottomOfConservationLevel) {
-                            conservationStorageValue = "0.00%";
-                        } else if (valueLast > topOfConservationLevel) {
-                            conservationStorageValue = "100.00%";
-                        } else {
-                            const total = (valueLast - bottomOfConservationLevel) / (topOfConservationLevel - bottomOfConservationLevel) * 100;
-                            conservationStorageValue = total.toFixed(2) + "%";
-                        }
-                    } else {
-                        conservationStorageValue = "%";
-                    }
-
-                    if (valueLast > 0.0 && topOfFloodLevel > 0.0 && bottomOfFloodLevel >= 0.0) {
-                        if (valueLast < bottomOfFloodLevel) {
-                            floodStorageValue = "0.00%";
-                        } else if (valueLast > topOfFloodLevel) {
-                            floodStorageValue = "100.00%";
-                        } else {
-                            const total = ((valueLast) - (bottomOfFloodLevel)) / ((topOfFloodLevel) - (bottomOfFloodLevel)) * 100;
-                            floodStorageValue = total.toFixed(2) + "%";
-                        }
-                    } else {
-                        floodStorageValue = "%";
-                    }
-
-                    consrTd.innerHTML = conservationStorageValue !== null ? conservationStorageValue : "-";
-                    floodTd.innerHTML = floodStorageValue !== null ? floodStorageValue : "-";
-
-                    resolve({ consrTd: conservationStorageValue, floodTd: floodStorageValue });
-                })
-                .catch(error => {
-                    console.error("Error fetching or processing data:", error);
-                    reject(error);
-                });
-        } else {
-            resolve({ consrTd: null, floodTd: null });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
-    });
+
+        const stage = await response.json();
+        stage.values.forEach(entry => {
+            entry[0] = formatNWSDate(entry[0]);
+        });
+
+        const dstOffsetHours = getDSTOffsetInHours();
+        const c_count = calculateCCount(tsidStorage);
+        const lastNonNullValue = getLastNonNullValue(stage);
+
+        let valueLast = null;
+        let timestampLast = null;
+
+        if (lastNonNullValue !== null) {
+            timestampLast = lastNonNullValue.timestamp;
+            valueLast = parseFloat(lastNonNullValue.value).toFixed(2);
+        }
+
+        let conservationStorageValue = "%";
+        if (valueLast > 0.0 && topOfConservationLevel > 0.0 && bottomOfConservationLevel >= 0.0) {
+            if (valueLast < bottomOfConservationLevel) {
+                conservationStorageValue = "0.00%";
+            } else if (valueLast > topOfConservationLevel) {
+                conservationStorageValue = "100.00%";
+            } else {
+                const total = ((valueLast - bottomOfConservationLevel) / (topOfConservationLevel - bottomOfConservationLevel)) * 100;
+                conservationStorageValue = total.toFixed(2) + "%";
+            }
+        }
+
+        let floodStorageValue = "%";
+        if (valueLast > 0.0 && topOfFloodLevel > 0.0 && bottomOfFloodLevel >= 0.0) {
+            if (valueLast < bottomOfFloodLevel) {
+                floodStorageValue = "0.00%";
+            } else if (valueLast > topOfFloodLevel) {
+                floodStorageValue = "100.00%";
+            } else {
+                const total = ((valueLast - bottomOfFloodLevel) / (topOfFloodLevel - bottomOfFloodLevel)) * 100;
+                floodStorageValue = total.toFixed(2) + "%";
+            }
+        }
+
+        consrTd.innerHTML = conservationStorageValue ?? "-";
+        floodTd.innerHTML = floodStorageValue ?? "-";
+
+        return { consrTd: conservationStorageValue, floodTd: floodStorageValue };
+
+    } catch (error) {
+        console.error("Error fetching or processing data:", error);
+        consrTd.innerHTML = "-";
+        floodTd.innerHTML = "-";
+        return { consrTd: null, floodTd: null };
+    }
 }
 
 function getDSTOffsetInHours() {
@@ -1618,9 +1624,9 @@ function getDSTOffsetInHours() {
     return dstOffsetHours; // Returns the offset in hours (e.g., -5 or -6)
 }
 
-function fetchAndUpdatePrecipTd(precipTd, tsid, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl) {
+function fetchAndUpdatePrecipTd(precipTd, tsid, end, begin, setBaseUrl) {
     if (tsid !== null) {
-        const urlPrecip = `${setBaseUrl}timeseries?name=${tsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+        const urlPrecip = `${setBaseUrl}timeseries?name=${tsid}&begin=${begin}&end=${end}&office=${office}`;
 
         fetch(urlPrecip, {
             method: 'GET',
@@ -1635,12 +1641,12 @@ function fetchAndUpdatePrecipTd(precipTd, tsid, currentDateTimeIso, currentDateT
                 }
                 return response.json();
             })
-            .then(precip => {
-                precip.values.forEach(entry => {
+            .then(data => {
+                data.values.forEach(entry => {
                     entry[0] = formatNWSDate(entry[0]);
                 });
 
-                const lastNonNullPrecipValue = getLastNonNullValue(precip);
+                const lastNonNullPrecipValue = getLastNonNullValue(data);
 
                 if (lastNonNullPrecipValue !== null) {
                     var timestampPrecipLast = lastNonNullPrecipValue.timestamp;
@@ -1650,14 +1656,14 @@ function fetchAndUpdatePrecipTd(precipTd, tsid, currentDateTimeIso, currentDateT
 
                 const c_count = calculateCCount(tsid);
 
-                const lastNonNull6HoursPrecipValue = getLastNonNull6HoursValue(precip, c_count);
+                const lastNonNull6HoursPrecipValue = getLastNonNull6HoursValue(data, c_count);
                 if (lastNonNull6HoursPrecipValue !== null) {
                     var timestampPrecip6HoursLast = lastNonNull6HoursPrecipValue.timestamp;
                     var valuePrecip6HoursLast = parseFloat(lastNonNull6HoursPrecipValue.value).toFixed(2);
                     var qualityCodePrecip6HoursLast = lastNonNull6HoursPrecipValue.qualityCode;
                 }
 
-                const lastNonNull24HoursPrecipValue = getLastNonNull24HoursValue(precip, c_count);
+                const lastNonNull24HoursPrecipValue = getLastNonNull24HoursValue(data, c_count);
                 if (lastNonNull24HoursPrecipValue !== null) {
                     var timestampPrecip24HoursLast = lastNonNull24HoursPrecipValue.timestamp;
                     var valuePrecip24HoursLast = parseFloat(lastNonNull24HoursPrecipValue.value).toFixed(2);
@@ -1673,18 +1679,9 @@ function fetchAndUpdatePrecipTd(precipTd, tsid, currentDateTimeIso, currentDateT
 
                 let innerHTMLPrecip;
                 if (lastNonNullPrecipValue === null) {
-                    innerHTMLPrecip = "<table id='precip'>"
-                        + "<tr>"
-                        + "<td class='precip_missing' title='24 hr delta'>"
-                        + "-M-"
-                        + "</td>"
-                        + "</tr>"
-                        + "</table>";
+                    innerHTMLPrecip = "<span class='missing'>" + "-M-" + "</span>";
                 } else {
-                    innerHTMLPrecip = "</table>"
-                        + "<span class='last_max_value'>"
-                        + valuePrecipLast
-                        + "</span>";
+                    innerHTMLPrecip = "<span class='last_max_value' title='"+ data.name + " " + timestampPrecipLast + "'>" + valuePrecipLast + "</span>";
                 }
                 return precipTd.innerHTML += innerHTMLPrecip;
             })
@@ -1752,22 +1749,16 @@ function fetchAndUpdateYesterdayInflowTd(precipCell, tsid, currentDateTimeMinus2
                 // If response is ok, parse it as JSON
                 return response.json();
             })
-            .then(precip => {
-                // Once data is fetched, log the fetched data structure
+            .then(data => {
                 // console.log("precip: ", precip);
 
                 // Convert timestamps in the JSON object
-                precip.values.forEach(entry => {
+                data.values.forEach(entry => {
                     entry[0] = formatNWSDate(entry[0]); // Update timestamp
                 });
 
-                // Output the updated JSON object
-                // // console.log(JSON.stringify(precip, null, 2));
-
-                // console.log("precipFormatted = ", precip);
-
                 // Get the last non-null value from the stage data
-                const lastNonNullPrecipValue = getLastNonNullValue(precip);
+                const lastNonNullPrecipValue = getLastNonNullValue(data);
                 // console.log("lastNonNullPrecipValue:", lastNonNullPrecipValue);
 
                 // Check if a non-null value was found
@@ -1787,21 +1778,9 @@ function fetchAndUpdateYesterdayInflowTd(precipCell, tsid, currentDateTimeMinus2
                 }
 
                 if (lastNonNullPrecipValue === null) {
-                    innerHTMLPrecip = "<table id='precip'>"
-                        + "<tr>"
-                        + "<td class='precip_missing' title='24 hr delta'>"
-                        + "-M-"
-                        + "</td>"
-                        + "</tr>"
-                        + "</table>";
+                    innerHTMLPrecip = "<span class='missing' title='(The last Consensus value, previous day)'>" + "-M-" + "</span>";
                 } else {
-                    innerHTMLPrecip = "</table>"
-                        // + "<span class='last_max_value' title='" + precip.name + ", Value = " + valuePrecipLast + ", Date Time = " + timestampPrecipLast + "'>"
-                        + "<span class='last_max_value'>"
-                        // + "<a href='../chart?office=" + office + "&cwms_ts_id=" + precip.name + "&lookback=4' target='_blank'>"
-                        + valuePrecipLast
-                        // + "</a>"
-                        + "</span>";
+                    innerHTMLPrecip = "<span class='last_max_value' title='" + "(The last Consensus value, previous day) " + data.name + " " + timestampPrecipLast + "'>" + valuePrecipLast + "</span>";
                 }
                 return precipCell.innerHTML += innerHTMLPrecip;
             })
@@ -1833,7 +1812,7 @@ function fetchAndUpdateControlledOutflowTd(tsid, isoDateTodayStr, isoDatePlus1St
                     return response.json();
                 })
                 .then(data => {
-                    console.log("data: ", data);
+                    // console.log("data: ", data);
 
                     if (data?.values?.length) {
                         data.values.forEach(entry => {

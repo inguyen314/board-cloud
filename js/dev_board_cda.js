@@ -779,105 +779,155 @@ if (display_tributary === "False" && display_type !== "Lake") {
 
 // LAKE TITLE
 if (display_type === "Lake") {
-	// Wrap your code inside the window load event listener
 	window.addEventListener('load', function () {
-		// Create the table structure
 		// Create the static table structure
 		var staticTable = document.createElement('table');
 		staticTable.id = 'board_cda';
 
-		// Create tbody element
-		var tbody = document.createElement("tbody");
+		// Create thead and tbody
+		var thead = document.createElement("thead");
 
-		// Row 1
-		var row1 = staticTable.insertRow();
-
-		// Use th instead of td for the header cell
+		// === Row 1: Title Row ===
+		var row1 = document.createElement('tr');
 		var headerCell = document.createElement('th');
-		headerCell.colSpan = 8;
+		headerCell.colSpan = 10;
 		headerCell.classList.add('Font_10');
 		headerCell.innerHTML = "<div id='board_title'>MVS LAKE DATA (WITH CLOUD LAKE SHEET)</div>";
 		row1.appendChild(headerCell);
+		thead.appendChild(row1);
 
-		// Row 2
-		var row2 = staticTable.insertRow(1);
+		// === Row 2: Last Modified Row ===
+		var row2 = document.createElement('tr');
+		var modifiedCell = document.createElement('th');
+		modifiedCell.colSpan = 10;
+		modifiedCell.innerHTML = "<div class='Last_Modified'>Last Modified:&nbsp;&nbsp" + currentDateTime +
+			" <a href='https://wm.mvs.ds.usace.army.mil/mvs/board/index.html?display_type=Lake&display_tributary=False&dev=True'>Switch to Original Board</a></div>";
+		row2.appendChild(modifiedCell);
+		thead.appendChild(row2);
 
-		// Use th instead of td for the header cell
-		var headerCell = document.createElement('th');
-		headerCell.colSpan = 8;
-		headerCell.innerHTML = "<div class='Last_Modified'>Last Modified:&nbsp;&nbsp" + currentDateTime + " <a href='https://wm.mvs.ds.usace.army.mil/mvs/board/index.html?display_type=Lake&display_tributary=False&dev=True'>Switch to Original Board</a></div>";
-		row2.appendChild(headerCell);
+		// === Row 3: Main Headers ===
+		var row3 = document.createElement('tr');
 
-		// Row 3
-		var row3 = staticTable.insertRow(2);
+		// Lake
+		var headerCell1 = document.createElement('th');
+		headerCell1.innerHTML = "Lake";
+		headerCell1.style.width = '15%';
+		headerCell1.classList.add('Font_20');
+		headerCell1.rowSpan = 2;
+		row3.appendChild(headerCell1);
 
-		var headerCell = document.createElement('th');
-		headerCell.innerHTML = "Lake";
-		headerCell.width = '15%'; // Set the width attribute
-		headerCell.classList.add('Font_12');
-		row3.appendChild(headerCell);
-
-		// Column 2
+		// Current Pool Level
 		var headerCell2 = document.createElement('th');
-		headerCell2.innerHTML = "Current " + ((currentMinute >= 0 && currentMinute < 30) ? currentHour + ":00" : currentHour + ":30") + "<br>" + "Pool Level (ft)";
-		headerCell2.width = '12%'; // Set the width attribute
+		headerCell2.innerHTML = "Current " + ((currentMinute >= 0 && currentMinute < 30) ? currentHour + ":00" : currentHour + ":30") + "<br>Pool Level (ft)";
+		headerCell2.style.width = '12%';
 		headerCell2.classList.add('Font_12');
+		headerCell2.rowSpan = 2;
 		row3.appendChild(headerCell2);
 
-		// Column 3
+		// 24hr Change
 		var headerCell3 = document.createElement('th');
 		headerCell3.innerHTML = "24hr<br>Change (ft)";
-		headerCell3.width = '10%'; // Set the width attribute
+		headerCell3.style.width = '10%';
 		headerCell3.classList.add('Font_12');
+		headerCell3.rowSpan = 2;
 		row3.appendChild(headerCell3);
 
-		// Column 4
+		// Current Storage Utilized
 		var headerCell4 = document.createElement('th');
-		headerCell4.innerHTML = "Current Storage Utilized <br> <span style='float: left; padding-left: 30px; padding-top: 10px; padding-bottom: 5px; font-size: 0.8em;'>Conservation</span><span style='float: right; padding-right: 30px; padding-top: 10px; padding-bottom: 5px; font-size: 0.8em;'>Flood</span>";
-		headerCell4.width = '17%'; // Set the width attribute
-		headerCell4.classList.add('Font_10');
+		headerCell4.innerHTML = "Current Storage Utilized";
+		headerCell4.classList.add('Font_12');
+		headerCell4.colSpan = 2;
 		row3.appendChild(headerCell4);
 
-		// Column 5
+		// Precip (in)
 		var headerCell5 = document.createElement('th');
 		headerCell5.innerHTML = "Precip (in)";
-		headerCell5.width = '9%'; // Set the width attribute
+		headerCell5.style.width = '9%';
 		headerCell5.classList.add('Font_12');
+		headerCell5.rowSpan = 2;
 		row3.appendChild(headerCell5);
 
-		// Column 6
+		// Yesterday Inflow
+		var headerCell55 = document.createElement('th');
+		headerCell55.innerHTML = "Yesterday Inflow (dsf)";
+		headerCell55.style.width = '9%';
+		headerCell55.classList.add('Font_12');
+		headerCell55.rowSpan = 2;
+		row3.appendChild(headerCell55);
+
+		// Controlled Outflow
 		var headerCell6 = document.createElement('th');
-		headerCell6.innerHTML = "Yesterday<br>Inflow (dsf)";
-		headerCell6.width = '9%'; // Set the width attribute
+		headerCell6.innerHTML = "Controlled Outflow (cfs)";
 		headerCell6.classList.add('Font_12');
+		headerCell6.colSpan = 2;
 		row3.appendChild(headerCell6);
 
-		// Column 7
+		// Seasonal Rule Curve
 		var headerCell7 = document.createElement('th');
-		headerCell7.innerHTML = "Controlled Outflow (cfs) <br> <span style='float: left; padding-left: 30px; padding-top: 10px; padding-bottom: 5px; font-size: 0.8em;'>Midnight</span><span style='float: right; padding-right: 30px; padding-top: 10px; padding-bottom: 5px; font-size: 0.8em;'>Evening</span>";
-		headerCell7.width = '17%'; // Set the width attribute
+		headerCell7.innerHTML = "Seasonal<br>Rule Curve (ft)";
+		headerCell7.style.width = '11%';
 		headerCell7.classList.add('Font_12');
+		headerCell7.rowSpan = 2;
 		row3.appendChild(headerCell7);
 
-		// Column 8
-		var headerCell8 = document.createElement('th');
-		headerCell8.innerHTML = "Seasonal<br>Rule Curve (ft)";
-		headerCell8.width = '11%'; // Set the width attribute
-		headerCell8.classList.add('Font_12');
-		row3.appendChild(headerCell8);
+		thead.appendChild(row3);
 
-		// Assuming you have a container with an ID 'tableContainer' in your HTML
+		// === Row 4: Sub-Headers for Storage and Outflow ===
+		var row4 = document.createElement('tr');
+
+		// Conservation
+		var subCell1 = document.createElement('th');
+		subCell1.innerHTML = "Conservation";
+		subCell1.classList.add('Font_10');
+		subCell1.style.textAlign = 'left';
+		subCell1.style.paddingLeft = '30px';
+		subCell1.style.width = '8.5%';
+		row4.appendChild(subCell1);
+
+		// Flood
+		var subCell2 = document.createElement('th');
+		subCell2.innerHTML = "Flood";
+		subCell2.classList.add('Font_10');
+		subCell2.style.textAlign = 'right';
+		subCell2.style.paddingRight = '30px';
+		subCell2.style.width = '8.5%';
+		row4.appendChild(subCell2);
+
+		// (no sub for precip — skipped)
+
+		// Midnight
+		var subCell3 = document.createElement('th');
+		subCell3.innerHTML = "Midnight";
+		subCell3.classList.add('Font_10');
+		subCell3.style.textAlign = 'left';
+		subCell3.style.paddingLeft = '30px';
+		subCell3.style.width = '8.5%';
+		row4.appendChild(subCell3);
+
+		// Evening
+		var subCell4 = document.createElement('th');
+		subCell4.innerHTML = "Evening";
+		subCell4.classList.add('Font_10');
+		subCell4.style.textAlign = 'right';
+		subCell4.style.paddingRight = '30px';
+		subCell4.style.width = '8.5%';
+		row4.appendChild(subCell4);
+
+		thead.appendChild(row4);
+
+		// Append thead and tbody to the table
+		staticTable.appendChild(thead);
+
+		// Add to the page
 		const tableContainer = document.getElementById('tableContainer');
-
-		// Check if the container is found
 		if (tableContainer) {
-			// Append the static table to the container
 			tableContainer.appendChild(staticTable);
 		} else {
 			console.error("Container with ID 'tableContainer' not found.");
 		}
 	});
 }
+
 
 //====================================================
 // ============== CREATE TABLE =======================
@@ -1016,9 +1066,8 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 					(() => {
 						// Create a new table cell for lake name
 						const lakeTd = document.createElement('td');
-						lakeTd.colSpan = 1;
 						lakeTd.classList.add('Font_20');
-						lakeTd.style.width = '15%';
+						lakeTd.style.width = "15%";
 
 						// Initialize lakeCellInnerHTML as an empty string
 						let lakeCellInnerHTML = '--';
@@ -1061,8 +1110,8 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						ConsrTd.classList.add('Font_20');
 						FloodTd.classList.add('Font_20');
 
-						ConsrTd.style.width = '8.5%';
-						FloodTd.style.width = '8.5%';
+						ConsrTd.style.width = "8.5%";
+						FloodTd.style.width = "8.5%";
 
 						const topOfConservationLevel = location['top-of-conservation']?.['constant-value'] || null;
 						// console.log("topOfConservationLevel: ", topOfConservationLevel);
@@ -1098,7 +1147,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const precipLakeTsid = location?.['tsid-lake-precip']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
 						if (precipLakeTsid) {
-							fetchAndUpdatePrecipTd(precipTd, precipLakeTsid, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl);
+							fetchAndUpdatePrecipTd(precipTd, precipLakeTsid, currentDateTimeIso, currentDateTimeMinus24HoursIso, setBaseUrl);
 						} else {
 							precipTd.textContent = "--";
 						}
@@ -1152,14 +1201,15 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										// console.log("value: ", value);
 
 										if (value !== null && value !== undefined) {
-											midnightControlledOutflowTd.textContent = value.toFixed(0);
+											midnightControlledOutflowTd.innerHTML = "<span title='" + "(Total outflow from the first row of the gate settings widget.) " + data.name + "'>" + value.toFixed(0) + "</span>";
+
 											if (flowUpperLimit !== null && value > flowUpperLimit) {
 												midnightControlledOutflowTd.style.color = 'red';
 											} else {
 												midnightControlledOutflowTd.style.color = ''; // reset to default
 											}
 										} else {
-											midnightControlledOutflowTd.textContent = "--";
+											midnightControlledOutflowTd.innerHTML = "<span class='missing' title='(Total outflow from the first row of the gate settings widget'>-M-</span>";
 											midnightControlledOutflowTd.style.color = ''; // reset to default
 										}
 									})
@@ -1173,14 +1223,14 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									.then(data => {
 										const value = data?.values?.[0]?.[1];
 										if (value !== null && value !== undefined) {
-											midnightControlledOutflowTd.textContent = value.toFixed(0);
+											midnightControlledOutflowTd.textContent = "<span title='" + "(Total outflow from the first row of the gate settings widget.) " + data.name + "'>" + value.toFixed(0) + "</span>";
 											if (flowUpperLimit !== null && value > flowUpperLimit) {
 												midnightControlledOutflowTd.style.color = 'red';
 											} else {
 												midnightControlledOutflowTd.style.color = ''; // reset to default
 											}
 										} else {
-											midnightControlledOutflowTd.textContent = "--";
+											midnightControlledOutflowTd.innerHTML = "<span class='missing' title='(Total outflow from the first row of the gate settings widget'>-M-</span>";
 											midnightControlledOutflowTd.style.color = ''; // reset to default
 										}
 									})
@@ -1196,18 +1246,28 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 								.then(data => {
 									// console.log("Fetched forecastLakeTsid data:", data);
 									const value = data?.values?.[0]?.[1];
-									eveningControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
+									const displayValue = typeof value === "number" ? value.toFixed(0) : value;
+
+									if (value !== null && value !== undefined) {
+										eveningControlledOutflowTd.innerHTML = "<span title='" + "(First forecasted lake value for tomorrow.) " + data.name + "'>" + displayValue + "</span>";
+									} else {
+										eveningControlledOutflowTd.innerHTML = "<span class='missing' title='(First forecasted lake value for tomorrow.'>-M-</span>";
+									}
+
 									if (location['metadata']['public-name'] === "Rend Pool") {
-										// TODO: Midnight?
-										eveningControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
-										midnightControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) + "?" : "--";
+										if (value !== null && value !== undefined) {
+											midnightControlledOutflowTd.textContent = displayValue;
+											eveningControlledOutflowTd.textContent = displayValue;
+										} else {
+											midnightControlledOutflowTd.innerHTML = "<span class='missing'>-M-</span>";
+											eveningControlledOutflowTd.innerHTML = "<span class='missing' title='(First forecasted lake value for tomorrow.'>-M-</span>";
+										}
 									}
 								})
 								.catch(error => {
 									console.error("Error during fetch:", error);
 								});
 						}
-
 
 						row.appendChild(midnightControlledOutflowTd);
 						row.appendChild(eveningControlledOutflowTd);
@@ -1216,6 +1276,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 					// 10-Seasonal Rule Curve
 					(() => {
 						const seasonalRuleCurveTd = document.createElement('td');
+						seasonalRuleCurveTd.style.width = "11%";
 						seasonalRuleCurveTd.classList.add('Font_20');
 
 						// fetchAndLogSeasonalRuleCurveDataTd(location['location-id'], seasonalRuleCurveTd, setJsonFileBaseUrl);
@@ -2176,7 +2237,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						// console.log("noteTsid: ", noteTsid);
 
 						if (noteTsid !== null) {
-							const url = `${setBaseUrl}timeseries/text?name=${noteTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+							const url = `${setBaseUrl}timeseries/text?name=${noteTsid}&begin=${currentDateTimeMinus24HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
 							fetch(url, {
 								method: 'GET',
