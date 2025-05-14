@@ -6739,6 +6739,15 @@
                             "timeseries-id": "Lk Shelbyville-Kaskaskia.Stage.Inst.~1Day.0.lakerep-rev-crest-note"
                         }
                     ]
+                },
+                "flow-upper-limit": {
+                    "office-id": "MVS",
+                    "location-level-id": "Shelbyville TW-Kaskaskia.Flow.Inst.0.Flow Upper Limit",
+                    "constant-value": 4500,
+                    "level-units-id": "cfs",
+                    "level-date": "2025-04-01T06:00:00Z",
+                    "attribute-units-id": "cfs",
+                    "seasonal-values": []
                 }
             },
             {
@@ -7181,6 +7190,15 @@
                             "timeseries-id": "Carlyle Lk-Kaskaskia.Stage.Inst.~1Day.0.lakerep-rev-crest-note"
                         }
                     ]
+                },
+                "flow-upper-limit": {
+                    "office-id": "MVS",
+                    "location-level-id": "Carlyle-Kaskaskia.Flow.Inst.0.Flow Upper Limit",
+                    "constant-value": 100000,
+                    "level-units-id": "cfs",
+                    "level-date": "2025-04-01T06:00:00Z",
+                    "attribute-units-id": "cfs",
+                    "seasonal-values": []
                 }
             },
             {
@@ -7761,6 +7779,15 @@
                             "timeseries-id": "Rend Lk-Big Muddy.Stage.Inst.~1Day.0.lakerep-rev-crest-note"
                         }
                     ]
+                },
+                "flow-upper-limit": {
+                    "office-id": "MVS",
+                    "location-level-id": "Rend Lk-Big Muddy.Flow.Inst.0.Flow Upper Limit",
+                    "constant-value": 1000,
+                    "level-units-id": "cfs",
+                    "level-date": "2025-04-01T06:00:00Z",
+                    "attribute-units-id": "cfs",
+                    "seasonal-values": []
                 }
             },
             {
@@ -8425,6 +8452,15 @@
                             "timeseries-id": "Wappapello Lk-St Francis.Stage.Inst.~1Day.0.lakerep-rev-crest-note"
                         }
                     ]
+                },
+                "flow-upper-limit": {
+                    "office-id": "MVS",
+                    "location-level-id": "Iron Bridge-St Francis.Flow.Inst.0.Flow Upper Limit",
+                    "constant-value": 10000,
+                    "level-units-id": "cfs",
+                    "level-date": "2025-04-01T06:00:00Z",
+                    "attribute-units-id": "cfs",
+                    "seasonal-values": []
                 }
             },
             {
@@ -8944,6 +8980,15 @@
                             "timeseries-id": "Mark Twain Lk-Salt.Stage.Inst.~1Day.0.lakerep-rev-crest-note"
                         }
                     ]
+                },
+                "flow-upper-limit": {
+                    "office-id": "MVS",
+                    "location-level-id": "Norton Bridge-Salt.Flow.Inst.0.Flow Upper Limit",
+                    "constant-value": 11999.999999999998,
+                    "level-units-id": "cfs",
+                    "level-date": "2025-04-01T06:00:00Z",
+                    "attribute-units-id": "cfs",
+                    "seasonal-values": []
                 }
             },
             {

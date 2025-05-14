@@ -1428,7 +1428,7 @@ function fetchAndUpdateStageTd(stageTd, DeltaTd, tsidStage, flood_level, current
                         delta_24 = "--";  // or set to "-1" or something else if you prefer
                     }
 
-                    console.log("delta_24:", delta_24);
+                    // console.log("delta_24:", delta_24);
 
                     // Make sure delta_24 is a valid number before calling parseFloat
                     if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
@@ -1814,7 +1814,7 @@ function fetchAndUpdateYesterdayInflowTd(precipCell, tsid, currentDateTimeMinus2
     }
 }
 
-function fetchAndUpdateControlledOutflowTd(tsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl) {
+function fetchAndUpdateControlledOutflowTd(tsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl, flowUpperLimit) {
     return new Promise((resolve, reject) => {
         if (tsid !== null) {
             const urlForecast = `${setBaseUrl}timeseries?name=${tsid}&begin=${isoDateTodayStr}&end=${isoDatePlus1Str}&office=${office}`;
@@ -1833,6 +1833,8 @@ function fetchAndUpdateControlledOutflowTd(tsid, isoDateTodayStr, isoDatePlus1St
                     return response.json();
                 })
                 .then(data => {
+                    console.log("data: ", data);
+
                     if (data?.values?.length) {
                         data.values.forEach(entry => {
                             entry[0] = formatNWSDate(entry[0]);

@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const doTwLakeTsidMap = new Map();
 		const turbinesTsidMap = new Map();
 		const noteLakeTsidMap = new Map();
+		const flowUpperLimitMap = new Map();
 
 		// Promises
 		const stageTsidPromises = [];
@@ -146,6 +147,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const doTwLakePromises = [];
 		const turbinesPromises = [];
 		const noteLakePromises = [];
+		const flowUpperLimitPromises = [];
 
 		const apiPromises = [];
 
@@ -239,7 +241,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 				...schedulePromises,
 				...doTwLakePromises,
 				...turbinesPromises,
-				...noteLakePromises
+				...noteLakePromises,
+				...flowUpperLimitPromises
 			]))
 			.then(() => {
 				// Merge fetched data into locations
@@ -276,6 +279,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 						loc['tsid-do-tw-lake'] = doTwLakeTsidMap.get(loc['location-id']);
 						loc['tsid-turbines-lake'] = turbinesTsidMap.get(loc['location-id']);
 						loc['tsid-note-lake'] = noteLakeTsidMap.get(loc['location-id']);
+						loc['flow-upper-limit'] = flowUpperLimitMap.get(loc['location-id']);
 					});
 				});
 
@@ -656,6 +660,27 @@ document.addEventListener('DOMContentLoaded', async function () {
 					.then(res => res.ok ? res.json() : null)
 					.then(data => data && noteLakeTsidMap.set(locationId, data))
 					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
+			);
+
+			let limitLocationId = null;
+
+			if (locationId === "Lk Shelbyville-Kaskaskia") {
+				limitLocationId = "Shelbyville TW-Kaskaskia";
+			} else if (locationId === "Carlyle Lk-Kaskaskia") {
+				limitLocationId = "Carlyle-Kaskaskia";
+			} else if (locationId === "Rend Lk-Big Muddy") {
+				limitLocationId = "Rend Lk-Big Muddy";
+			} else if (locationId === "Wappapello Lk-St Francis") {
+				limitLocationId = "Iron Bridge-St Francis";
+			} else if (locationId === "Mark Twain Lk-Salt") {
+				limitLocationId = "Norton Bridge-Salt";
+			}
+			const flowUpperLimitUrl = `${setBaseUrl}levels/${limitLocationId}.Flow.Inst.0.Flow Upper Limit?office=${office}&effective-date=${levelIdEffectiveDate}&unit=cfs`;
+			flowUpperLimitPromises.push(
+				fetch(flowUpperLimitUrl)
+					.then(res => res.status === 404 ? null : res.ok ? res.json() : Promise.reject(`fetch error: ${res.statusText}`))
+					.then(data => flowUpperLimitMap.set(locationId, data ?? null))
+					.catch(err => console.error(`Flood fetch failed for ${locationId}:`, err))
 			);
 		}
 	}
@@ -1116,27 +1141,48 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const gateTotalLakeTsid = location?.['tsid-gate-total-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 						const forecastLakeTsid = location?.['tsid-forecast-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
+						const flowUpperLimit = location['flow-upper-limit']?.['constant-value'] ?? null;
+						// console.log("flowUpperLimit: ", flowUpperLimit);
+
 						if (location['metadata'][`public-name`] === "Shelbyville Pool" || location['metadata'][`public-name`] === "Carlyle Pool") {
 							if (outflowTotalLakeTsid) {
-								fetchAndUpdateControlledOutflowTd(outflowTotalLakeTsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl)
+								fetchAndUpdateControlledOutflowTd(outflowTotalLakeTsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl, flowUpperLimit)
 									.then(data => {
-										// console.log("Fetched outflowTotalLakeTsid data:", data);
 										const value = data?.values?.[0]?.[1];
-										midnightControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
+										// console.log("value: ", value);
+
+										if (value !== null && value !== undefined) {
+											midnightControlledOutflowTd.textContent = value.toFixed(0);
+											if (flowUpperLimit !== null && value > flowUpperLimit) {
+												midnightControlledOutflowTd.style.color = 'red';
+											} else {
+												midnightControlledOutflowTd.style.color = ''; // reset to default
+											}
+										} else {
+											midnightControlledOutflowTd.textContent = "--";
+											midnightControlledOutflowTd.style.color = ''; // reset to default
+										}
 									})
-									.catch(error => {
-										console.error("Error during fetch:", error);
-									});
+
 							}
 						}
 
 						if (location['metadata'][`public-name`] === "Wappapello Pool" || location['metadata'][`public-name`] === "Mark Twain Pool") {
 							if (gateTotalLakeTsid) {
-								fetchAndUpdateControlledOutflowTd(gateTotalLakeTsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl)
+								fetchAndUpdateControlledOutflowTd(gateTotalLakeTsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl, flowUpperLimit)
 									.then(data => {
-										// console.log("Fetched gateTotalLakeTsid data:", data);
 										const value = data?.values?.[0]?.[1];
-										midnightControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
+										if (value !== null && value !== undefined) {
+											midnightControlledOutflowTd.textContent = value.toFixed(0);
+											if (flowUpperLimit !== null && value > flowUpperLimit) {
+												midnightControlledOutflowTd.style.color = 'red';
+											} else {
+												midnightControlledOutflowTd.style.color = ''; // reset to default
+											}
+										} else {
+											midnightControlledOutflowTd.textContent = "--";
+											midnightControlledOutflowTd.style.color = ''; // reset to default
+										}
 									})
 									.catch(error => {
 										console.error("Error during fetch:", error);
@@ -1151,17 +1197,17 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									// console.log("Fetched forecastLakeTsid data:", data);
 									const value = data?.values?.[0]?.[1];
 									eveningControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
-									if (location['metadata'][`public-name`] === "Rend Pool") {
-										// TODO: what is the midnight outflow for Rend?
-										midnightControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
-									} else {
-										midnightControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
+									if (location['metadata']['public-name'] === "Rend Pool") {
+										// TODO: Midnight?
+										eveningControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) : "--";
+										midnightControlledOutflowTd.textContent = value !== null && value !== undefined ? value.toFixed(0) + "?" : "--";
 									}
 								})
 								.catch(error => {
 									console.error("Error during fetch:", error);
 								});
 						}
+
 
 						row.appendChild(midnightControlledOutflowTd);
 						row.appendChild(eveningControlledOutflowTd);
@@ -1337,7 +1383,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						twDoCell.style.color = 'lightgray';
 						twDoCell.style.textAlign = 'center';
 
-						let twDoInnerHTML = 'TW DO:  ';
+						let twDoInnerHTML = 'Tw Do:  ';
 
 						const doTsid = location?.['tsid-do-tw-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
@@ -1364,17 +1410,18 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									// console.log("data: ", data);
 
 									const c_count = calculateCCount(doTsid);
-									// console.log("c_count: ", c_count);
 
-									const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
+									const lastNonNullValue = getLastNonNullValue(data);
 									// console.log("lastNonNullValue:", lastNonNullValue);
 
 									let valueLast = null;
 									let timestampLast = null;
+									let unitLast = null;
 
-									if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-										timestampLast = lastNonNullValue.current6am.timestamp;
-										valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
+									if (lastNonNullValue !== null) {
+										timestampLast = lastNonNullValue.timestamp;
+										valueLast = parseFloat(lastNonNullValue.value).toFixed(2);
+										unitLast = data.units;
 									}
 									// console.log("valueLast:", valueLast);
 									// console.log("timestampLast:", timestampLast);
@@ -1382,11 +1429,13 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									let value24HoursLast = null;
 									let timestamp24HoursLast = null;
 
-									if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-										timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
-										value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(2);
-									}
+									const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
+									// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
 
+									if (lastNonNull24HoursValue !== null) {
+										timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+										value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(2);
+									}
 									// console.log("value24HoursLast:", value24HoursLast);
 									// console.log("timestamp24HoursLast:", timestamp24HoursLast);
 
@@ -1398,6 +1447,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									} else {
 										delta_24 = "--";  // or set to "-1" or something else if you prefer
 									}
+
 									// console.log("delta_24:", delta_24);
 
 									// Make sure delta_24 is a valid number before calling parseFloat
@@ -1407,14 +1457,14 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										delta_24 = "--";
 									}
 
-									let innerHTML;
+									let innerHTM;
 									if (valueLast === null) {
-										innerHTML = twDoInnerHTML + "<span class='missing'>-M-</span>";
+										innerHTM = "<span class='missing'>-M-</span>";
 									} else {
-										innerHTML = twDoInnerHTML + `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${data.units}</span>`;
+										innerHTM = `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${unitLast}</span>`;
 									}
 
-									twDoCell.innerHTML = innerHTML;
+									twDoCell.innerHTML = innerHTM;
 								})
 								.catch(error => {
 									console.error("Error fetching or processing data:", error);
@@ -1434,8 +1484,6 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						gagedOutflowCell.style.width = '10%';
 						gagedOutflowCell.style.backgroundColor = '#404040';
 						gagedOutflowCell.style.color = 'lightgray';
-
-						let gagedOutflowInnerTextHTML = 'Gaged Outflow:  ';
 
 						const gagedOutflowTsid = location?.['tsid-gaged-outflow-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 						// console.log("gagedOutflowTsid: ", gagedOutflowTsid);
@@ -1463,17 +1511,18 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									// console.log("data: ", data);
 
 									const c_count = calculateCCount(gagedOutflowTsid);
-									// console.log("c_count: ", c_count);
 
-									const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
+									const lastNonNullValue = getLastNonNullValue(data);
 									// console.log("lastNonNullValue:", lastNonNullValue);
 
 									let valueLast = null;
 									let timestampLast = null;
+									let unitLast = null;
 
-									if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-										timestampLast = lastNonNullValue.current6am.timestamp;
-										valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(0);
+									if (lastNonNullValue !== null) {
+										timestampLast = lastNonNullValue.timestamp;
+										valueLast = parseFloat(lastNonNullValue.value).toFixed(0);
+										unitLast = data.units;
 									}
 									// console.log("valueLast:", valueLast);
 									// console.log("timestampLast:", timestampLast);
@@ -1481,11 +1530,13 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									let value24HoursLast = null;
 									let timestamp24HoursLast = null;
 
-									if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-										timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
-										value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(0);
-									}
+									const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
+									// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
 
+									if (lastNonNull24HoursValue !== null) {
+										timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+										value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(0);
+									}
 									// console.log("value24HoursLast:", value24HoursLast);
 									// console.log("timestamp24HoursLast:", timestamp24HoursLast);
 
@@ -1497,6 +1548,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									} else {
 										delta_24 = "--";  // or set to "-1" or something else if you prefer
 									}
+
 									// console.log("delta_24:", delta_24);
 
 									// Make sure delta_24 is a valid number before calling parseFloat
@@ -1506,14 +1558,14 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										delta_24 = "--";
 									}
 
-									let gagedOutflowInnerHTML;
+									let innerHTM;
 									if (valueLast === null) {
-										gagedOutflowInnerHTML = gagedOutflowInnerTextHTML + "<span class='missing'>-M-</span>";
+										innerHTM = "<span class='missing'>-M-</span>";
 									} else {
-										gagedOutflowInnerHTML = gagedOutflowInnerTextHTML + `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${data.units}</span>`;
+										innerHTM = `<span title='${timestampLast}'>Outflow: ${valueLast} (${delta_24}) ${unitLast}</span>`;
 									}
 
-									gagedOutflowCell.innerHTML = gagedOutflowInnerHTML;
+									gagedOutflowCell.innerHTML = innerHTM;
 								})
 								.catch(error => {
 									console.error("Error fetching or processing data:", error);
@@ -1834,10 +1886,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							reregDoCell.style.backgroundColor = '#404040';
 							reregDoCell.style.color = 'lightgray';
 
-							let twDoInnerHTML = 'ReReg Do:  ';
-
 							const doReRegTsid = location?.['tsid-do-re-reg-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-							const doReRegTsid2 = location?.['tsid-do-re-reg-lake']?.['assigned-time-series']?.[1]?.['timeseries-id'] ?? null;
 
 							if (doReRegTsid !== null) {
 								const url = `${setBaseUrl}timeseries?name=${doReRegTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
@@ -1862,17 +1911,18 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										// console.log("data: ", data);
 
 										const c_count = calculateCCount(doReRegTsid);
-										// console.log("c_count: ", c_count);
 
-										const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
+										const lastNonNullValue = getLastNonNullValue(data);
 										// console.log("lastNonNullValue:", lastNonNullValue);
 
 										let valueLast = null;
 										let timestampLast = null;
+										let unitLast = null;
 
-										if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-											timestampLast = lastNonNullValue.current6am.timestamp;
-											valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
+										if (lastNonNullValue !== null) {
+											timestampLast = lastNonNullValue.timestamp;
+											valueLast = parseFloat(lastNonNullValue.value).toFixed(2);
+											unitLast = data.units;
 										}
 										// console.log("valueLast:", valueLast);
 										// console.log("timestampLast:", timestampLast);
@@ -1880,11 +1930,13 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										let value24HoursLast = null;
 										let timestamp24HoursLast = null;
 
-										if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-											timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
-											value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(2);
-										}
+										const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
+										// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
 
+										if (lastNonNull24HoursValue !== null) {
+											timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+											value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(2);
+										}
 										// console.log("value24HoursLast:", value24HoursLast);
 										// console.log("timestamp24HoursLast:", timestamp24HoursLast);
 
@@ -1896,6 +1948,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										} else {
 											delta_24 = "--";  // or set to "-1" or something else if you prefer
 										}
+
 										// console.log("delta_24:", delta_24);
 
 										// Make sure delta_24 is a valid number before calling parseFloat
@@ -1905,14 +1958,14 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 											delta_24 = "--";
 										}
 
-										let innerHTML;
+										let innerHTM;
 										if (valueLast === null) {
-											innerHTML = twDoInnerHTML + "<span class='missing'>-M-</span>";
+											innerHTM = "<span class='missing'>-M-</span>";
 										} else {
-											innerHTML = twDoInnerHTML + `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${data.units}</span>`;
+											innerHTM = `<span title='${timestampLast}'>ReReg Do: ${valueLast} (${delta_24}) ${unitLast}</span>`;
 										}
 
-										reregDoCell.innerHTML = innerHTML;
+										reregDoCell.innerHTML = innerHTM;
 									})
 									.catch(error => {
 										console.error("Error fetching or processing data:", error);
@@ -1933,9 +1986,6 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							reregDoCell2.style.backgroundColor = '#404040';
 							reregDoCell2.style.color = 'lightgray';
 
-							let twDoInnerHTML = 'ReReg Do2:  ';
-
-							const doReRegTsid = location?.['tsid-do-re-reg-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 							const doReRegTsid2 = location?.['tsid-do-re-reg-lake']?.['assigned-time-series']?.[1]?.['timeseries-id'] ?? null;
 
 							if (doReRegTsid2 !== null) {
@@ -1961,17 +2011,18 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										// console.log("data: ", data);
 
 										const c_count = calculateCCount(doReRegTsid2);
-										// console.log("c_count: ", c_count);
 
-										const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
+										const lastNonNullValue = getLastNonNullValue(data);
 										// console.log("lastNonNullValue:", lastNonNullValue);
 
 										let valueLast = null;
 										let timestampLast = null;
+										let unitLast = null;
 
-										if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-											timestampLast = lastNonNullValue.current6am.timestamp;
-											valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
+										if (lastNonNullValue !== null) {
+											timestampLast = lastNonNullValue.timestamp;
+											valueLast = parseFloat(lastNonNullValue.value).toFixed(2);
+											unitLast = data.units;
 										}
 										// console.log("valueLast:", valueLast);
 										// console.log("timestampLast:", timestampLast);
@@ -1979,11 +2030,13 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										let value24HoursLast = null;
 										let timestamp24HoursLast = null;
 
-										if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-											timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
-											value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(2);
-										}
+										const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
+										// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
 
+										if (lastNonNull24HoursValue !== null) {
+											timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+											value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(2);
+										}
 										// console.log("value24HoursLast:", value24HoursLast);
 										// console.log("timestamp24HoursLast:", timestamp24HoursLast);
 
@@ -1995,6 +2048,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 										} else {
 											delta_24 = "--";  // or set to "-1" or something else if you prefer
 										}
+
 										// console.log("delta_24:", delta_24);
 
 										// Make sure delta_24 is a valid number before calling parseFloat
@@ -2004,14 +2058,14 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 											delta_24 = "--";
 										}
 
-										let innerHTML;
+										let innerHTM;
 										if (valueLast === null) {
-											innerHTML = twDoInnerHTML + "<span class='missing'>-M-</span>";
+											innerHTM = "<span class='missing'>-M-</span>";
 										} else {
-											innerHTML = twDoInnerHTML + `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${data.units}</span>`;
+											innerHTM = `<span title='${timestampLast}'>ReReg Do2: ${valueLast} (${delta_24}) ${unitLast}</span>`;
 										}
 
-										reregDoCell2.innerHTML = innerHTML;
+										reregDoCell2.innerHTML = innerHTM;
 									})
 									.catch(error => {
 										console.error("Error fetching or processing data:", error);
@@ -2108,7 +2162,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 					(() => {
 						// Create a new table cell for lake name
 						const noteCell = row4.insertCell(1);
-						noteCell.colSpan = 7;
+						noteCell.colSpan = 9;
 						noteCell.classList.add('Font_15');
 						noteCell.style.width = '10%';
 						noteCell.style.backgroundColor = 'lightyellow';
@@ -2174,7 +2228,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 					if ("blank" === "blank") {
 						// Create a new table cell for lake name in the second row
 						const blankCell5 = row5.insertCell(0);
-						blankCell5.colSpan = 8;
+						blankCell5.colSpan = 10;
 						blankCell5.classList.add('Font_15');
 						blankCell5.style.color = 'white';
 						blankCell5.style.height = '20px'; // Add this line to set the height
