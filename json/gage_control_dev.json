@@ -6748,6 +6748,20 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "cfs",
                     "seasonal-values": []
+                },
+                "tsid-outflow-average-lake": {
+                    "office-id": "MVS",
+                    "id": "Outflow-Average-Lake-Test",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Lk Shelbyville-Kaskaskia"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Lk Shelbyville-Kaskaskia.Flow-Out.Ave.~1Day.1Day.lakerep-rev-test"
+                        }
+                    ]
                 }
             },
             {
@@ -7199,6 +7213,21 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "cfs",
                     "seasonal-values": []
+                },
+                "tsid-outflow-average-lake": {
+                    "office-id": "MVS",
+                    "id": "Outflow-Average-Lake-Test",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Carlyle Lk-Kaskaskia"
+                    },
+                    "description": "Lake Sheet",
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Carlyle Lk-Kaskaskia.Flow-Out.Ave.~1Day.1Day.lakerep-rev-test"
+                        }
+                    ]
                 }
             },
             {
@@ -7788,6 +7817,20 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "cfs",
                     "seasonal-values": []
+                },
+                "tsid-outflow-average-lake": {
+                    "office-id": "MVS",
+                    "id": "Outflow-Average-Lake-Test",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Rend Lk-Big Muddy"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Rend Lk-Big Muddy.Flow-Out.Ave.~1Day.1Day.lakerep-rev-test"
+                        }
+                    ]
                 }
             },
             {
@@ -8461,6 +8504,21 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "cfs",
                     "seasonal-values": []
+                },
+                "tsid-outflow-average-lake": {
+                    "office-id": "MVS",
+                    "id": "Outflow-Average-Lake-Test",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Wappapello Lk-St Francis"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Wappapello Lk-St Francis.Flow-Out.Ave.~1Day.1Day.lakerep-rev-test",
+                            "attribute": 1
+                        }
+                    ]
                 }
             },
             {
@@ -8989,6 +9047,20 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "cfs",
                     "seasonal-values": []
+                },
+                "tsid-outflow-average-lake": {
+                    "office-id": "MVS",
+                    "id": "Outflow-Average-Lake-Test",
+                    "time-series-category": {
+                        "office-id": "MVS",
+                        "id": "Mark Twain Lk-Salt"
+                    },
+                    "assigned-time-series": [
+                        {
+                            "office-id": "MVS",
+                            "timeseries-id": "Mark Twain Lk-Salt.Flow-Spill.Ave.~1Day.1Day.lakerep-rev-test"
+                        }
+                    ]
                 }
             },
             {

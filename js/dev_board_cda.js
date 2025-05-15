@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const setTimeseriesGroup15 = "Conc-DO-Tw-Lake";
 		const setTimeseriesGroup16 = "Turbines-Lake-Test";
 		const setTimeseriesGroup17 = "Note-Lake";
+		const setTimeseriesGroup18 = "Outflow-Average-Lake-Test";
 
 		const categoryApiUrl = `${setBaseUrl}location/group?office=${office}&group-office-id=${office}&category-office-id=${office}&category-id=${setLocationCategory}`;
 
@@ -114,6 +115,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const turbinesTsidMap = new Map();
 		const noteLakeTsidMap = new Map();
 		const flowUpperLimitMap = new Map();
+		const outflowAverageLakeTsidMap = new Map();
 
 		// Promises
 		const stageTsidPromises = [];
@@ -148,6 +150,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const turbinesPromises = [];
 		const noteLakePromises = [];
 		const flowUpperLimitPromises = [];
+		const outflowAverageLakePromises = [];
 
 		const apiPromises = [];
 
@@ -242,7 +245,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 				...doTwLakePromises,
 				...turbinesPromises,
 				...noteLakePromises,
-				...flowUpperLimitPromises
+				...flowUpperLimitPromises,
+				...outflowAverageLakePromises
 			]))
 			.then(() => {
 				// Merge fetched data into locations
@@ -280,6 +284,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 						loc['tsid-turbines-lake'] = turbinesTsidMap.get(loc['location-id']);
 						loc['tsid-note-lake'] = noteLakeTsidMap.get(loc['location-id']);
 						loc['flow-upper-limit'] = flowUpperLimitMap.get(loc['location-id']);
+						loc['tsid-outflow-average-lake'] = outflowAverageLakeTsidMap.get(loc['location-id']);
 					});
 				});
 
@@ -681,6 +686,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 					.then(res => res.status === 404 ? null : res.ok ? res.json() : Promise.reject(`fetch error: ${res.statusText}`))
 					.then(data => flowUpperLimitMap.set(locationId, data ?? null))
 					.catch(err => console.error(`Flood fetch failed for ${locationId}:`, err))
+			);
+
+			const tsidOutflowAverageUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup18}?office=${office}&category-id=${locationId}`;
+			outflowAverageLakePromises.push(
+				fetch(tsidOutflowAverageUrl)
+					.then(res => res.ok ? res.json() : null)
+					.then(data => data && outflowAverageLakeTsidMap.set(locationId, data))
+					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
 			);
 		}
 	}
@@ -1189,6 +1202,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const outflowTotalLakeTsid = location?.['tsid-outflow-total-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 						const gateTotalLakeTsid = location?.['tsid-gate-total-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 						const forecastLakeTsid = location?.['tsid-forecast-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						const yesterdayOutflowAverage = location?.['tsid-outflow-average-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
 						const flowUpperLimit = location['flow-upper-limit']?.['constant-value'] ?? null;
 						// console.log("flowUpperLimit: ", flowUpperLimit);
@@ -1253,20 +1267,30 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 									} else {
 										eveningControlledOutflowTd.innerHTML = "<span class='missing' title='(First forecasted lake value for tomorrow.'>-M-</span>";
 									}
-
-									if (location['metadata']['public-name'] === "Rend Pool") {
-										if (value !== null && value !== undefined) {
-											midnightControlledOutflowTd.textContent = displayValue;
-											eveningControlledOutflowTd.textContent = displayValue;
-										} else {
-											midnightControlledOutflowTd.innerHTML = "<span class='missing'>-M-</span>";
-											eveningControlledOutflowTd.innerHTML = "<span class='missing' title='(First forecasted lake value for tomorrow.'>-M-</span>";
-										}
-									}
 								})
 								.catch(error => {
 									console.error("Error during fetch:", error);
 								});
+						}
+
+						if (location['metadata']['public-name'] === "Rend Pool") {
+							if (yesterdayOutflowAverage) {
+								fetchAndUpdateOutflowAverageTd(yesterdayOutflowAverage, isoDateTodayStr, isoDatePlus1Str, isoDateTodayPlus6HoursStr, setBaseUrl)
+									.then(data => {
+										console.log("data:", data);
+										const value = data?.values?.[0]?.[1];
+										const displayValue = typeof value === "number" ? value.toFixed(0) : value;
+
+										if (value !== null && value !== undefined) {
+											midnightControlledOutflowTd.innerHTML = "<span title='" + "(Yesterday Average Outflow.) " + data.name + "'>" + displayValue + "</span>";
+										} else {
+											midnightControlledOutflowTd.innerHTML = "<span class='missing' title='(Yesterday Average Outflow.'>-M-</span>";
+										}
+									})
+									.catch(error => {
+										console.error("Error during fetch:", error);
+									});
+							}
 						}
 
 						row.appendChild(midnightControlledOutflowTd);

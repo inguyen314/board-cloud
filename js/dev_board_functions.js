@@ -1867,6 +1867,42 @@ function fetchAndUpdateForecastTd(tsid, isoDateTodayStr, isoDatePlus1Str, isoDat
     });
 }
 
+function fetchAndUpdateOutflowAverageTd(tsid, isoDateTodayStr, isoDatePlus1Str, isoDateTodayPlus6HoursStr, setBaseUrl) {
+    return new Promise((resolve, reject) => {
+        if (tsid !== null) {
+            const urlForecast = `${setBaseUrl}timeseries?name=${tsid}&begin=${isoDateTodayStr}&end=${isoDatePlus1Str}&office=${office}&version-date=${isoDateTodayPlus6HoursStr}`;
+
+            fetch(urlForecast, {
+                method: 'GET',
+                headers: {
+                    "Accept": "application/json;version=2", // Ensuring the correct version is used
+                    "cache-control": "no-cache"
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data?.values?.length) {
+                        data.values.forEach(entry => {
+                            entry[0] = formatNWSDate(entry[0]);
+                        });
+                    }
+                    resolve(data);
+                })
+                .catch(error => {
+                    console.error("Error fetching or processing data:", error);
+                    reject(error);
+                });
+        } else {
+            resolve(null);
+        }
+    });
+}
+
 function fetchAndUpdateCrestPoolForecastTd(stageTd, DeltaTd, tsidStage, currentDateTime, currentDateTimePlus7Days, setBaseUrl) {
     function getTodayAtSixCentral() {
         const today = new Date();
