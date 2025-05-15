@@ -1750,7 +1750,7 @@ function fetchAndUpdateYesterdayInflowTd(precipCell, tsid, isoDateMinus1Str, iso
                 return response.json();
             })
             .then(data => {
-                console.log("data: ", data);
+                // console.log("data: ", data);
 
                 // Convert timestamps in the JSON object
                 data.values.forEach(entry => {
@@ -1861,10 +1861,10 @@ function fetchAndUpdateForecastTd(tsid, isoDateTodayStr, isoDatePlus1Str, isoDat
     });
 }
 
-function fetchAndUpdateOutflowAverageTd(tsid, isoDateTodayStr, isoDatePlus1Str, isoDateTodayPlus6HoursStr, setBaseUrl) {
+function fetchAndUpdateOutflowAverageTd(tsid, begin, end, setBaseUrl) {
     return new Promise((resolve, reject) => {
         if (tsid !== null) {
-            const urlForecast = `${setBaseUrl}timeseries?name=${tsid}&begin=${isoDateTodayStr}&end=${isoDatePlus1Str}&office=${office}&version-date=${isoDateTodayPlus6HoursStr}`;
+            const urlForecast = `${setBaseUrl}timeseries?name=${tsid}&begin=${begin}&end=${end}&office=${office}`;
 
             fetch(urlForecast, {
                 method: 'GET',

@@ -1370,10 +1370,11 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 
 							if (location['metadata']['public-name'] === "Rend Pool") {
 								if (yesterdayOutflowAverage) {
-									fetchAndUpdateOutflowAverageTd(yesterdayOutflowAverage, isoDateTodayStr, isoDatePlus1Str, isoDateTodayPlus6HoursStr, setBaseUrl)
+									fetchAndUpdateOutflowAverageTd(yesterdayOutflowAverage, isoDateTodayStr, isoDateTodayStr, setBaseUrl)
 										.then(data => {
 											console.log("data:", data);
-											const value = data?.values?.[0]?.[1];
+											let value = data?.values?.[0]?.[1];
+											value = Math.round(value / 10) * 10;
 											const displayValue = typeof value === "number" ? value.toFixed(0) : value;
 
 											if (value !== null && value !== undefined) {
