@@ -1164,7 +1164,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 						const yesterdayInflowTsid = location?.['tsid-lake-inflow-yesterday']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
 						if (yesterdayInflowTsid) {
-							fetchAndUpdateYesterdayInflowTd(yesterdayInflowTd, yesterdayInflowTsid, currentDateTimeMinus2Hours, currentDateTime, currentDateTimeMinus60Hours, setBaseUrl);
+							fetchAndUpdateYesterdayInflowTd(yesterdayInflowTd, yesterdayInflowTsid, currentDateTimeMinus2Hours, currentDateTime, currentDateTimeMinus24Hours, setBaseUrl);
 						} else {
 							yesterdayInflowTd.textContent = "--";
 						}
@@ -1939,7 +1939,7 @@ function createTable(combinedDataReservoir, setBaseUrl, display_type, display_tr
 							let blankCell3InnerHTML = '';
 
 							// Update the inner HTML of the cell with data for the second row, preserving HTML
-							blankCell3InnerHTML = "..."; // Replace with the actual data for the second lake
+							blankCell3InnerHTML = ""; // Replace with the actual data for the second lake
 							// console.log('blankCell3InnerHTML =', blankCell3InnerHTML);
 							blankCell33.innerHTML = blankCell3InnerHTML;
 						})();
