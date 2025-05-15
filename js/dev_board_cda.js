@@ -80,6 +80,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const setTimeseriesGroup16 = "Turbines-Lake-Test";
 		const setTimeseriesGroup17 = "Note-Lake";
 		const setTimeseriesGroup18 = "Outflow-Average-Lake-Test";
+		const setTimeseriesGroup19 = "Tainter";
+		const setTimeseriesGroup20 = "Roller";
 
 		const categoryApiUrl = `${setBaseUrl}location/group?office=${office}&group-office-id=${office}&category-office-id=${office}&category-id=${setLocationCategory}`;
 
@@ -118,6 +120,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const flowUpperLimitMap = new Map();
 		const outflowAverageLakeTsidMap = new Map();
 		const boardLocationsMap = new Map();
+		const taintTsidMap = new Map();
+		const rollTsidMap = new Map();
+		const closureMap = new Map();
 
 		// Promises
 		const stageTsidPromises = [];
@@ -154,6 +159,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 		const flowUpperLimitPromises = [];
 		const outflowAverageLakePromises = [];
 		const boardLocationsPromises = [];
+		const taintPromises = [];
+		const rollPromises = [];
+		const closurePromises = [];
 
 		const apiPromises = [];
 
@@ -250,7 +258,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 				...noteLakePromises,
 				...flowUpperLimitPromises,
 				...outflowAverageLakePromises,
-				...boardLocationsPromises
+				...boardLocationsPromises,
+				...taintPromises,
+				...rollPromises,
+				...closurePromises
 			]))
 			.then(() => {
 				// Merge fetched data into locations
@@ -278,7 +289,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 						loc['tsid-nws-crest'] = crestNwsTsidMap.get(loc['location-id']);
 						loc['eoc-phase-1'] = eocPhase1Map.get(loc['location-id']);
 						loc['eoc-phase-2'] = eocPhase1Map.get(loc['location-id']);
-						loc['lwrp'] = eocPhase1Map.get(loc['location-id']);
+						loc['lwrp'] = lwrpMap.get(loc['location-id']);
 						loc['bankfull'] = bankfullMap.get(loc['location-id']);
 						loc['tsid-do-re-reg-lake'] = doReRegLakeMap.get(loc['location-id']);
 						loc['tsid-gaged-outflow-lake'] = gagedOutflowMap.get(loc['location-id']);
@@ -290,6 +301,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 						loc['flow-upper-limit'] = flowUpperLimitMap.get(loc['location-id']);
 						loc['tsid-outflow-average-lake'] = outflowAverageLakeTsidMap.get(loc['location-id']);
 						loc['board-locations'] = boardLocationsMap.get(loc['location-id']);
+						loc['tsid-taint'] = taintTsidMap.get(loc['location-id']);
+						loc['tsid-roll'] = rollTsidMap.get(loc['location-id']);
+						loc['closure'] = closureMap.get(loc['location-id']);
 					});
 				});
 
@@ -441,6 +455,30 @@ document.addEventListener('DOMContentLoaded', async function () {
 					.then(res => res.ok ? res.json() : null)
 					.then(data => data && boardLocationsMap.set(locationId, data))
 					.catch(err => console.error(`Fetch failed for ${locationId}:`, err))
+			);
+
+			const tsidTaintUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup19}?office=${office}&category-id=${locationId}`;
+			taintPromises.push(
+				fetch(tsidTaintUrl)
+					.then(res => res.ok ? res.json() : null)
+					.then(data => data && taintTsidMap.set(locationId, data))
+					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
+			);
+
+			const tsidRollUrl = `${setBaseUrl}timeseries/group/${setTimeseriesGroup20}?office=${office}&category-id=${locationId}`;
+			rollPromises.push(
+				fetch(tsidRollUrl)
+					.then(res => res.ok ? res.json() : null)
+					.then(data => data && rollTsidMap.set(locationId, data))
+					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
+			);
+
+			const closureUrl = `${setBaseUrl}levels/${locationId}.Stage.Inst.0.Closure?office=${office}&effective-date=${levelIdEffectiveDate}&unit=ft`;
+			closurePromises.push(
+				fetch(closureUrl)
+					.then(res => res.status === 404 ? null : res.ok ? res.json() : Promise.reject(`Flood fetch error: ${res.statusText}`))
+					.then(data => closureMap.set(locationId, data ?? null))
+					.catch(err => console.error(`TSID fetch failed for ${locationId}:`, err))
 			);
 		}
 
@@ -2491,7 +2529,8 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 					let publicNameCellInnerHTML = "--";
 
 					// Update the inner HTML of the cell with data, preserving HTML
-					publicNameCellInnerHTML = "<span title='" + location['location-id'] + "'>" + location['metadata']['public-name'] + "</span>";
+					// publicNameCellInnerHTML = "<span title='" + location['location-id'] + "'>" + location['metadata']['public-name'] + "</span>";
+					publicNameCellInnerHTML = "<span title='" + location['location-id'] + "'>" + location['location-id'] + "</span>";
 					// console.log("publicNameCellInnerHTML = ", publicNameCellInnerHTML);
 					publicNameCell.innerHTML = publicNameCellInnerHTML;
 				})();
@@ -2816,7 +2855,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 										entry[0] = formatNWSDate(entry[0]); // Update timestamp
 									});
 
-									console.log("crest = ", crest);
+									// console.log("crest = ", crest);
 
 									const lastNonNullCrestValue = getLastNonNullValue(crest);
 
@@ -2872,442 +2911,431 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 					}
 				})();
 
-				// // LD SETTINGS
-				// (() => {
-				// 	// Create a new table cell
-				// 	const lDSettingCell = row.insertCell(10);
-				// 	lDSettingCell.classList.add("project_gage");
-				// 	lDSettingCell.style.width = "15%";
+				// LD SETTINGS
+				(() => {
+					// Create a new table cell
+					const lDSettingCell = row.insertCell(10);
+					lDSettingCell.classList.add("project_gage");
+					lDSettingCell.style.width = "15%";
 
-				// 	// console.log('data.location_id:', data.location_id);
+					// console.log('data.location_id:', data.location_id);
 
-				// 	// Initialize stageCwmsIdCell.innerHTML as an empty string
-				// 	let lDSettingCellInnerHTML = "--";
+					// Initialize stageCwmsIdCell.innerHTML as an empty string
+					let lDSettingCellInnerHTML = "--";
 
-				// 	if (data.tsid_taint !== null || data.tsid_roll !== null) {
+					const tsidTaint = location['tsid-taint']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+					// console.log("tsidTaint: " + tsidTaint);
 
-				// 		const tsidTaint = data.tsid_taint;
-				// 		// console.log("tsidTaint: " + tsidTaint);
+					const tsidRoll = location['tsid-roll']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+					// console.log("tsidRoll: " + tsidRoll);
 
-				// 		const tsidRoll = data.tsid_roll;
-				// 		// console.log("tsidRoll: " + tsidRoll);
+					if (tsidTaint !== null || tsidRoll !== null) {
+						let urlTainter = null;
+						if (cda === "public") {
+							urlTainter = `${setBaseUrl}timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+						} else if (cda === "internal") {
+							urlTainter = `${setBaseUrl}timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+						}
+						fetch(urlTainter, {
+							method: 'GET',
+							headers: {
+								'Accept': 'application/json;version=2'
+							}
+						})
+							.then(response => {
+								if (!response.ok) {
+									if (response.status === 404) {
+										throw new Error('Resource not found (404)');
+									} else {
+										throw new Error('Network response was not ok');
+									}
+								}
+								return response.json();
+							})
+							.then(tainter => {
+								// Log the tainter to the console
+								// console.log("tainter: ", data.location_id, data.tsid_taint, tainter);
 
-				// 		let urlTainter = null;
-				// 		if (cda === "public") {
-				// 			urlTainter = `${setBaseUrl}timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 		} else if (cda === "internal") {
-				// 			urlTainter = `${setBaseUrl}timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 		}
-				// 		fetch(urlTainter, {
-				// 			method: 'GET',
-				// 			headers: {
-				// 				'Accept': 'application/json;version=2'
-				// 			}
-				// 		})
-				// 			.then(response => {
-				// 				if (!response.ok) {
-				// 					if (response.status === 404) {
-				// 						throw new Error('Resource not found (404)');
-				// 					} else {
-				// 						throw new Error('Network response was not ok');
-				// 					}
-				// 				}
-				// 				return response.json();
-				// 			})
-				// 			.then(tainter => {
-				// 				// Log the tainter to the console
-				// 				// console.log("tainter: ", data.location_id, data.tsid_taint, tainter);
+								if (tainter !== null) {
+									// Your code to be executed if tainter is not null
+									// console.log("tainter is not null");
 
-				// 				if (tainter !== null && data.tsid_taint !== null) {
-				// 					// Your code to be executed if tainter is not null
-				// 					// console.log("tainter is not null");
+									// Convert timestamps in the JSON object
+									tainter.values.forEach(entry => {
+										entry[0] = formatNWSDate(entry[0]); // Update timestamp
+									});
 
-				// 					// Convert timestamps in the JSON object
-				// 					tainter.values.forEach(entry => {
-				// 						entry[0] = formatNWSDate(entry[0]); // Update timestamp
-				// 					});
+									// console.log("tainter formatted = ", tainter);
 
-				// 					// console.log("tainter formatted = ", tainter);
+									// Get the last non-null value from the tainter data
+									const lastNonNullValue = getLastNonNullValue(tainter);
+									// console.log("lastNonNullValue:", lastNonNullValue);
 
-				// 					// Get the last non-null value from the tainter data
-				// 					const lastNonNullValue = getLastNonNullValue(tainter);
-				// 					// console.log("lastNonNullValue:", lastNonNullValue);
+									// Check if a non-null value was found
+									if (lastNonNullValue !== null) {
+										// Extract timestamp, value, and quality code from the last non-null value
+										var timestampLast = lastNonNullValue.timestamp;
+										var valueLast = lastNonNullValue.value;
+										var qualityCodeLast = lastNonNullValue.qualityCode;
+										// console.log("timestampLast:", timestampLast);
+										// console.log("timestampLast:", typeof (timestampLast));
+										// console.log("valueLast:", valueLast);
+										// console.log("qualityCodeLast:", qualityCodeLast);
+									} else {
+										// If no non-null valueLast is found, log a message
+										console.log("No non-null valueLast found.");
+									}
 
-				// 					// Check if a non-null value was found
-				// 					if (lastNonNullValue !== null) {
-				// 						// Extract timestamp, value, and quality code from the last non-null value
-				// 						var timestampLast = lastNonNullValue.timestamp;
-				// 						var valueLast = lastNonNullValue.value;
-				// 						var qualityCodeLast = lastNonNullValue.qualityCode;
-				// 						// console.log("timestampLast:", timestampLast);
-				// 						// console.log("timestampLast:", typeof (timestampLast));
-				// 						// console.log("valueLast:", valueLast);
-				// 						// console.log("qualityCodeLast:", qualityCodeLast);
-				// 					} else {
-				// 						// If no non-null valueLast is found, log a message
-				// 						console.log("No non-null valueLast found.");
-				// 					}
+									let tainter_value = "";
+									if (valueLast > 900) {
+										tainter_value = "OR";
+									} else {
+										tainter_value = valueLast.toFixed(1);
+									}
 
-				// 					let tainter_value = "";
-				// 					if (valueLast > 900) {
-				// 						tainter_value = "OR";
-				// 					} else {
-				// 						tainter_value = valueLast.toFixed(1);
-				// 					}
+									// Set the combined value to the cell, preserving HTML
+									lDSettingCellInnerHTML = "<span class='Board_Tainter' title='" + "" + "'>" + tainter_value + "</span>";
+									// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
 
-				// 					// Set the combined value to the cell, preserving HTML
-				// 					lDSettingCellInnerHTML = "<span class='Board_Tainter' title='" + "" + "'>" + tainter_value + "</span>";
-				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
+									// Set the HTML inside the cell once the fetch is complete
+									lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+								} else if (tainter === null && data.tsid_taint !== null) {
+									// console.log('data.location_id:', data.location_id);
+									lDSettingCellInnerHTML = "<span class='Board_Tainter' title='Tsid Tainter Exist But Missing Value'>" + "-M-" + "</span>";
+									// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
+								} else {
+									// Your code to be executed if ld_setting is null
+									// console.log("tainter is null");
 
-				// 					// Set the HTML inside the cell once the fetch is complete
-				// 					lDSettingCell.innerHTML = lDSettingCellInnerHTML;
-				// 				} else if (tainter === null && data.tsid_taint !== null) {
-				// 					// console.log('data.location_id:', data.location_id);
-				// 					lDSettingCellInnerHTML = "<span class='Board_Tainter' title='Tsid Tainter Exist But Missing Value'>" + "-M-" + "</span>";
-				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
-				// 				} else {
-				// 					// Your code to be executed if ld_setting is null
-				// 					// console.log("tainter is null");
+									// Set the combined value to the cell, preserving HTML
+									lDSettingCellInnerHTML = "";
+									// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
+								}
+								lDSettingCell.innerHTML = lDSettingCellInnerHTML;
 
-				// 					// Set the combined value to the cell, preserving HTML
-				// 					lDSettingCellInnerHTML = "";
-				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
-				// 				}
-				// 				lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+								// console.log("Has Roller");
 
-				// 				// console.log("Has Roller");
+								let secondUrlRoller = null;
+								if (cda === "public") {
+									secondUrlRoller = `${setBaseUrl}timeseries?name=${tsidRoll}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+								} else if (cda === "internal") {
+									secondUrlRoller = `${setBaseUrl}timeseries?name=${tsidRoll}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+								}
+								// console.log("secondUrlRoller: ", secondUrlRoller);
+								return fetch(secondUrlRoller, {
+									method: 'GET',
+									headers: {
+										'Accept': 'application/json;version=2'
+									}
+								});
+							})
+							.then(response => response.json())
+							.then(roller => {
+								// Process the data from the third fetch
+								// console.log('roller:', roller);
 
-				// 				let secondUrlRoller = null;
-				// 				if (cda === "public") {
-				// 					secondUrlRoller = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidRoll}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 				} else if (cda === "internal") {
-				// 					secondUrlRoller = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidRoll}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 				}
-				// 				// console.log("secondUrlRoller: ", secondUrlRoller);
-				// 				return fetch(secondUrlRoller, {
-				// 					method: 'GET',
-				// 					headers: {
-				// 						'Accept': 'application/json;version=2'
-				// 					}
-				// 				});
-				// 			})
-				// 			.then(response => response.json())
-				// 			.then(roller => {
-				// 				// Process the data from the third fetch
-				// 				// console.log('roller:', roller);
+								if (roller !== null) {
+									// Your code to be executed if roller is not null
+									// console.log("roller is not null");
 
-				// 				if (roller !== null && data.tsid_roll !== null) {
-				// 					// Your code to be executed if roller is not null
-				// 					// console.log("roller is not null");
+									// Get the last non-null value from the tainter data
+									const lastNonNullValue = getLastNonNullValue(roller);
+									// console.log("lastNonNullValue:", lastNonNullValue);
 
-				// 					// Get the last non-null value from the tainter data
-				// 					const lastNonNullValue = getLastNonNullValue(roller);
-				// 					// console.log("lastNonNullValue:", lastNonNullValue);
+									// Check if a non-null value was found
+									if (lastNonNullValue !== null) {
+										// Extract timestamp, value, and quality code from the last non-null value
+										var timestampLast = lastNonNullValue.timestamp;
+										var valueLast = lastNonNullValue.value;
+										var qualityCodeLast = lastNonNullValue.qualityCode;
+										// console.log("timestampLast:", timestampLast);
+										// console.log("timestampLast:", typeof (timestampLast));
+										// console.log("valueLast:", valueLast);
+										// console.log("qualityCodeLast:", qualityCodeLast);
+									} else {
+										// If no non-null valueLast is found, log a message
+										console.log("No non-null valueLast found.");
+									}
 
-				// 					// Check if a non-null value was found
-				// 					if (lastNonNullValue !== null) {
-				// 						// Extract timestamp, value, and quality code from the last non-null value
-				// 						var timestampLast = lastNonNullValue.timestamp;
-				// 						var valueLast = lastNonNullValue.value;
-				// 						var qualityCodeLast = lastNonNullValue.qualityCode;
-				// 						// console.log("timestampLast:", timestampLast);
-				// 						// console.log("timestampLast:", typeof (timestampLast));
-				// 						// console.log("valueLast:", valueLast);
-				// 						// console.log("qualityCodeLast:", qualityCodeLast);
-				// 					} else {
-				// 						// If no non-null valueLast is found, log a message
-				// 						console.log("No non-null valueLast found.");
-				// 					}
+									let roller_value = "";
+									if (valueLast > 900) {
+										roller_value = "OR";
+									} else {
+										roller_value = valueLast.toFixed(1);
+									}
 
-				// 					let roller_value = "";
-				// 					if (valueLast > 900) {
-				// 						roller_value = "OR";
-				// 					} else {
-				// 						roller_value = valueLast.toFixed(1);
-				// 					}
+									// Set the combined value to the cell, preserving HTML
+									lDSettingCellInnerHTML += "<span class='Board_Roller' title='" + "" + "'>" + roller_value + "</span>";
+									// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
 
-				// 					// Set the combined value to the cell, preserving HTML
-				// 					lDSettingCellInnerHTML += "<span class='Board_Roller' title='" + "" + "'>" + roller_value + "</span>";
-				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
+									// Set the HTML inside the cell once the fetch is complete
+									lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+								} else if (roller === null && data.tsid_roll !== null) { // roller is missing
+									lDSettingCellInnerHTML += "<span class='Board_Roller' title='Tsid Roller Exist But Missing Value'>" + "-M-" + "</span>";
+									// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
+								} else {
+									// Your code to be executed if ld_setting is null
+									// console.log("roller is null");
 
-				// 					// Set the HTML inside the cell once the fetch is complete
-				// 					lDSettingCell.innerHTML = lDSettingCellInnerHTML;
-				// 				} else if (roller === null && data.tsid_roll !== null) { // roller is missing
-				// 					lDSettingCellInnerHTML += "<span class='Board_Roller' title='Tsid Roller Exist But Missing Value'>" + "-M-" + "</span>";
-				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
-				// 				} else {
-				// 					// Your code to be executed if ld_setting is null
-				// 					// console.log("roller is null");
+									// Set the combined value to the cell, preserving HTML
+									lDSettingCellInnerHTML += "<span class='Board_Roller_Hide' title='No Roller'>" + "" + "</span>";
+									// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
+								}
+								lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+							})
+							.catch(error => {
+								console.error('Error:', error);
+							});
+					} else {
+						if (location['closure'] && location['closure']['level-comment']) {
+							lDSettingCellInnerHTML = "<span>" + location['closure']['level-comment'] + "</span>";
+						} else {
+							lDSettingCellInnerHTML = "";
+						}
+						lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+					}
+				})();
 
-				// 					// Set the combined value to the cell, preserving HTML
-				// 					lDSettingCellInnerHTML += "<span class='Board_Roller_Hide' title='No Roller'>" + "" + "</span>";
-				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
-				// 				}
-				// 				lDSettingCell.innerHTML = lDSettingCellInnerHTML;
-				// 			})
-				// 			.catch(error => {
-				// 				console.error('Error:', error);
-				// 			});
-				// 	} else {
-				// 		if (data.board_lib_title !== null) {
-				// 			lDSettingCellInnerHTML = "<span title='" + data.board_lib_note + "'>" + data.board_lib_title + "<span>";
-				// 		} else {
-				// 			lDSettingCellInnerHTML = "";
-				// 		}
-				// 		lDSettingCell.innerHTML = lDSettingCellInnerHTML;
-				// 	}
-				// })();
+				// LWRP OR FLOODSTAGE
+				(() => {
+					if (display_type === "LWRP") {
+						// Create a new table cell
+						const lwrpCell = row.insertCell(11);
+						lwrpCell.classList.add("Font_15");
+						lwrpCell.style.width = "5%";
 
-				// 	// LWRP OR FLOODSTAGE
-				// 	(() => {
-				// 		if (display_type === "LWRP") {
-				// 			// Create a new table cell
-				// 			const lwrpCell = row.insertCell(11);
-				// 			lwrpCell.classList.add("Font_15");
-				// 			lwrpCell.style.width = "5%";
+						// Initialize stageCwmsIdCell.innerHTML as an empty string
+						let lwrpCellInnerHTML = "--";
 
-				// 			// Initialize stageCwmsIdCell.innerHTML as an empty string
-				// 			let lwrpCellInnerHTML = "--";
+						if (location['lwrp']) {
+							if (location['location-id'] === "Alton-Mississippi") {
+								// Set the combined value to the cell, preserving HTML
+								lwrpCellInnerHTML = "<span title='" + "--" + "'>" + (location['lwrp']['constant-value'] + 400).toFixed(1) + "</span>";
+								// console.log("lwrpCellInnerHTML = ", lwrpCellInnerHTML);
+							} else {
+								if (location['lwrp']['constant-value'] < 900) {
+									// Set the combined value to the cell, preserving HTML
+									lwrpCellInnerHTML = "<span title='" + "--" + "'>" + location['lwrp']['constant-value'].toFixed(1) + "</span>";
+									// console.log("lwrpCellInnerHTML = ", lwrpCellInnerHTML);
+								} else {
+									lwrpCellInnerHTML = "<span title='" + "--" + "'>" + "" + "</span>";
+								}
+							}
 
-				// 			if (data.lwrp) {
-				// 				if (data['location_id'] === "Alton-Mississippi") {
-				// 					// Set the combined value to the cell, preserving HTML
-				// 					lwrpCellInnerHTML = "<span title='" + "--" + "'>" + (data.lwrp['constant-value'] + 400).toFixed(1) + "</span>";
-				// 					// console.log("lwrpCellInnerHTML = ", lwrpCellInnerHTML);
-				// 				} else {
-				// 					if (data.lwrp['constant-value'] < 900) {
-				// 						// Set the combined value to the cell, preserving HTML
-				// 						lwrpCellInnerHTML = "<span title='" + "--" + "'>" + data.lwrp['constant-value'].toFixed(1) + "</span>";
-				// 						// console.log("lwrpCellInnerHTML = ", lwrpCellInnerHTML);
-				// 					} else {
-				// 						lwrpCellInnerHTML = "<span title='" + "--" + "'>" + "" + "</span>";
-				// 					}
-				// 				}
+							// Set the HTML inside the cell once the fetch is complete
+							lwrpCell.innerHTML = lwrpCellInnerHTML;
+						} else {
+							// Set the combined value to the cell, preserving HTML
+							lwrpCellInnerHTML = "<span >" + "" + "</span>";
+							// console.log("lwrpCellInnerHTML = ", lwrpCellInnerHTML);
 
-				// 				// Set the HTML inside the cell once the fetch is complete
-				// 				lwrpCell.innerHTML = lwrpCellInnerHTML;
-				// 			} else {
-				// 				// Set the combined value to the cell, preserving HTML
-				// 				lwrpCellInnerHTML = "<span >" + "" + "</span>";
-				// 				// console.log("lwrpCellInnerHTML = ", lwrpCellInnerHTML);
+							// Set the HTML inside the cell once the fetch is complete
+							lwrpCell.innerHTML = lwrpCellInnerHTML;
+						}
+					} else if (display_type === "FloodStage") {
+						// Create a new table cell
+						const floodStageCell = row.insertCell(11);
+						floodStageCell.classList.add("Font_15");
+						floodStageCell.style.width = "5%";
 
-				// 				// Set the HTML inside the cell once the fetch is complete
-				// 				lwrpCell.innerHTML = lwrpCellInnerHTML;
-				// 			}
-				// 		} else if (display_type === "FloodStage") {
-				// 			// Create a new table cell
-				// 			const floodStageCell = row.insertCell(11);
-				// 			floodStageCell.classList.add("Font_15");
-				// 			floodStageCell.style.width = "5%";
+						// Initialize stageCwmsIdCell.innerHTML as an empty string
+						let floodStageCellInnerHTML = "";
 
-				// 			// Initialize stageCwmsIdCell.innerHTML as an empty string
-				// 			let floodStageCellInnerHTML = "";
+						if (location['flood']["constant-value"] !== null) {
 
-				// 			if (data.flood["constant-value"] !== null) {
+							if (location['flood']["constant-value"] > 900) {
+								floodStageCellInnerHTML = "<span title='" + "" + "'>" + "" + "</span>";
+							} else {
+								floodStageCellInnerHTML = "<span title='" + location['flood']["location-level-id"] + "'>" + (location['flood']["constant-value"]).toFixed(1) + "</span>";
+							}
+							// Set the HTML inside the cell once the fetch is complete
+							floodStageCell.innerHTML = floodStageCellInnerHTML;
+						} else {
+							floodStageCellInnerHTML = "";
+							// Set the HTML inside the cell once the fetch is complete
+							floodStageCell.innerHTML = floodStageCellInnerHTML;
+						}
+					} else {
 
-				// 				if (data.flood["constant-value"] > 900) {
-				// 					floodStageCellInnerHTML = "<span title='" + "" + "'>" + "" + "</span>";
-				// 				} else {
-				// 					floodStageCellInnerHTML = "<span title='" + data.flood["location-level-id"] + "'>" + flood_level.toFixed(1) + "</span>";
-				// 				}
-				// 				// Set the HTML inside the cell once the fetch is complete
-				// 				floodStageCell.innerHTML = floodStageCellInnerHTML;
-				// 			} else {
-				// 				floodStageCellInnerHTML = "";
-				// 				// Set the HTML inside the cell once the fetch is complete
-				// 				floodStageCell.innerHTML = floodStageCellInnerHTML;
-				// 			}
-				// 		} else {
+					}
+				})();
 
-				// 		}
-				// 	})();
+				// PLUS MINUS LWRP OR PHASE1/PHASE2 
+				(() => {
+					if (display_type === "LWRP") {
+						// Create a new table cell
+						const plusMinusLWRPCell = row.insertCell(12);
+						plusMinusLWRPCell.classList.add("Font_15");
+						plusMinusLWRPCell.style.width = "8%";
 
-				// 	// PLUS MINUS LWRP OR PHASE1/PHASE2 
-				// 	(() => {
-				// 		if (display_type === "LWRP") {
-				// 			// Create a new table cell
-				// 			const plusMinusLWRPCell = row.insertCell(12);
-				// 			plusMinusLWRPCell.classList.add("Font_15");
-				// 			plusMinusLWRPCell.style.width = "8%";
+						// Initialize stageCwmsIdCell.innerHTML as an empty string
+						let plusMinusLWRPCellInnerHTML = "";
 
-				// 			// Initialize stageCwmsIdCell.innerHTML as an empty string
-				// 			let plusMinusLWRPCellInnerHTML = "";
+						const tsidStage = location['tsid-stage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						const flood_level = location['flood']['constant-value'];
+						// console.log("tsidStage = ", tsidStage);
 
-				// 			let tsidStage = null;
-				// 			if (data.display_stage_29 === true) {
-				// 				tsidStage = data.tsid_stage_29
-				// 			} else {
-				// 				tsidStage = data.tsid_stage_rev
-				// 			}
-				// 			// console.log("tsidStage = ", tsidStage);
+						if (tsidStage !== null) {
+							// Fetch the time series data from the API using the determined query string
+							let urlStage = null;
+							if (cda === "public") {
+								urlStage = `${setBaseUrl}timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=${office}`;
+							} else if (cda === "internal") {
+								urlStage = `${setBaseUrl}timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=${office}`;
+							} else {
 
-				// 			if (tsidStage !== null) {
-				// 				// Fetch the time series data from the API using the determined query string
-				// 				let urlStage = null;
-				// 				if (cda === "public") {
-				// 					urlStage = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 				} else if (cda === "internal") {
-				// 					urlStage = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 				} else {
+							}
+							// console.log("urlStage = ", urlStage);
+							fetch(urlStage, {
+								method: 'GET',
+								headers: {
+									'Accept': 'application/json;version=2'
+								}
+							})
+								.then(response => {
+									// Check if the response is ok
+									if (!response.ok) {
+										// If not, throw an error
+										throw new Error('Network response was not ok');
+									}
+									// If response is ok, parse it as JSON
+									return response.json();
+								})
+								.then(stage => {
+									// console.log("stage:", stage);
 
-				// 				}
-				// 				// console.log("urlStage = ", urlStage);
-				// 				fetch(urlStage, {
-				// 					method: 'GET',
-				// 					headers: {
-				// 						'Accept': 'application/json;version=2'
-				// 					}
-				// 				})
-				// 					.then(response => {
-				// 						// Check if the response is ok
-				// 						if (!response.ok) {
-				// 							// If not, throw an error
-				// 							throw new Error('Network response was not ok');
-				// 						}
-				// 						// If response is ok, parse it as JSON
-				// 						return response.json();
-				// 					})
-				// 					.then(stage => {
-				// 						// console.log("stage:", stage);
+									// Convert timestamps in the JSON object
+									stage.values.forEach(entry => {
+										entry[0] = formatNWSDate(entry[0]); // Update timestamp
+									});
+									// console.log("stage formatted = ", stage);
 
-				// 						// Convert timestamps in the JSON object
-				// 						stage.values.forEach(entry => {
-				// 							entry[0] = formatNWSDate(entry[0]); // Update timestamp
-				// 						});
+									// Get the last non-null value from the stage data
+									const lastNonNullValue = getLastNonNullValue(stage);
+									// console.log("lastNonNullValue:", lastNonNullValue);
 
-				// 						// console.log("stage formatted = ", stage);
+									// Check if a non-null value was found
+									if (lastNonNullValue !== null) {
+										// Extract timestamp, value, and quality code from the last non-null value
+										var timestampLast = lastNonNullValue.timestamp;
+										var valueLast = lastNonNullValue.value;
+										var qualityCodeLast = lastNonNullValue.qualityCode;
+									} else {
+										// If no non-null valueLast is found, log a message
+										console.log("No lastNonNullValue found.");
+									}
 
-				// 						// Get the last non-null value from the stage data
-				// 						const lastNonNullValue = getLastNonNullValue(stage);
-				// 						// console.log("lastNonNullValue:", lastNonNullValue);
+									// Check for Nav TW-Kaskaskia
+									let plusMinusLwrp = null;
+									if (location['location-id'] === "Nav TW-Kaskaskia") {
+										if (location['lwrp'] && location['lwrp']['constant-value'] !== undefined) {
+											plusMinusLwrp = ((valueLast - 0) - location['lwrp']['constant-value']).toFixed(1);
+										} else {
+											console.warn("Warn: 'constant-value' is missing in location['lwrp']");
+										}
+									} else {
+										if (location['lwrp'] && location['lwrp']['constant-value'] !== undefined) {
+											plusMinusLwrp = (valueLast - location['lwrp']['constant-value']).toFixed(1);
+										} else {
+											console.warn("Warn: 'constant-value' is missing in location['lwrp']");
+										}
+									}
 
-				// 						// Check if a non-null value was found
-				// 						if (lastNonNullValue !== null) {
-				// 							// Extract timestamp, value, and quality code from the last non-null value
-				// 							var timestampLast = lastNonNullValue.timestamp;
-				// 							var valueLast = lastNonNullValue.value;
-				// 							var qualityCodeLast = lastNonNullValue.qualityCode;
-				// 							// console.log("timestampLast:", timestampLast);
-				// 							// console.log("valueLast:", valueLast);
-				// 							// console.log("qualityCodeLast:", qualityCodeLast);
-				// 						} else {
-				// 							// If no non-null valueLast is found, log a message
-				// 							console.log("No lastNonNullValue found.");
-				// 						}
+									// Add "+" for positive and "-" for negative values
+									const formattedTotal = plusMinusLwrp >= 0 ? `+${plusMinusLwrp}` : plusMinusLwrp;
 
-				// 						// Check for Nav TW-Kaskaskia
-				// 						let plusMinusLwrp = null;
-				// 						if (data.location_id === "Nav TW-Kaskaskia") {
-				// 							if (data.lwrp && data.lwrp['constant-value'] !== undefined) {
-				// 								plusMinusLwrp = ((valueLast - 0) - data.lwrp['constant-value']).toFixed(1);
-				// 							} else {
-				// 								console.warn("Warn: 'constant-value' is missing in data.lwrp");
-				// 							}
-				// 						} else {
-				// 							if (data.lwrp && data.lwrp['constant-value'] !== undefined) {
-				// 								plusMinusLwrp = (valueLast - data.lwrp['constant-value']).toFixed(1);
-				// 							} else {
-				// 								console.warn("Warn: 'constant-value' is missing in data.lwrp");
-				// 							}
-				// 						}
+									if (location['lwrp'] !== null && valueLast !== null) {
+										if (location['lwrp']['constant-value'] < 900) {
+											if (valueLast !== null && valueLast !== undefined) {
+												plusMinusLWRPCellInnerHTML = `<span title="${valueLast}, ${location['lwrp']['constant-value']}">${formattedTotal}</span>`;
+											} else {
+												plusMinusLWRPCellInnerHTML = "<span class='missing'>-M-</span>";
+											}
+										} else {
+											plusMinusLWRPCellInnerHTML = "<span class='missing'></span>";
+										}
+									} else {
+										plusMinusLWRPCellInnerHTML = "<span class='missing'></span>";
+									}
 
-				// 						// Add "+" for positive and "-" for negative values
-				// 						const formattedTotal = plusMinusLwrp >= 0 ? `+${plusMinusLwrp}` : plusMinusLwrp;
+									plusMinusLWRPCell.innerHTML = plusMinusLWRPCellInnerHTML;
+								})
+								.catch(error => {
+									// Catch and log any errors that occur during fetching or processing
+									console.error("Error fetching or processing data:", error);
+								});
+						}
+						plusMinusLWRPCell.innerHTML = plusMinusLWRPCellInnerHTML;
 
-				// 						if (data.lwrp !== null && valueLast !== null) {
-				// 							if (data.lwrp['constant-value'] < 900) {
-				// 								if (valueLast !== null && valueLast !== undefined) {
-				// 									plusMinusLWRPCellInnerHTML = `<span title="${valueLast}, ${data.lwrp['constant-value']}">${formattedTotal}</span>`;
-				// 								} else {
-				// 									plusMinusLWRPCellInnerHTML = "<span class='missing'>-M-</span>";
-				// 								}
-				// 							} else {
-				// 								plusMinusLWRPCellInnerHTML = "<span class='missing'></span>";
-				// 							}
-				// 						} else {
-				// 							plusMinusLWRPCellInnerHTML = "<span class='missing'></span>";
-				// 						}
+					} else if (display_type === "FloodStage") {
+						// Create a new table cell
+						const actionStageCell = row.insertCell(12);
+						actionStageCell.classList.add("Font_12");
+						actionStageCell.style.width = "8%";
 
-				// 						plusMinusLWRPCell.innerHTML = plusMinusLWRPCellInnerHTML;
-				// 					})
-				// 					.catch(error => {
-				// 						// Catch and log any errors that occur during fetching or processing
-				// 						console.error("Error fetching or processing data:", error);
-				// 					});
-				// 			}
-				// 			plusMinusLWRPCell.innerHTML = plusMinusLWRPCellInnerHTML;
+						// Initialize stageCwmsIdCell.innerHTML as an empty string
+						let actionStageCellInnerHTML = "--";
 
-				// 		} else if (display_type === "FloodStage") {
-				// 			// Create a new table cell
-				// 			const actionStageCell = row.insertCell(12);
-				// 			actionStageCell.classList.add("Font_12");
-				// 			actionStageCell.style.width = "8%";
+						if (location['eoc-phase-1'] && location['eoc-phase-2']) {
+							const phase1_value = location['eoc-phase-1']["constant-value"];
+							const phase2_value = location['eoc-phase-2']["constant-value"];
 
-				// 			// Initialize stageCwmsIdCell.innerHTML as an empty string
-				// 			let actionStageCellInnerHTML = "--";
+							// Set the combined value to the cell, preserving HTML
+							actionStageCellInnerHTML = "<span title='" + location['eoc-phase-1']["location-level-id"] + " : " + location['eoc-phase-2']["location-level-id"] + "'>" + phase1_value.toFixed(1) + "/" + phase2_value.toFixed(1) + "</span>";
+							// console.log("actionStageCellInnerHTML = ", actionStageCellInnerHTML);
 
-				// 			if (data.phase1 && data.phase2) {
-				// 				const phase1_value = data.phase1["constant-value"];
-				// 				const phase2_value = data.phase2["constant-value"];
+							// Set the HTML inside the cell once the fetch is complete
+							actionStageCell.innerHTML = actionStageCellInnerHTML;
+						} else {
+							actionStageCell.innerHTML = actionStageCellInnerHTML;
+							// console.log("No data fetched from either LWRP or stage API");
+						}
+					} else {
+						// Create a new table cell
+						const yCell = row.insertCell(12);
+						yCell.classList.add("Font_12");
+						yCell.style.width = "8%";
 
-				// 				// Set the combined value to the cell, preserving HTML
-				// 				actionStageCellInnerHTML = "<span title='" + data.phase1["location-level-id"] + " : " + data.phase2["location-level-id"] + "'>" + phase1_value.toFixed(1) + "/" + phase2_value.toFixed(1) + "</span>";
-				// 				// console.log("actionStageCellInnerHTML = ", actionStageCellInnerHTML);
+						// Initialize stageCwmsIdCell.innerHTML as an empty string
+						let yCellInnerHTML = "-0-";
+						yCell.innerHTML = yCellInnerHTML;
+					}
+				})();
 
-				// 				// Set the HTML inside the cell once the fetch is complete
-				// 				actionStageCell.innerHTML = actionStageCellInnerHTML;
-				// 			} else {
-				// 				// console.log("No data fetched from either LWRP or stage API");
-				// 			}
-				// 		} else {
-				// 			// Create a new table cell
-				// 			const yCell = row.insertCell(12);
-				// 			yCell.classList.add("Font_12");
-				// 			yCell.style.width = "8%";
+				// GAGEZERO
+				(() => {
+					// Create a new table cell
+					const gageZeroCell = row.insertCell(13);
+					gageZeroCell.classList.add("Font_15");
+					gageZeroCell.style.width = "6%";
 
-				// 			// Initialize stageCwmsIdCell.innerHTML as an empty string
-				// 			let yCellInnerHTML = "-0-";
-				// 			yCell.innerHTML = yCellInnerHTML;
-				// 		}
-				// 	})();
+					// Initialize stageCwmsIdCell.innerHTML as an empty string
+					let gageZeroCellInnerHTML = "--";
 
-				// 	// GAGEZERO
-				// 	(() => {
-				// 		// Create a new table cell
-				// 		const gageZeroCell = row.insertCell(13);
-				// 		gageZeroCell.classList.add("Font_15");
-				// 		gageZeroCell.style.width = "6%";
+					// TODO: Cairo still use NGVD29, needs to change to NAV88. NAVD88 = 271.08ft
+					if (location['location_id'] === "Alton-Mississippi") {
+						// Set the combined value to the cell, preserving HTML
+						gageZeroCellInnerHTML = "<span title='" + "vertical_datum: " + "NAVD88" + "'>" + (location['metadata']["elevation"] - (location['ngvd29']["constant-value"])).toFixed(2) + "</span>";
+						// console.log("gageZeroCellInnerHTML = ", gageZeroCellInnerHTML);
+					} else {
+						if (location['metadata']["vertical-datum"] === "NAVD88") {
+							// Set the combined value to the cell, preserving HTML
+							gageZeroCellInnerHTML = "<span title='" + "vertical_datum: " + location['metadata']["vertical-datum"] + "'>" + location['metadata']["elevation"].toFixed(2) + "</span>";
+							// console.log("gageZeroCellInnerHTML = ", gageZeroCellInnerHTML);
+						} else if (location['metadata']["vertical-datum"] === "NGVD29") {
+							// Set the combined value to the cell, preserving HTML
+							gageZeroCellInnerHTML = "<span style='color: darkorange;' title='" + "vertical_datum: " + location['metadata']["vertical-datum"] + "'>" + location['metadata']["elevation"].toFixed(2) + "</span>";
+							// console.log("gageZeroCellInnerHTML = ", gageZeroCellInnerHTML);
+						} else {
+							// Set the combined value to the cell, preserving HTML
+							gageZeroCellInnerHTML = "<span title='" + "vertical_datum: " + data.vertical_datum + "'>" + "  " + "</span>";
+							// console.log("gageZeroCellInnerHTML = ", gageZeroCellInnerHTML);
+						}
+					}
 
-				// 		// Initialize stageCwmsIdCell.innerHTML as an empty string
-				// 		let gageZeroCellInnerHTML = "--";
-
-				// 		// console.log(data.location_id.split('-')[0], data.metadata["vertical-datum"], data.metadata["elevation"].toFixed(2));
-
-				// 		// TODO: Cairo still use NGVD29, needs to change to NAV88. NAVD88 = 271.08ft
-				// 		if (data.display_stage_29 === true || data.location_id === "Alton-Mississippi") {
-				// 			// Set the combined value to the cell, preserving HTML
-				// 			// gageZeroCellInnerHTML = "<span title='" + "vertical_datum: " + "NGVD29" + "'>" + (data.metadata["elevation"] - data.ngvd29["constant-value"]).toFixed(2) + "</span>";
-				// 			gageZeroCellInnerHTML = "<span title='" + "vertical_datum: " + "NAVD88" + "'>" + (data.metadata["elevation"] - (data.ngvd29["constant-value"])).toFixed(2) + "</span>";
-				// 			// console.log("gageZeroCellInnerHTML = ", gageZeroCellInnerHTML);
-				// 		} else {
-				// 			if (data.metadata["vertical-datum"] === "NAVD88") {
-				// 				// Set the combined value to the cell, preserving HTML
-				// 				gageZeroCellInnerHTML = "<span title='" + "vertical_datum: " + data.metadata["vertical-datum"] + "'>" + data.metadata["elevation"].toFixed(2) + "</span>";
-				// 				// console.log("gageZeroCellInnerHTML = ", gageZeroCellInnerHTML);
-				// 			} else if (data.metadata["vertical-datum"] === "NGVD29") {
-				// 				// Set the combined value to the cell, preserving HTML
-				// 				gageZeroCellInnerHTML = "<span style='color: darkorange;' title='" + "vertical_datum: " + data.metadata["vertical-datum"] + "'>" + data.metadata["elevation"].toFixed(2) + "</span>";
-				// 				// console.log("gageZeroCellInnerHTML = ", gageZeroCellInnerHTML);
-				// 			} else {
-				// 				// Set the combined value to the cell, preserving HTML
-				// 				gageZeroCellInnerHTML = "<span title='" + "vertical_datum: " + data.vertical_datum + "'>" + "  " + "</span>";
-				// 				// console.log("gageZeroCellInnerHTML = ", gageZeroCellInnerHTML);
-				// 			}
-				// 		}
-
-				// 		// Set the HTML inside the cell once the fetch is complete
-				// 		gageZeroCell.innerHTML = gageZeroCellInnerHTML;
-				// 	})();
+					// Set the HTML inside the cell once the fetch is complete
+					gageZeroCell.innerHTML = gageZeroCellInnerHTML;
+				})();
 
 			});
 		});
