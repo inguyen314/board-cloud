@@ -1134,6 +1134,9 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 	const currentDateTimePlus4Days = addDaysToDate(currentDateTime, 4);
 	const currentDateTimePlus4DaysIso = currentDateTimePlus4Days.toISOString();
 
+	const currentDateTimePlus14Days = addDaysToDate(currentDateTime, 14);
+	const currentDateTimePlus14DaysIso = currentDateTimePlus14Days.toISOString();
+
 	const currentDateTimePlus7Days = addDaysToDate(currentDateTime, 7);
 	const currentDateTimePlus7DaysIso = currentDateTimePlus7Days.toISOString();
 
@@ -1269,7 +1272,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 							const yesterdayInflowTsid = location?.['tsid-lake-inflow-yesterday']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
 							if (yesterdayInflowTsid) {
-								fetchAndUpdateYesterdayInflowTd(yesterdayInflowTd, yesterdayInflowTsid, currentDateTimeMinus2Hours, currentDateTime, currentDateTimeMinus24Hours, setBaseUrl);
+								fetchAndUpdateYesterdayInflowTd(yesterdayInflowTd, yesterdayInflowTsid, isoDateMinus1Str, isoDateTodayStr, setBaseUrl);
 							} else {
 								yesterdayInflowTd.textContent = "--";
 							}
@@ -2449,631 +2452,610 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 
 			basin['assigned-locations'].forEach((location) => {
 				//==============================================================================================================================================
-				// RIVER
+				// RIVER / TRIBUTARY
 				//==============================================================================================================================================
+				const row = table.insertRow();
 
-				// DISPLAY RIVER OR TRIBUTARY display_tributary === "False"
+				// RIVER MILE
+				(() => {
+					// Create a new table cell for river mile
+					const riverMileCell = row.insertCell(0);
+					riverMileCell.colSpan = 1;
+					riverMileCell.classList.add("Font_15");
+					riverMileCell.style.width = "6%";
 
+					// Initialize riverMileCellInnerHTML as an empty string
+					let riverMileCellInnerHTML = "--";
 
+					// Check if the 'river_mile_hard_coded' property in data is a valid number
+					if (!isNaN(parseFloat(location['river-mile'][0]['published-station'])) && Number.isInteger(parseFloat(location['river-mile'][0]['published-station']))) {
+						location['river-mile'][0]['published-station'] = location['river-mile'][0]['published-station'] + '.0';
+					}
 
-				// if (data.display_board === "True" && display_type !== "Lake") {
-				// 	// Create a new row for each gage data entry
-				// 	const row = table.insertRow();
+					// Update the inner HTML of the cell with data, preserving HTML
+					riverMileCellInnerHTML = "<span class='hard_coded'>" + parseFloat(location['river-mile'][0]['published-station']).toFixed(1) + "</span>";
+					// console.log("riverMileCellInnerHTML =", riverMileCellInnerHTML);
+					riverMileCell.innerHTML = riverMileCellInnerHTML;
+				})();
 
-				// 	// RIVER MILE
-				// 	(() => {
-				// 		// Create a new table cell for river mile
-				// 		const riverMileCell = row.insertCell(0);
-				// 		riverMileCell.colSpan = 1; // Set the colspan to 1 for River Mile
-				// 		riverMileCell.classList.add("Font_15");
-				// 		riverMileCell.style.width = "6%";
+				// LOCATION
+				(() => {
+					// Create a new table cell for public name
+					const publicNameCell = row.insertCell(1);
+					publicNameCell.colSpan = 1;
+					publicNameCell.classList.add("Font_18");
+					publicNameCell.style.width = "16%";
 
-				// 		// Initialize riverMileCellInnerHTML as an empty string
-				// 		let riverMileCellInnerHTML = "--";
+					// Initialize publicNameCellInnerHTML as an empty string
+					let publicNameCellInnerHTML = "--";
 
-				// 		// Check if the 'river_mile_hard_coded' property in data is a valid number
-				// 		if (!isNaN(parseFloat(data.river_mile_hard_coded)) && Number.isInteger(parseFloat(data.river_mile_hard_coded))) {
-				// 			data.river_mile_hard_coded = data.river_mile_hard_coded + '.0';
+					// Update the inner HTML of the cell with data, preserving HTML
+					publicNameCellInnerHTML = "<span title='" + location['location-id'] + "'>" + location['metadata']['public-name'] + "</span>";
+					// console.log("publicNameCellInnerHTML = ", publicNameCellInnerHTML);
+					publicNameCell.innerHTML = publicNameCellInnerHTML;
+				})();
+
+				// CURRENT STAGE AND 24HR CHANGE
+				(() => {
+					// Create a new table cell
+					const stageCell = row.insertCell(2);
+					stageCell.style.width = "6%";
+					stageCell.classList.add("Font_18");
+
+					// Create a new table cell
+					const stageDeltaCell = row.insertCell(3);
+					stageDeltaCell.style.width = "5%";
+					stageDeltaCell.classList.add("Font_18");
+
+					// Initialize stageCell.innerHTML as an empty string
+					let stageCellInnerHTML = "--";
+					let stageDeltaCellInnerHTML = "--";
+
+					const tsidStage = location['tsid-stage']['assigned-time-series'][0]['timeseries-id'];
+					const flood_level = location['flood']['constant-value'];
+
+					if (tsidStage !== null) {
+						// Fetch the time series data from the API using the determined query string
+						let urlStage = null;
+						if (cda === "public") {
+							urlStage = `${setBaseUrl}timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+						} else if (cda === "internal") {
+							urlStage = `${setBaseUrl}timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+						} else {
+
+						}
+						// console.log("urlStage = ", urlStage);
+						fetch(urlStage, {
+							method: 'GET',
+							headers: {
+								'Accept': 'application/json;version=2'
+							}
+						})
+							.then(response => {
+								// Check if the response is ok
+								if (!response.ok) {
+									// If not, throw an error
+									throw new Error('Network response was not ok');
+								}
+								// If response is ok, parse it as JSON
+								return response.json();
+							})
+							.then(stage => {
+								// console.log("stage:", stage);
+
+								// Convert timestamps in the JSON object
+								stage.values.forEach(entry => {
+									entry[0] = formatNWSDate(entry[0]); // Update timestamp
+								});
+
+								// console.log("stage formatted = ", stage);
+
+								// Get the last non-null value from the stage data
+								const lastNonNullValue = getLastNonNullValue(stage);
+								// console.log("lastNonNullValue:", lastNonNullValue);
+
+								let timestampLast = null;
+								let valueLast = null;
+								let qualityCodeLast = null;
+
+								// Check if a non-null value was found
+								if (lastNonNullValue !== null) {
+									// Extract timestamp, value, and quality code from the last non-null value
+									timestampLast = lastNonNullValue.timestamp;
+									valueLast = lastNonNullValue.value;
+									qualityCodeLast = lastNonNullValue.qualityCode;
+								} else {
+									// If no non-null valueLast is found, log a message
+									console.log("No lastNonNullValue found.");
+								}
+
+								const c_count = calculateCCount(tsidStage);
+								// console.log("c_count:", c_count);
+
+								const lastNonNull24HoursValue = getLastNonNull24HoursValue(stage, c_count);
+								// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
+
+								// Check if a non-null value was found
+								if (lastNonNull24HoursValue !== null) {
+									// Extract timestamp, value, and quality code from the last non-null value
+									var timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+									var value24HoursLast = lastNonNull24HoursValue.value;
+									var qualityCode24HoursLast = lastNonNull24HoursValue.qualityCode;
+								} else {
+									// If no non-null valueLast is found, log a message
+									console.log("No lastNonNull24HoursValue found.");
+								}
+
+								// Calculate the 24 hours change between first and last value
+								const delta_24 = valueLast - value24HoursLast;
+								// console.log("delta_24:", delta_24);
+
+								// FLOOD CLASS
+								var floodClass = determineStageClass(valueLast, flood_level, timestampLast);
+								// console.log("floodClass:", floodClass);
+
+								if (valueLast) {
+									stageCellInnerHTML = "<span class='" + floodClass + "' title='" + stage.name + ", Value = " + valueLast.toFixed(2) + ", Date Time = " + timestampLast + ", Flood Level = " + flood_level.toFixed(2) + "'>"
+										+ valueLast.toFixed(1)
+										+ "</span>";
+
+									stageDeltaCellInnerHTML = "<span class='last_max_value' title='" + stage.name + ", Value = " + value24HoursLast.toFixed(2) + ", Date Time = " + timestamp24HoursLast + ", Delta = (" + valueLast.toFixed(2) + " - " + value24HoursLast.toFixed(2) + ") = " + delta_24.toFixed(2) + "'>"
+										+ delta_24.toFixed(1)
+										+ "</span>";
+								} else {
+									stageCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>"
+								}
+								stageCell.innerHTML = stageCellInnerHTML;
+								stageDeltaCell.innerHTML = stageDeltaCellInnerHTML;
+							})
+							.catch(error => {
+								// Catch and log any errors that occur during fetching or processing
+								console.error("Error fetching or processing data:", error);
+							});
+					}
+				})();
+
+				// NWS DAY1, DAY2, DAY3, Forecast Time
+				(() => {
+					// Create a new table cell
+					const nwsDayOneCell = row.insertCell(4);
+					nwsDayOneCell.classList.add("next_3_days");
+					nwsDayOneCell.style.width = "5%";
+
+					const nwsDayTwoCell = row.insertCell(5);
+					nwsDayTwoCell.classList.add("next_3_days");
+					nwsDayTwoCell.style.width = "5%";
+
+					const nwsDayThreeCell = row.insertCell(6);
+					nwsDayThreeCell.classList.add("next_3_days");
+					nwsDayThreeCell.style.width = "5%";
+
+					const forecastTimeCell = row.insertCell(7);
+					forecastTimeCell.classList.add("forecast_time");
+					forecastTimeCell.style.width = "8%";
+
+					// Initialize stageCwmsIdCell.innerHTML as an empty string
+					let nwsDayOneCellInnerHTML = "--";
+					let nwsDayTwoCellInnerHTML = "--";
+					let nwsDayThreeCellInnerHTML = "--";
+					let forecastTimeCellInnerHTML = "--";
+
+					// Get stagerev tsid to check for version equal to 29
+					const tsidStage = location['tsid-stage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+
+					const tsidNwsForecast = location['tsid-nws-forecast']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+
+					const flood_level = location['flood']?.['constant-value'] ?? null;
+
+					// Prepare time to send to CDA
+					const { currentDateTimeMidNightISO, currentDateTimePlus4DaysMidNightISO } = generateDateTimeStrings(currentDateTime, currentDateTimePlus4Days);
+
+					// Forecasts exist only at stage rev, no projects
+					if (tsidStage !== null) {
+						// console.log("tsidStage:", tsidStage);
+
+						if (tsidNwsForecast !== null) {
+							// console.log("The last two characters are not '29'");
+
+							// Fetch the time series data from the API using the determined query string
+							let urlNWS = null;
+							if (cda === "public") {
+								urlNWS = `${setBaseUrl}timeseries?name=${tsidNwsForecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+							} else if (cda === "internal") {
+								urlNWS = `${setBaseUrl}timeseries?name=${tsidNwsForecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+							} else {
+								urlNWS = null;
+							}
+							// console.log("urlNWS = ", urlNWS);
+							fetch(urlNWS, {
+								method: 'GET',
+								headers: {
+									'Accept': 'application/json;version=2'
+								}
+							})
+								.then(response => {
+									// Check if the response is ok
+									if (!response.ok) {
+										// If not, throw an error
+										throw new Error('Network response was not ok');
+									}
+									// If response is ok, parse it as JSON
+									return response.json();
+								})
+								.then(nws3Days => {
+									// console.log("nws3Days: ", nws3Days);
+
+									// Convert timestamps in the JSON object
+									nws3Days.values.forEach(entry => {
+										entry[0] = formatNWSDate(entry[0]); // Update timestamp
+									});
+									// console.log("nws3Days = ", nws3Days);
+
+									// Extract values with time ending in "13:00"
+									const valuesWithTimeNoon = extractValuesWithTimeNoon(nws3Days.values);
+									// console.log("valuesWithTimeNoon = ", valuesWithTimeNoon);
+
+									// Extract the first second middle value
+									const firstFirstValue = valuesWithTimeNoon?.[1]?.[0];
+									const firstMiddleValue = (valuesWithTimeNoon?.[1]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1)) : "";
+									// console.log("firstMiddleValue = ", firstMiddleValue);
+									// console.log("firstMiddleValue = ", typeof (firstMiddleValue));
+
+									// Extract the second second middle value
+									const secondFirstValue = valuesWithTimeNoon?.[2]?.[0];
+									const secondMiddleValue = (valuesWithTimeNoon?.[2]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1)) : "";
+
+									// Extract the third second middle value
+									const thirdFirstValue = valuesWithTimeNoon?.[3]?.[0];
+									const thirdMiddleValue = (valuesWithTimeNoon?.[3]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1)) : "";
+
+									// Dertermine Flood Classes
+									var floodClassDay1 = determineStageClass(firstMiddleValue, flood_level, firstFirstValue);
+									// console.log("floodClassDay1:", floodClassDay1);
+
+									var floodClassDay2 = determineStageClass(secondMiddleValue, flood_level, secondFirstValue);
+									// console.log("floodClassDay2:", floodClassDay2);
+
+									var floodClassDay3 = determineStageClass(thirdMiddleValue, flood_level, thirdFirstValue);
+									// console.log("floodClassDay3:", floodClassDay3);
+
+									if (nws3Days !== null || nws3Days !== undefined) {
+										if (firstMiddleValue !== null && !isNaN(firstMiddleValue)) {
+											nwsDayOneCellInnerHTML = "<span class='" + floodClassDay1 + "'>" + firstMiddleValue + "</span>";
+										} else {
+											nwsDayOneCellInnerHTML = "<span class='" + floodClassDay1 + "'>" + "-" + "</span>";
+										}
+
+										if (secondMiddleValue !== null && !isNaN(secondMiddleValue)) {
+											nwsDayTwoCellInnerHTML = "<span class='" + floodClassDay2 + "'>" + secondMiddleValue + "</span>";
+										} else {
+											nwsDayTwoCellInnerHTML = "<span class='" + floodClassDay2 + "'>" + "-" + "</span>";
+										}
+
+										if (thirdMiddleValue !== null && !isNaN(thirdMiddleValue)) {
+											nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + thirdMiddleValue + "</span>";
+										} else {
+											nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + "-" + "</span>";
+										}
+
+										fetchAndLogNwsData(tsidNwsForecast, forecastTimeCell);
+									} else {
+										nwsDayOneCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
+										nwsDayTwoCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
+										nwsDayThreeCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
+										forecastTimeCellInnerHTML = "<span class='missing' style='background-color: orange;'>" + "-cdana-" + "</span>";
+									}
+
+									nwsDayOneCell.innerHTML = nwsDayOneCellInnerHTML;
+									nwsDayTwoCell.innerHTML = nwsDayTwoCellInnerHTML;
+									nwsDayThreeCell.innerHTML = nwsDayThreeCellInnerHTML;
+									forecastTimeCell.innerHTML = forecastTimeCellInnerHTML;
+								})
+								.catch(error => {
+									// Catch and log any errors that occur during fetching or processing
+									console.error("Error fetching or processing data:", error);
+								});
+						}
+					}
+				})();
+
+				// CREST AND CREST DATE
+				(() => {
+					// Create a new table cell
+					const crestCell = row.insertCell(8);
+					crestCell.style.width = "5%";
+
+					const crestDateCell = row.insertCell(9);
+					crestDateCell.style.width = "5%";
+
+					// Initialize stageCwmsIdCell.innerHTML as an empty string
+					let crestCellInnerHTML = "";
+					let crestDateCellInnerHTML = "";
+
+					// Get tsid
+					const tsidCrest = location['tsid-nws-crest']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+					const flood_level = location['flood']['constant-value'];
+
+					// Prepare time to send to CDA
+					const { currentDateTimeMidNightISO, currentDateTimePlus4DaysMidNightISO } = generateDateTimeStrings(currentDateTime, currentDateTimePlus14Days);
+
+					// // Use PHP 
+					// fetchAndLogNwsCrestData(tsidCrest, crestCell, crestDateCell);
+
+					if (tsidCrest !== null) {
+						// Fetch the time series data from the API using the determined query string
+						let urlCrest = null;
+						if (cda === "public") {
+							urlCrest = `${setBaseUrl}timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+						} else if (cda === "internal") {
+							urlCrest = `${setBaseUrl}timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+						} else {
+							urlCrest = null;
+						}
+						// console.log("urlCrest = ", urlCrest);
+						fetch(urlCrest, {
+							method: 'GET',
+							headers: {
+								'Accept': 'application/json;version=2'
+							}
+						})
+							.then(response => {
+								if (!response.ok) {
+									if (response.status === 404) {
+										throw new Error('Resource not found (404)');
+									} else {
+										throw new Error('Network response was not ok');
+									}
+								}
+								return response.json();
+							})
+							.then(crest => {
+								if (crest && crest.values) {
+									crest.values.forEach(entry => {
+										entry[0] = formatNWSDate(entry[0]); // Update timestamp
+									});
+
+									console.log("crest = ", crest);
+
+									const lastNonNullCrestValue = getLastNonNullValue(crest);
+
+									if (lastNonNullCrestValue !== null) {
+										var timestampLastCrest = lastNonNullCrestValue.timestamp;
+										var valueLastCrest = parseFloat(lastNonNullCrestValue.value).toFixed(2);
+										var qualityCodeLastCrest = lastNonNullCrestValue.qualityCode;
+
+										const c_count = calculateCCount(tsidCrest);
+
+										const formattedLastCrestValueTimeStamp = formatTimestampToString(timestampLastCrest);
+
+										const timeStampDateCrestObject = new Date(timestampLastCrest);
+
+										var floodClass = determineStageClass(valueLastCrest, flood_level);
+
+										if (valueLastCrest === null) {
+											crestCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
+										} else if (valueLastCrest === undefined) {
+											crestCellInnerHTML = "<span>" + "" + "</span>";
+										} else {
+											crestCellInnerHTML = "<span style='font-weight: bold; color: red; font-size: 1.5em;' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + valueLastCrest + "</span>";
+										}
+										crestCell.innerHTML = crestCellInnerHTML;
+
+										if (valueLastCrest === null) {
+											crestDateCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
+										} else if (valueLastCrest === undefined) {
+											crestDateCellInnerHTML = "<span>" + "" + "</span>";
+										} else {
+											crestDateCellInnerHTML = "<span style='font-weight: bold; font-size: 1.5em;' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + timestampLastCrest.substring(0, 5) + "</span>";
+										}
+										crestDateCell.innerHTML = crestDateCellInnerHTML;
+									} else {
+										crestCell.innerHTML = "";
+										crestDateCell.innerHTML = "";
+									}
+								} else {
+									crestCell.innerHTML = "";
+									crestDateCell.innerHTML = "";
+								}
+							})
+							.catch(error => {
+								// Catch and log any errors that occur during fetching or processing
+								console.error("Error fetching or processing data:", error);
+								// Optionally provide user feedback for the error
+								crestCell.innerHTML = "<span class='error'>--</span>";
+								crestDateCell.innerHTML = "<span class='error'>--</span>";
+							});
+					} else {
+						crestCell.innerHTML = crestCellInnerHTML;
+						crestDateCell.innerHTML = crestDateCellInnerHTML;
+					}
+				})();
+
+				// // LD SETTINGS
+				// (() => {
+				// 	// Create a new table cell
+				// 	const lDSettingCell = row.insertCell(10);
+				// 	lDSettingCell.classList.add("project_gage");
+				// 	lDSettingCell.style.width = "15%";
+
+				// 	// console.log('data.location_id:', data.location_id);
+
+				// 	// Initialize stageCwmsIdCell.innerHTML as an empty string
+				// 	let lDSettingCellInnerHTML = "--";
+
+				// 	if (data.tsid_taint !== null || data.tsid_roll !== null) {
+
+				// 		const tsidTaint = data.tsid_taint;
+				// 		// console.log("tsidTaint: " + tsidTaint);
+
+				// 		const tsidRoll = data.tsid_roll;
+				// 		// console.log("tsidRoll: " + tsidRoll);
+
+				// 		let urlTainter = null;
+				// 		if (cda === "public") {
+				// 			urlTainter = `${setBaseUrl}timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+				// 		} else if (cda === "internal") {
+				// 			urlTainter = `${setBaseUrl}timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
 				// 		}
-
-				// 		// Update the inner HTML of the cell with data, preserving HTML
-				// 		riverMileCellInnerHTML = "<span class='hard_coded'>" + parseFloat(data.river_mile_hard_coded).toFixed(1) + "</span>";
-				// 		// console.log("riverMileCellInnerHTML =", riverMileCellInnerHTML);
-				// 		riverMileCell.innerHTML = riverMileCellInnerHTML;
-				// 	})();
-
-				// 	// LOCATION
-				// 	(() => {
-				// 		// Create a new table cell for public name
-				// 		const publicNameCell = row.insertCell(1);
-				// 		publicNameCell.colSpan = 1; // Set the colspan to 1 for Public Name
-				// 		publicNameCell.classList.add("Font_18");
-				// 		publicNameCell.style.width = "16%";
-
-				// 		// Initialize publicNameCellInnerHTML as an empty string
-				// 		let publicNameCellInnerHTML = "--";
-
-				// 		// Update the inner HTML of the cell with data, preserving HTML
-				// 		publicNameCellInnerHTML = "<span title='" + data.tsid_stage_rev + "'>" + data.location_id.split('-')[0] + "</span>";
-				// 		// console.log("publicNameCellInnerHTML = ", publicNameCellInnerHTML);
-				// 		publicNameCell.innerHTML = publicNameCellInnerHTML;
-				// 	})();
-
-				// 	// CURRENT STAGE AND 24HR CHANGE
-				// 	(() => {
-				// 		// Create a new table cell
-				// 		const stageCell = row.insertCell(2);
-				// 		stageCell.style.width = "6%";
-				// 		stageCell.classList.add("Font_18");
-
-				// 		// Create a new table cell
-				// 		const stageDeltaCell = row.insertCell(3);
-				// 		stageDeltaCell.style.width = "5%";
-				// 		stageDeltaCell.classList.add("Font_18");
-
-				// 		// Initialize stageCell.innerHTML as an empty string
-				// 		let stageCellInnerHTML = "--";
-				// 		let stageDeltaCellInnerHTML = "--";
-
-				// 		let tsidStage = null;
-				// 		if (data.location_id === "Alton-Mississippi") {
-				// 			tsidStage = data.tsid_stage_29
-				// 		} else if (data.location_id === "Nav TW-Kaskaskia") {
-				// 			tsidStage = data.tsid_stage_rev
-				// 		} else if (data.display_stage_29 === true) {
-				// 			tsidStage = data.tsid_stage_29
-				// 		} else {
-				// 			tsidStage = data.tsid_stage_rev
-				// 		}
-				// 		// console.log("tsidStage = ", tsidStage);
-
-				// 		if (tsidStage !== null) {
-				// 			// Fetch the time series data from the API using the determined query string
-				// 			let urlStage = null;
-				// 			if (cda === "public") {
-				// 				urlStage = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 			} else if (cda === "internal") {
-				// 				urlStage = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidStage}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 			} else {
-
+				// 		fetch(urlTainter, {
+				// 			method: 'GET',
+				// 			headers: {
+				// 				'Accept': 'application/json;version=2'
 				// 			}
-				// 			// console.log("urlStage = ", urlStage);
-				// 			fetch(urlStage, {
-				// 				method: 'GET',
-				// 				headers: {
-				// 					'Accept': 'application/json;version=2'
-				// 				}
-				// 			})
-				// 				.then(response => {
-				// 					// Check if the response is ok
-				// 					if (!response.ok) {
-				// 						// If not, throw an error
+				// 		})
+				// 			.then(response => {
+				// 				if (!response.ok) {
+				// 					if (response.status === 404) {
+				// 						throw new Error('Resource not found (404)');
+				// 					} else {
 				// 						throw new Error('Network response was not ok');
 				// 					}
-				// 					// If response is ok, parse it as JSON
-				// 					return response.json();
-				// 				})
-				// 				.then(stage => {
-				// 					// console.log("stage:", stage);
+				// 				}
+				// 				return response.json();
+				// 			})
+				// 			.then(tainter => {
+				// 				// Log the tainter to the console
+				// 				// console.log("tainter: ", data.location_id, data.tsid_taint, tainter);
+
+				// 				if (tainter !== null && data.tsid_taint !== null) {
+				// 					// Your code to be executed if tainter is not null
+				// 					// console.log("tainter is not null");
 
 				// 					// Convert timestamps in the JSON object
-				// 					stage.values.forEach(entry => {
+				// 					tainter.values.forEach(entry => {
 				// 						entry[0] = formatNWSDate(entry[0]); // Update timestamp
 				// 					});
 
-				// 					// console.log("stage formatted = ", stage);
+				// 					// console.log("tainter formatted = ", tainter);
 
-				// 					// Get the last non-null value from the stage data
-				// 					const lastNonNullValue = getLastNonNullValue(stage);
+				// 					// Get the last non-null value from the tainter data
+				// 					const lastNonNullValue = getLastNonNullValue(tainter);
 				// 					// console.log("lastNonNullValue:", lastNonNullValue);
-
-				// 					let timestampLast = null;
-				// 					let valueLast = null;
-				// 					let qualityCodeLast = null;
 
 				// 					// Check if a non-null value was found
 				// 					if (lastNonNullValue !== null) {
 				// 						// Extract timestamp, value, and quality code from the last non-null value
-				// 						timestampLast = lastNonNullValue.timestamp;
-				// 						valueLast = lastNonNullValue.value;
-				// 						qualityCodeLast = lastNonNullValue.qualityCode;
+				// 						var timestampLast = lastNonNullValue.timestamp;
+				// 						var valueLast = lastNonNullValue.value;
+				// 						var qualityCodeLast = lastNonNullValue.qualityCode;
 				// 						// console.log("timestampLast:", timestampLast);
 				// 						// console.log("timestampLast:", typeof (timestampLast));
 				// 						// console.log("valueLast:", valueLast);
 				// 						// console.log("qualityCodeLast:", qualityCodeLast);
 				// 					} else {
 				// 						// If no non-null valueLast is found, log a message
-				// 						console.log("No lastNonNullValue found.");
+				// 						console.log("No non-null valueLast found.");
 				// 					}
 
-				// 					const c_count = calculateCCount(tsidStage);
-				// 					// console.log("c_count:", c_count);
-
-				// 					const lastNonNull24HoursValue = getLastNonNull24HoursValue(stage, c_count);
-				// 					// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
-
-				// 					// Check if a non-null value was found
-				// 					if (lastNonNull24HoursValue !== null) {
-				// 						// Extract timestamp, value, and quality code from the last non-null value
-				// 						var timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
-				// 						var value24HoursLast = lastNonNull24HoursValue.value;
-				// 						var qualityCode24HoursLast = lastNonNull24HoursValue.qualityCode;
-
-				// 						// console.log("timestamp24HoursLast:", timestamp24HoursLast);
-				// 						// console.log("value24HoursLast:", value24HoursLast);
-				// 						// console.log("qualityCode24HoursLast:", qualityCode24HoursLast);
+				// 					let tainter_value = "";
+				// 					if (valueLast > 900) {
+				// 						tainter_value = "OR";
 				// 					} else {
-				// 						// If no non-null valueLast is found, log a message
-				// 						console.log("No lastNonNull24HoursValue found.");
+				// 						tainter_value = valueLast.toFixed(1);
 				// 					}
 
-				// 					// Calculate the 24 hours change between first and last value
-				// 					const delta_24 = valueLast - value24HoursLast;
-				// 					// console.log("delta_24:", delta_24);
+				// 					// Set the combined value to the cell, preserving HTML
+				// 					lDSettingCellInnerHTML = "<span class='Board_Tainter' title='" + "" + "'>" + tainter_value + "</span>";
+				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
 
-				// 					// FLOOD CLASS
-				// 					var floodClass = determineStageClass(valueLast, flood_level, timestampLast);
-				// 					// console.log("floodClass:", floodClass);
-
-				// 					if (valueLast) {
-				// 						stageCellInnerHTML = "<span class='" + floodClass + "' title='" + stage.name + ", Value = " + valueLast.toFixed(2) + ", Date Time = " + timestampLast + ", Flood Level = " + flood_level.toFixed(2) + "'>"
-				// 							+ valueLast.toFixed(1)
-				// 							+ "</span>";
-
-				// 						stageDeltaCellInnerHTML = "<span class='last_max_value' title='" + stage.name + ", Value = " + value24HoursLast.toFixed(2) + ", Date Time = " + timestamp24HoursLast + ", Delta = (" + valueLast.toFixed(2) + " - " + value24HoursLast.toFixed(2) + ") = " + delta_24.toFixed(2) + "'>"
-				// 							+ delta_24.toFixed(1)
-				// 							+ "</span>";
-				// 					} else {
-				// 						stageCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>"
-				// 					}
-				// 					stageCell.innerHTML = stageCellInnerHTML;
-				// 					stageDeltaCell.innerHTML = stageDeltaCellInnerHTML;
-				// 				})
-				// 				.catch(error => {
-				// 					// Catch and log any errors that occur during fetching or processing
-				// 					console.error("Error fetching or processing data:", error);
-				// 				});
-				// 		}
-				// 	})();
-
-				// 	// NWS DAY1, DAY2, DAY3, Forecast Time
-				// 	(() => {
-				// 		// Create a new table cell
-				// 		const nwsDayOneCell = row.insertCell(4);
-				// 		nwsDayOneCell.classList.add("next_3_days");
-				// 		nwsDayOneCell.style.width = "5%";
-
-				// 		const nwsDayTwoCell = row.insertCell(5);
-				// 		nwsDayTwoCell.classList.add("next_3_days");
-				// 		nwsDayTwoCell.style.width = "5%";
-
-				// 		const nwsDayThreeCell = row.insertCell(6);
-				// 		nwsDayThreeCell.classList.add("next_3_days");
-				// 		nwsDayThreeCell.style.width = "5%";
-
-				// 		const forecastTimeCell = row.insertCell(7);
-				// 		forecastTimeCell.classList.add("forecast_time");
-				// 		forecastTimeCell.style.width = "8%";
-
-				// 		// Initialize stageCwmsIdCell.innerHTML as an empty string
-				// 		let nwsDayOneCellInnerHTML = "--";
-				// 		let nwsDayTwoCellInnerHTML = "--";
-				// 		let nwsDayThreeCellInnerHTML = "--";
-				// 		let forecastTimeCellInnerHTML = "--";
-
-				// 		// Get stagerev tsid to check for version equal to 29
-				// 		const tsidStage = data.tsid_stage_rev
-				// 		// console.log("tsidStage = ", tsidStage);
-
-				// 		// Prepare time to send to CDA
-				// 		const { currentDateTimeMidNightISO, currentDateTimePlus4DaysMidNightISO } = generateDateTimeStrings(currentDateTime, currentDateTimePlus4Days);
-
-				// 		// Forecasts exist only at stage rev, no projects
-				// 		if (tsidStage !== null) {
-				// 			// console.log("tsidStage:", tsidStage);
-
-				// 			if (data.tsid_stage_nws_3_day_forecast !== null) {
-				// 				// console.log("The last two characters are not '29'");
-
-				// 				// Fetch the time series data from the API using the determined query string
-				// 				let urlNWS = null;
-				// 				if (cda === "public") {
-				// 					urlNWS = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${data.tsid_stage_nws_3_day_forecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
-				// 				} else if (cda === "internal") {
-				// 					urlNWS = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${data.tsid_stage_nws_3_day_forecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+				// 					// Set the HTML inside the cell once the fetch is complete
+				// 					lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+				// 				} else if (tainter === null && data.tsid_taint !== null) {
+				// 					// console.log('data.location_id:', data.location_id);
+				// 					lDSettingCellInnerHTML = "<span class='Board_Tainter' title='Tsid Tainter Exist But Missing Value'>" + "-M-" + "</span>";
+				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
 				// 				} else {
-				// 					urlNWS = null;
+				// 					// Your code to be executed if ld_setting is null
+				// 					// console.log("tainter is null");
+
+				// 					// Set the combined value to the cell, preserving HTML
+				// 					lDSettingCellInnerHTML = "";
+				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
 				// 				}
-				// 				// console.log("urlNWS = ", urlNWS);
-				// 				fetch(urlNWS, {
+				// 				lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+
+				// 				// console.log("Has Roller");
+
+				// 				let secondUrlRoller = null;
+				// 				if (cda === "public") {
+				// 					secondUrlRoller = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidRoll}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+				// 				} else if (cda === "internal") {
+				// 					secondUrlRoller = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidRoll}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
+				// 				}
+				// 				// console.log("secondUrlRoller: ", secondUrlRoller);
+				// 				return fetch(secondUrlRoller, {
 				// 					method: 'GET',
 				// 					headers: {
 				// 						'Accept': 'application/json;version=2'
 				// 					}
-				// 				})
-				// 					.then(response => {
-				// 						// Check if the response is ok
-				// 						if (!response.ok) {
-				// 							// If not, throw an error
-				// 							throw new Error('Network response was not ok');
-				// 						}
-				// 						// If response is ok, parse it as JSON
-				// 						return response.json();
-				// 					})
-				// 					.then(nws3Days => {
-				// 						// console.log("nws3Days: ", nws3Days);
-
-				// 						// Convert timestamps in the JSON object
-				// 						nws3Days.values.forEach(entry => {
-				// 							entry[0] = formatNWSDate(entry[0]); // Update timestamp
-				// 						});
-				// 						// console.log("nws3Days = ", nws3Days);
-
-				// 						// Extract values with time ending in "13:00"
-				// 						const valuesWithTimeNoon = extractValuesWithTimeNoon(nws3Days.values);
-				// 						// console.log("valuesWithTimeNoon = ", valuesWithTimeNoon);
-
-				// 						// Extract the first second middle value
-				// 						const firstFirstValue = valuesWithTimeNoon?.[1]?.[0];
-				// 						const firstMiddleValue = (valuesWithTimeNoon?.[1]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1)) : "";
-				// 						// console.log("firstMiddleValue = ", firstMiddleValue);
-				// 						// console.log("firstMiddleValue = ", typeof (firstMiddleValue));
-
-				// 						// Extract the second second middle value
-				// 						const secondFirstValue = valuesWithTimeNoon?.[2]?.[0];
-				// 						const secondMiddleValue = (valuesWithTimeNoon?.[2]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1)) : "";
-
-				// 						// Extract the third second middle value
-				// 						const thirdFirstValue = valuesWithTimeNoon?.[3]?.[0];
-				// 						const thirdMiddleValue = (valuesWithTimeNoon?.[3]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1)) : "";
-
-				// 						// Dertermine Flood Classes
-				// 						var floodClassDay1 = determineStageClass(firstMiddleValue, flood_level, firstFirstValue);
-				// 						// console.log("floodClassDay1:", floodClassDay1);
-
-				// 						var floodClassDay2 = determineStageClass(secondMiddleValue, flood_level, secondFirstValue);
-				// 						// console.log("floodClassDay2:", floodClassDay2);
-
-				// 						var floodClassDay3 = determineStageClass(thirdMiddleValue, flood_level, thirdFirstValue);
-				// 						// console.log("floodClassDay3:", floodClassDay3);
-
-				// 						if (nws3Days !== null || nws3Days !== undefined) {
-				// 							if (firstMiddleValue !== null && !isNaN(firstMiddleValue)) {
-				// 								nwsDayOneCellInnerHTML = "<span class='" + floodClassDay1 + "'>" + firstMiddleValue + "</span>";
-				// 							} else {
-				// 								nwsDayOneCellInnerHTML = "<span class='" + floodClassDay1 + "'>" + "-" + "</span>";
-				// 							}
-
-				// 							if (secondMiddleValue !== null && !isNaN(secondMiddleValue)) {
-				// 								nwsDayTwoCellInnerHTML = "<span class='" + floodClassDay2 + "'>" + secondMiddleValue + "</span>";
-				// 							} else {
-				// 								nwsDayTwoCellInnerHTML = "<span class='" + floodClassDay2 + "'>" + "-" + "</span>";
-				// 							}
-
-				// 							if (thirdMiddleValue !== null && !isNaN(thirdMiddleValue)) {
-				// 								nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + thirdMiddleValue + "</span>";
-				// 							} else {
-				// 								nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + "-" + "</span>";
-				// 							}
-
-				// 							fetchAndLogNwsData(data.tsid_stage_nws_3_day_forecast, forecastTimeCell);
-				// 						} else {
-				// 							nwsDayOneCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
-				// 							nwsDayTwoCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
-				// 							nwsDayThreeCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
-				// 							forecastTimeCellInnerHTML = "<span class='missing' style='background-color: orange;'>" + "-cdana-" + "</span>";
-				// 						}
-
-				// 						nwsDayOneCell.innerHTML = nwsDayOneCellInnerHTML;
-				// 						nwsDayTwoCell.innerHTML = nwsDayTwoCellInnerHTML;
-				// 						nwsDayThreeCell.innerHTML = nwsDayThreeCellInnerHTML;
-				// 						forecastTimeCell.innerHTML = forecastTimeCellInnerHTML;
-				// 					})
-				// 					.catch(error => {
-				// 						// Catch and log any errors that occur during fetching or processing
-				// 						console.error("Error fetching or processing data:", error);
-				// 					});
-				// 			}
-				// 		}
-				// 	})();
-
-				// 	// CREST AND CREST DATE
-				// 	(() => {
-				// 		// Create a new table cell
-				// 		const crestCell = row.insertCell(8);
-				// 		crestCell.style.width = "5%";
-
-				// 		const crestDateCell = row.insertCell(9);
-				// 		crestDateCell.style.width = "5%";
-
-				// 		// Initialize stageCwmsIdCell.innerHTML as an empty string
-				// 		let crestCellInnerHTML = "";
-				// 		let crestDateCellInnerHTML = "";
-
-				// 		// Get tsid
-				// 		const tsidCrest = data.tsid_crest;
-				// 		// console.log("tsidCrest = ", tsidCrest);
-
-				// 		// Prepare time to send to CDA
-				// 		const { currentDateTimeMidNightISO, currentDateTimePlus4DaysMidNightISO } = generateDateTimeStrings(currentDateTime, currentDateTimePlus14Days);
-
-				// 		// Use PHP 
-				// 		fetchAndLogNwsCrestData(tsidCrest, crestCell, crestDateCell);
-
-				// 		// if (tsidCrest !== null) {
-				// 		// 	// Fetch the time series data from the API using the determined query string
-				// 		// 	let urlCrest = null;
-				// 		// 	if (cda === "public") {
-				// 		// 		urlCrest = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
-				// 		// 	} else if (cda === "internal") {
-				// 		// 		urlCrest = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidCrest}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
-				// 		// 	} else {
-				// 		// 		urlCrest = null;
-				// 		// 	}
-				// 		// 	// console.log("urlCrest = ", urlCrest);
-				// 		// 	fetch(urlCrest, {
-				// 		// 		method: 'GET',
-				// 		// 		headers: {
-				// 		// 			'Accept': 'application/json;version=2'
-				// 		// 		}
-				// 		// 	})
-				// 		// 		.then(response => {
-				// 		// 			if (!response.ok) {
-				// 		// 				if (response.status === 404) {
-				// 		// 					throw new Error('Resource not found (404)');
-				// 		// 				} else {
-				// 		// 					throw new Error('Network response was not ok');
-				// 		// 				}
-				// 		// 			}
-				// 		// 			return response.json();
-				// 		// 		})
-				// 		// 		.then(crest => {
-				// 		// 			if (crest && crest.values) {
-				// 		// 				crest.values.forEach(entry => {
-				// 		// 					entry[0] = formatNWSDate(entry[0]); // Update timestamp
-				// 		// 				});
-
-				// 		// 				console.log("crest = ", crest);
-
-				// 		// 				const lastNonNullCrestValue = getLastNonNullValue(crest);
-
-				// 		// 				if (lastNonNullCrestValue !== null) {
-				// 		// 					var timestampLastCrest = lastNonNullCrestValue.timestamp;
-				// 		// 					var valueLastCrest = parseFloat(lastNonNullCrestValue.value).toFixed(2);
-				// 		// 					var qualityCodeLastCrest = lastNonNullCrestValue.qualityCode;
-
-				// 		// 					const c_count = calculateCCount(tsidCrest);
-
-				// 		// 					const formattedLastCrestValueTimeStamp = formatTimestampToString(timestampLastCrest);
-
-				// 		// 					const timeStampDateCrestObject = new Date(timestampLastCrest);
-
-				// 		// 					var floodClass = determineStageClass(valueLastCrest, flood_level);
-
-				// 		// 					if (valueLastCrest === null) {
-				// 		// 						crestCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
-				// 		// 					} else if (valueLastCrest === undefined) {
-				// 		// 						crestCellInnerHTML = "<span>" + "" + "</span>";
-				// 		// 					} else {
-				// 		// 						crestCellInnerHTML = "<span style='font-weight: bold; color: red; font-size: 1.5em;' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + valueLastCrest + "</span>";
-				// 		// 					}
-				// 		// 					crestCell.innerHTML = crestCellInnerHTML;
-
-				// 		// 					if (valueLastCrest === null) {
-				// 		// 						crestDateCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
-				// 		// 					} else if (valueLastCrest === undefined) {
-				// 		// 						crestDateCellInnerHTML = "<span>" + "" + "</span>";
-				// 		// 					} else {
-				// 		// 						crestDateCellInnerHTML = "<span style='font-weight: bold; font-size: 1.5em;' title='" + crest.name + ", Value = " + valueLastCrest + ", Date Time = " + timestampLastCrest + "'>" + timestampLastCrest.substring(0, 5) + "</span>";
-				// 		// 					}
-				// 		// 					crestDateCell.innerHTML = crestDateCellInnerHTML;
-				// 		// 				} else {
-				// 		// 					crestCell.innerHTML = "";
-				// 		// 					crestDateCell.innerHTML = "";
-				// 		// 				}
-				// 		// 			} else {
-				// 		// 				crestCell.innerHTML = "";
-				// 		// 				crestDateCell.innerHTML = "";
-				// 		// 			}
-				// 		// 		})
-				// 		// 		.catch(error => {
-				// 		// 			// Catch and log any errors that occur during fetching or processing
-				// 		// 			console.error("Error fetching or processing data:", error);
-				// 		// 			// Optionally provide user feedback for the error
-				// 		// 			crestCell.innerHTML = "<span class='error'>--</span>";
-				// 		// 			crestDateCell.innerHTML = "<span class='error'>--</span>";
-				// 		// 		});
-				// 		// } else {
-				// 		// 	crestCell.innerHTML = crestCellInnerHTML;
-				// 		// 	crestDateCell.innerHTML = crestDateCellInnerHTML;
-				// 		// }
-				// 	})();
-
-				// 	// LD SETTINGS
-				// 	(() => {
-				// 		// Create a new table cell
-				// 		const lDSettingCell = row.insertCell(10);
-				// 		lDSettingCell.classList.add("project_gage");
-				// 		lDSettingCell.style.width = "15%";
-
-				// 		// console.log('data.location_id:', data.location_id);
-
-				// 		// Initialize stageCwmsIdCell.innerHTML as an empty string
-				// 		let lDSettingCellInnerHTML = "--";
-
-				// 		if (data.tsid_taint !== null || data.tsid_roll !== null) {
-
-				// 			const tsidTaint = data.tsid_taint;
-				// 			// console.log("tsidTaint: " + tsidTaint);
-
-				// 			const tsidRoll = data.tsid_roll;
-				// 			// console.log("tsidRoll: " + tsidRoll);
-
-				// 			let urlTainter = null;
-				// 			if (cda === "public") {
-				// 				urlTainter = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 			} else if (cda === "internal") {
-				// 				urlTainter = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidTaint}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 			}
-				// 			fetch(urlTainter, {
-				// 				method: 'GET',
-				// 				headers: {
-				// 					'Accept': 'application/json;version=2'
-				// 				}
-				// 			})
-				// 				.then(response => {
-				// 					if (!response.ok) {
-				// 						if (response.status === 404) {
-				// 							throw new Error('Resource not found (404)');
-				// 						} else {
-				// 							throw new Error('Network response was not ok');
-				// 						}
-				// 					}
-				// 					return response.json();
-				// 				})
-				// 				.then(tainter => {
-				// 					// Log the tainter to the console
-				// 					// console.log("tainter: ", data.location_id, data.tsid_taint, tainter);
-
-				// 					if (tainter !== null && data.tsid_taint !== null) {
-				// 						// Your code to be executed if tainter is not null
-				// 						// console.log("tainter is not null");
-
-				// 						// Convert timestamps in the JSON object
-				// 						tainter.values.forEach(entry => {
-				// 							entry[0] = formatNWSDate(entry[0]); // Update timestamp
-				// 						});
-
-				// 						// console.log("tainter formatted = ", tainter);
-
-				// 						// Get the last non-null value from the tainter data
-				// 						const lastNonNullValue = getLastNonNullValue(tainter);
-				// 						// console.log("lastNonNullValue:", lastNonNullValue);
-
-				// 						// Check if a non-null value was found
-				// 						if (lastNonNullValue !== null) {
-				// 							// Extract timestamp, value, and quality code from the last non-null value
-				// 							var timestampLast = lastNonNullValue.timestamp;
-				// 							var valueLast = lastNonNullValue.value;
-				// 							var qualityCodeLast = lastNonNullValue.qualityCode;
-				// 							// console.log("timestampLast:", timestampLast);
-				// 							// console.log("timestampLast:", typeof (timestampLast));
-				// 							// console.log("valueLast:", valueLast);
-				// 							// console.log("qualityCodeLast:", qualityCodeLast);
-				// 						} else {
-				// 							// If no non-null valueLast is found, log a message
-				// 							console.log("No non-null valueLast found.");
-				// 						}
-
-				// 						let tainter_value = "";
-				// 						if (valueLast > 900) {
-				// 							tainter_value = "OR";
-				// 						} else {
-				// 							tainter_value = valueLast.toFixed(1);
-				// 						}
-
-				// 						// Set the combined value to the cell, preserving HTML
-				// 						lDSettingCellInnerHTML = "<span class='Board_Tainter' title='" + "" + "'>" + tainter_value + "</span>";
-				// 						// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
-
-				// 						// Set the HTML inside the cell once the fetch is complete
-				// 						lDSettingCell.innerHTML = lDSettingCellInnerHTML;
-				// 					} else if (tainter === null && data.tsid_taint !== null) {
-				// 						// console.log('data.location_id:', data.location_id);
-				// 						lDSettingCellInnerHTML = "<span class='Board_Tainter' title='Tsid Tainter Exist But Missing Value'>" + "-M-" + "</span>";
-				// 						// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
-				// 					} else {
-				// 						// Your code to be executed if ld_setting is null
-				// 						// console.log("tainter is null");
-
-				// 						// Set the combined value to the cell, preserving HTML
-				// 						lDSettingCellInnerHTML = "";
-				// 						// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
-				// 					}
-				// 					lDSettingCell.innerHTML = lDSettingCellInnerHTML;
-
-				// 					// console.log("Has Roller");
-
-				// 					let secondUrlRoller = null;
-				// 					if (cda === "public") {
-				// 						secondUrlRoller = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${tsidRoll}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 					} else if (cda === "internal") {
-				// 						secondUrlRoller = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${tsidRoll}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=MVS`;
-				// 					}
-				// 					// console.log("secondUrlRoller: ", secondUrlRoller);
-				// 					return fetch(secondUrlRoller, {
-				// 						method: 'GET',
-				// 						headers: {
-				// 							'Accept': 'application/json;version=2'
-				// 						}
-				// 					});
-				// 				})
-				// 				.then(response => response.json())
-				// 				.then(roller => {
-				// 					// Process the data from the third fetch
-				// 					// console.log('roller:', roller);
-
-				// 					if (roller !== null && data.tsid_roll !== null) {
-				// 						// Your code to be executed if roller is not null
-				// 						// console.log("roller is not null");
-
-				// 						// Get the last non-null value from the tainter data
-				// 						const lastNonNullValue = getLastNonNullValue(roller);
-				// 						// console.log("lastNonNullValue:", lastNonNullValue);
-
-				// 						// Check if a non-null value was found
-				// 						if (lastNonNullValue !== null) {
-				// 							// Extract timestamp, value, and quality code from the last non-null value
-				// 							var timestampLast = lastNonNullValue.timestamp;
-				// 							var valueLast = lastNonNullValue.value;
-				// 							var qualityCodeLast = lastNonNullValue.qualityCode;
-				// 							// console.log("timestampLast:", timestampLast);
-				// 							// console.log("timestampLast:", typeof (timestampLast));
-				// 							// console.log("valueLast:", valueLast);
-				// 							// console.log("qualityCodeLast:", qualityCodeLast);
-				// 						} else {
-				// 							// If no non-null valueLast is found, log a message
-				// 							console.log("No non-null valueLast found.");
-				// 						}
-
-				// 						let roller_value = "";
-				// 						if (valueLast > 900) {
-				// 							roller_value = "OR";
-				// 						} else {
-				// 							roller_value = valueLast.toFixed(1);
-				// 						}
-
-				// 						// Set the combined value to the cell, preserving HTML
-				// 						lDSettingCellInnerHTML += "<span class='Board_Roller' title='" + "" + "'>" + roller_value + "</span>";
-				// 						// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
-
-				// 						// Set the HTML inside the cell once the fetch is complete
-				// 						lDSettingCell.innerHTML = lDSettingCellInnerHTML;
-				// 					} else if (roller === null && data.tsid_roll !== null) { // roller is missing
-				// 						lDSettingCellInnerHTML += "<span class='Board_Roller' title='Tsid Roller Exist But Missing Value'>" + "-M-" + "</span>";
-				// 						// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
-				// 					} else {
-				// 						// Your code to be executed if ld_setting is null
-				// 						// console.log("roller is null");
-
-				// 						// Set the combined value to the cell, preserving HTML
-				// 						lDSettingCellInnerHTML += "<span class='Board_Roller_Hide' title='No Roller'>" + "" + "</span>";
-				// 						// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
-				// 					}
-				// 					lDSettingCell.innerHTML = lDSettingCellInnerHTML;
-				// 				})
-				// 				.catch(error => {
-				// 					console.error('Error:', error);
 				// 				});
+				// 			})
+				// 			.then(response => response.json())
+				// 			.then(roller => {
+				// 				// Process the data from the third fetch
+				// 				// console.log('roller:', roller);
+
+				// 				if (roller !== null && data.tsid_roll !== null) {
+				// 					// Your code to be executed if roller is not null
+				// 					// console.log("roller is not null");
+
+				// 					// Get the last non-null value from the tainter data
+				// 					const lastNonNullValue = getLastNonNullValue(roller);
+				// 					// console.log("lastNonNullValue:", lastNonNullValue);
+
+				// 					// Check if a non-null value was found
+				// 					if (lastNonNullValue !== null) {
+				// 						// Extract timestamp, value, and quality code from the last non-null value
+				// 						var timestampLast = lastNonNullValue.timestamp;
+				// 						var valueLast = lastNonNullValue.value;
+				// 						var qualityCodeLast = lastNonNullValue.qualityCode;
+				// 						// console.log("timestampLast:", timestampLast);
+				// 						// console.log("timestampLast:", typeof (timestampLast));
+				// 						// console.log("valueLast:", valueLast);
+				// 						// console.log("qualityCodeLast:", qualityCodeLast);
+				// 					} else {
+				// 						// If no non-null valueLast is found, log a message
+				// 						console.log("No non-null valueLast found.");
+				// 					}
+
+				// 					let roller_value = "";
+				// 					if (valueLast > 900) {
+				// 						roller_value = "OR";
+				// 					} else {
+				// 						roller_value = valueLast.toFixed(1);
+				// 					}
+
+				// 					// Set the combined value to the cell, preserving HTML
+				// 					lDSettingCellInnerHTML += "<span class='Board_Roller' title='" + "" + "'>" + roller_value + "</span>";
+				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
+
+				// 					// Set the HTML inside the cell once the fetch is complete
+				// 					lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+				// 				} else if (roller === null && data.tsid_roll !== null) { // roller is missing
+				// 					lDSettingCellInnerHTML += "<span class='Board_Roller' title='Tsid Roller Exist But Missing Value'>" + "-M-" + "</span>";
+				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
+				// 				} else {
+				// 					// Your code to be executed if ld_setting is null
+				// 					// console.log("roller is null");
+
+				// 					// Set the combined value to the cell, preserving HTML
+				// 					lDSettingCellInnerHTML += "<span class='Board_Roller_Hide' title='No Roller'>" + "" + "</span>";
+				// 					// console.log("lDSettingCellInnerHTML = ", lDSettingCellInnerHTML);
+				// 				}
+				// 				lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+				// 			})
+				// 			.catch(error => {
+				// 				console.error('Error:', error);
+				// 			});
+				// 	} else {
+				// 		if (data.board_lib_title !== null) {
+				// 			lDSettingCellInnerHTML = "<span title='" + data.board_lib_note + "'>" + data.board_lib_title + "<span>";
 				// 		} else {
-				// 			if (data.board_lib_title !== null) {
-				// 				lDSettingCellInnerHTML = "<span title='" + data.board_lib_note + "'>" + data.board_lib_title + "<span>";
-				// 			} else {
-				// 				lDSettingCellInnerHTML = "";
-				// 			}
-				// 			lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+				// 			lDSettingCellInnerHTML = "";
 				// 		}
-				// 	})();
+				// 		lDSettingCell.innerHTML = lDSettingCellInnerHTML;
+				// 	}
+				// })();
 
 				// 	// LWRP OR FLOODSTAGE
 				// 	(() => {
@@ -3325,9 +3307,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 				// 		// Set the HTML inside the cell once the fetch is complete
 				// 		gageZeroCell.innerHTML = gageZeroCellInnerHTML;
 				// 	})();
-				// } else {
-				// 	// NO VISIABLE GAGE
-				// }
+
 			});
 		});
 	}

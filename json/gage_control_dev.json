@@ -102,7 +102,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "LD 20 TW-Mississippi",
@@ -197,7 +219,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "LD 21 Pool-Mississippi",
@@ -292,7 +336,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "LD 21 TW-Mississippi",
@@ -387,7 +453,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Hannibal-Mississippi",
@@ -514,7 +602,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "LD 22 Pool-Mississippi",
@@ -609,7 +719,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "LD 22 TW-Mississippi",
@@ -742,7 +874,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Louisiana-Mississippi",
@@ -899,6 +1053,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -1000,7 +1176,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "LD 24 TW-Mississippi",
@@ -1158,6 +1356,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -1271,7 +1491,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "LD 25 Pool-Mississippi",
@@ -1372,7 +1614,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "LD 25 TW-Mississippi",
@@ -1530,6 +1794,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -1664,7 +1950,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Mel Price Pool-Mississippi",
@@ -1765,7 +2073,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Mel Price TW-Mississippi",
@@ -1923,6 +2253,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -2025,7 +2377,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "LD 27 TW-Mississippi",
@@ -2126,7 +2500,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "St Louis-Mississippi",
@@ -2284,6 +2680,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -2384,7 +2802,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Jefferson Brks-Mississippi",
@@ -2484,7 +2924,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Herculaneum-Mississippi",
@@ -2581,7 +3043,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Chester-Mississippi",
@@ -2740,6 +3224,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -2898,6 +3404,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -3032,7 +3560,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Thompson Ldg-Mississippi",
@@ -3145,7 +3695,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Birds Point-Mississippi",
@@ -3258,7 +3830,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -3400,7 +3994,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "La Salle-Illinois",
@@ -3529,7 +4145,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Peoria-Illinois",
@@ -3658,7 +4296,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Beardstown-Illinois",
@@ -3815,6 +4475,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -3972,6 +4654,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -4105,7 +4809,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Florence-Illinois",
@@ -4219,7 +4945,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Hardin-Illinois",
@@ -4378,6 +5126,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             }
         ]
@@ -4509,7 +5279,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -4673,6 +5465,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -4825,6 +5639,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -4983,6 +5819,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             }
         ]
@@ -5117,7 +5975,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Sullivan-Meramec",
@@ -5250,7 +6130,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Champion City-Bourbeuse",
@@ -5348,7 +6250,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Union-Bourbeuse",
@@ -5483,7 +6407,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Pacific-Meramec",
@@ -5618,7 +6564,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Byrnesville-Big",
@@ -5752,7 +6720,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Eureka-Meramec",
@@ -5886,7 +6876,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Valley Park-Meramec",
@@ -6044,6 +7056,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -6179,7 +7213,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -6324,7 +7380,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Paducah-Ohio",
@@ -6452,7 +7530,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -6921,6 +8021,28 @@
                     "level-date": "2025-04-01T06:00:00Z",
                     "attribute-units-id": "ft",
                     "seasonal-values": []
+                },
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
                 }
             },
             {
@@ -7338,7 +8460,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Nav Pool-Kaskaskia",
@@ -7452,7 +8596,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Nav TW-Kaskaskia",
@@ -7564,7 +8730,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -7964,7 +9152,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Murphysboro-Big Muddy",
@@ -8099,7 +9309,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -8232,7 +9464,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "Wappapello Lk-St Francis",
@@ -8611,7 +9865,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "St Francis-St Francis",
@@ -8697,7 +9973,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -9154,7 +10452,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             },
             {
                 "location-id": "New London-Salt",
@@ -9247,7 +10567,29 @@
                 },
                 "eoc-phase-1": null,
                 "eoc-phase-2": null,
-                "lwrp": null
+                "lwrp": null,
+                "board-locations": {
+                    "office-id": "MVS",
+                    "id": "Board",
+                    "location-category": {
+                        "office-id": "MVS",
+                        "id": "MVS"
+                    },
+                    "assigned-locations": [
+                        {
+                            "location-id": "St Louis-Mississippi",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "St Charles-Missouri",
+                            "office-id": "MVS"
+                        },
+                        {
+                            "location-id": "Mel Price Pool-Mississippi",
+                            "office-id": "MVS"
+                        }
+                    ]
+                }
             }
         ]
     }

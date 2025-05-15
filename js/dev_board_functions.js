@@ -1727,10 +1727,10 @@ function formatTimestampToStringIOS(timestamp) {
     return dateObj.toISOString().replace("T", " ").slice(0, 16);
 }
 
-function fetchAndUpdateYesterdayInflowTd(precipCell, tsid, currentDateTimeMinus2Hours, currentDateTime, currentDateTimeMinus30Hours, setBaseUrl) {
+function fetchAndUpdateYesterdayInflowTd(precipCell, tsid, isoDateMinus1Str, isoDateTodayStr, setBaseUrl) {
     if (tsid !== null) {
         // Fetch the time series data from the API using the determined query string
-        const urlPrecip = `${setBaseUrl}timeseries?name=${tsid}&begin=${currentDateTimeMinus30Hours.toISOString()}&end=${currentDateTime.toISOString()}&office=${office}`;
+        const urlPrecip = `${setBaseUrl}timeseries?name=${tsid}&begin=${isoDateMinus1Str}&end=${isoDateTodayStr}&office=${office}`;
         // console.log("urlPrecip = ", urlPrecip);
 
         fetch(urlPrecip, {
@@ -1750,7 +1750,7 @@ function fetchAndUpdateYesterdayInflowTd(precipCell, tsid, currentDateTimeMinus2
                 return response.json();
             })
             .then(data => {
-                // console.log("precip: ", precip);
+                console.log("data: ", data);
 
                 // Convert timestamps in the JSON object
                 data.values.forEach(entry => {
@@ -1763,15 +1763,9 @@ function fetchAndUpdateYesterdayInflowTd(precipCell, tsid, currentDateTimeMinus2
 
                 // Check if a non-null value was found
                 if (lastNonNullPrecipValue !== null) {
-                    // Extract timestamp, value, and quality code from the last non-null value
                     var timestampPrecipLast = lastNonNullPrecipValue.timestamp;
                     var valuePrecipLast = parseFloat(lastNonNullPrecipValue.value).toFixed(0);
                     var qualityCodePrecipLast = lastNonNullPrecipValue.qualityCode;
-
-                    // Log the extracted valueLasts
-                    // console.log("timestampPrecipLast:", timestampPrecipLast);
-                    // console.log("valuePrecipLast:", valuePrecipLast);
-                    // console.log("qualityCodePrecipLast:", qualityCodePrecipLast);
                 } else {
                     // If no non-null valueLast is found, log a message
                     // console.log("No non-null valueLast found.");
