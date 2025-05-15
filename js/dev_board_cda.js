@@ -705,88 +705,131 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 // RIVER TITLE
 if (display_tributary === "False" && display_type !== "Lake") {
-	document.write("<table id='board_cda'>");
-	document.write("<tr>");
-	document.write("<th colspan='15'>");
-	document.write("<div id='board_title'>MVS RIVER DATA</div>");
-	document.write("</th>");
-	document.write("</tr>");
+	const table = document.createElement('table');
+	table.id = 'board_cda';
 
-	document.write("<tr>");
-	document.write("<th colspan='2'>");
-	document.write("<div class='Last_Modified'>Last Modified:&nbsp;&nbsp" + currentDateTime + "</div>");
-	document.write("</th>");
-	document.write("<th colspan='13'>");
+	// Row 1: Title row using <th>
+	const row1 = table.insertRow();
+	const th1 = document.createElement('th');
+	th1.colSpan = 15;
+	th1.innerHTML = "<div id='board_title'>MVS RIVER DATA</div>";
+	row1.appendChild(th1);
+
+	// Row 2: Last Modified + Switch Link using <th>
+	const row2 = table.insertRow();
+
+	// Last Modified cell
+	const th2_1 = document.createElement('th');
+	th2_1.colSpan = 2;
+	th2_1.innerHTML = `<div class='Last_Modified'>Last Modified:&nbsp;&nbsp;${currentDateTime}</div>`;
+	row2.appendChild(th2_1);
+
+	// Switch link cell
+	const th2_2 = document.createElement('th');
+	th2_2.colSpan = 13;
 	if (display_type === "FloodStage" && display_tributary === "False") {
-		document.write("<div id='formsContainer'><div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=FloodStage&display_tributary=False&dev=True'>Switch to Dev Board</a></div></div>");
+		th2_2.innerHTML = `<div id='formsContainer'><div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=FloodStage&display_tributary=False&dev=True'>Switch to Dev Board</a></div></div>`;
 	} else {
-		document.write("<div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=LWRP&display_tributary=False&dev=True'>Switch to PHP Board</a></div>");
+		th2_2.innerHTML = `<div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=LWRP&display_tributary=False&dev=True'>Switch to PHP Board</a></div>`;
 	}
-	document.write("</th>");
-	document.write("</tr>");
+	row2.appendChild(th2_2);
 
-	document.write("<tr>");
-	document.write("<th rowspan='3' width='6%' style='font-size: 1.2em;'>River Mile</th>");
-	document.write("<th rowspan='3'width='16%' style='font-size: 1.2em;'>Location</th>");
-	document.write("<th rowspan='3' width='6%' style='font-size: 1.2em;'>Current<br>" +
-		((currentMinute >= 0 && currentMinute < 30) ? currentHour + ":00" : currentHour + ":30") +
-		"<br>Levels</th>");
-	document.write("<th rowspan='3' width='5%' style='font-size: 1.2em;'>24hr<br>Change</th>");
-	document.write("<th colspan='6' style='font-size: 1.2em;'>National Weather Service River Forcast</th>");
-	document.write("<th rowspan='3' width='15%' style='font-size: 1.2em;'> LD Settings<br>[Tainter] [Roller]</th>");
+	// Row 3: Header row
+	const row3 = table.insertRow();
+	row3.innerHTML = `
+    <th rowspan='3' width='6%' style='font-size: 1.2em;'>River Mile</th>
+    <th rowspan='3' width='16%' style='font-size: 1.2em;'>Location</th>
+    <th rowspan='3' width='6%' style='font-size: 1.2em;'>Current<br>${(currentMinute >= 0 && currentMinute < 30) ? currentHour + ":00" : currentHour + ":30"
+		}<br>Levels</th>
+    <th rowspan='3' width='5%' style='font-size: 1.2em;'>24hr<br>Change</th>
+    <th colspan='6' style='font-size: 1.2em;'>National Weather Service River Forecast</th>
+    <th rowspan='3' width='15%' style='font-size: 1.2em;'> LD Settings<br>[Tainter] [Roller]</th>
+`;
 
+	const typeCell = document.createElement('th');
+	typeCell.colSpan = 2;
+	typeCell.rowSpan = 1;
 	if (display_type === "LWRP") {
-		document.write("<th colspan='2' rowspan='1'><a href='dev.html?display_type=FloodStage&display_tributary=False&dev=True'>Switch to FloodStage</a></th>");
-	} else if (display_type == "FloodStage") {
-		document.write("<th colspan='2' rowspan='1'><a href='dev.html?display_type=LWRP&display_tributary=False&dev=True'>Switch to LWRP</a></th>");
-	} else {
-		document.write("<th colspan='2' rowspan='1' width='8%'></th>");
-	}
-
-	document.write("<th rowspan='3' width='6%' style='font-size: 1.2em;'>Gage Zero<br>NAVD88</th>");
-	document.write("</tr>");
-
-	document.write("<tr>");
-	document.write("<th colspan='3' style='font-size: 1.2em;'>Next 3 days</th>");
-	document.write("<th width='8%' style='font-size: 1.2em;'>Forecast Time</th>");
-	document.write("<th width='5%' style='font-size: 1.2em;'>Crest</th>");
-	document.write("<th width='5%' style='font-size: 1.2em;'>Date</th>");
-
-	if (display_type === "LWRP") {
-		document.write("<th rowspan='2' width='5%'>LWRP</th>");
-		document.write("<th rowspan='2' width='8%'>Plus or <br>Minus<br>LWRP</th>");
+		typeCell.innerHTML = `<a href='dev.html?display_type=FloodStage&display_tributary=False&dev=True'>Switch to FloodStage</a>`;
 	} else if (display_type === "FloodStage") {
-		document.write("<th rowspan='2' width='5%' style='font-size: 1.2em;'>Flood<br>Stage</th>");
-		document.write("<th rowspan='2' width='8%' style='font-size: 1.2em;'>Action<br>Stages<br>[Phase 1/2]</th>");
+		typeCell.innerHTML = `<a href='dev.html?display_type=LWRP&display_tributary=False&dev=True'>Switch to LWRP</a>`;
+	}
+	row3.appendChild(typeCell);
+
+	const gageZeroCell = document.createElement('th');
+	gageZeroCell.rowSpan = 3;
+	gageZeroCell.style.fontSize = '1.2em';
+	gageZeroCell.width = '6%';
+	gageZeroCell.innerHTML = 'Gage Zero<br>NAVD88';
+	row3.appendChild(gageZeroCell);
+
+	// Row 4: Forecast Headers
+	const row4 = table.insertRow();
+	row4.innerHTML = `
+    <th colspan='3' style='font-size: 1.2em;'>Next 3 days</th>
+    <th width='8%' style='font-size: 1.2em;'>Forecast Time</th>
+    <th width='5%' style='font-size: 1.2em;'>Crest</th>
+    <th width='5%' style='font-size: 1.2em;'>Date</th>
+`;
+
+	if (display_type === "LWRP") {
+		row4.innerHTML += `
+        <th rowspan='2' width='5%'>LWRP</th>
+        <th rowspan='2' width='8%'>Plus or <br>Minus<br>LWRP</th>
+    `;
+	} else if (display_type === "FloodStage") {
+		row4.innerHTML += `
+        <th rowspan='2' width='5%' style='font-size: 1.2em;'>Flood<br>Stage</th>
+        <th rowspan='2' width='8%' style='font-size: 1.2em;'>Action<br>Stages<br>[Phase 1/2]</th>
+    `;
 	} else {
-		document.write("<th colspan='2' rowspan='2'></th>");
-		document.write("<th colspan='2' rowspan='2'></th>");
+		row4.innerHTML += `
+        <th colspan='2' rowspan='2'></th>
+        <th colspan='2' rowspan='2'></th>
+    `;
 	}
 
-	document.write("</tr>");
+	// Row 5: Day Labels
+	const row5 = table.insertRow();
+	row5.innerHTML = `
+    <th width='5%'>${currentPlusOneDayAbbreviation} ${nws_day1_date_title}</th>
+    <th width='5%'>${currentPlusTwoDayAbbreviation} ${nws_day2_date_title}</th>
+    <th width='5%'>${currentPlusThreeDayAbbreviation} ${nws_day3_date_title}</th>
+    <th colspan='3'></th>
+`;
 
-	document.write("<tr>");
-	document.write("<th width='5%'>" + currentPlusOneDayAbbreviation + " " + nws_day1_date_title + "</th>");
-	document.write("<th width='5%'>" + currentPlusTwoDayAbbreviation + " " + nws_day2_date_title + "</th>");
-	document.write("<th width='5%'>" + currentPlusThreeDayAbbreviation + " " + nws_day3_date_title + "</th>");
-	document.write("<th colspan='3'></th>");
-	document.write("</tr>");
-	document.write("</table>");
+	// Append the table to the body or another container
+	document.body.appendChild(table);
 } else {
-	if (display_type === "LWRP") {
-		document.write("<table id='board_cda'>");
-		document.write("<div class='Last_Modified_Tributary'>Last Modified:&nbsp;&nbsp" + currentDateTime + "</div>");
-		document.write("<div class='Last_Modified_Tributary'><a href='https://wm.mvs.ds.usace.army.mil/web_apps/board/public/board.php?display_type=LWRP&display_tributary=True'>Switch to PHP Board</a></div>");
-		document.write("<div class='Flood_Stage_Switch_Tributary'><a href='dev.html?display_type=FloodStage&display_tributary=True&dev=True'>Switch to FloodStage</a></div>");
-		document.write("</table>");
-	} else if (display_type == "FloodStage") {
-		document.write("<table id='board_cda'>");
-		document.write("<div class='Last_Modified_Tributary'>Last Modified:&nbsp;&nbsp" + currentDateTime + "</div>");
-		document.write("<div class='Last_Modified_Tributary'><a href='https://wm.mvs.ds.usace.army.mil/web_apps/board/public/board.php?display_type=FloodStage&display_tributary=True'>Switch to PHP Board</a></div>");
-		document.write("<div class='Flood_Stage_Switch_Tributary'><a href='dev.html?display_type=LWRP&display_tributary=True&dev=True'>Switch to LWRP</a></div>");
-		document.write("</table>");
+	if (display_type === "LWRP" || display_type === "FloodStage") {
+		// Create and append Last Modified div
+		const lastModifiedDiv = document.createElement('div');
+		lastModifiedDiv.className = 'Last_Modified_Tributary';
+		lastModifiedDiv.innerHTML = `Last Modified:&nbsp;&nbsp;${currentDateTime}`;
+		document.body.appendChild(lastModifiedDiv);
+
+		// Create and append PHP Board link
+		const phpBoardDiv = document.createElement('div');
+		phpBoardDiv.className = 'Last_Modified_Tributary';
+		phpBoardDiv.innerHTML = `<a href='https://wm.mvs.ds.usace.army.mil/web_apps/board/public/board.php?display_type=${display_type}&display_tributary=True'>Switch to PHP Board</a>`;
+		document.body.appendChild(phpBoardDiv);
+
+		// Create and append switch link
+		const switchDiv = document.createElement('div');
+		switchDiv.className = 'Flood_Stage_Switch_Tributary';
+		if (display_type === "LWRP") {
+			switchDiv.innerHTML = `<a href='dev.html?display_type=FloodStage&display_tributary=True&dev=True'>Switch to FloodStage</a>`;
+		} else {
+			switchDiv.innerHTML = `<a href='dev.html?display_type=LWRP&display_tributary=True&dev=True'>Switch to LWRP</a>`;
+		}
+		document.body.appendChild(switchDiv);
+
+		// Create and append the table
+		const table = document.createElement('table');
+		table.id = 'board_cda';
+		document.body.appendChild(table);
 	} else {
-		console.error();
+		console.error("Invalid display_type:", display_type);
 	}
 }
 
