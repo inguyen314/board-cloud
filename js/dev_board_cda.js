@@ -811,7 +811,7 @@ if (display_tributary === "False" && display_type !== "Lake") {
 		// Create and append PHP Board link
 		const phpBoardDiv = document.createElement('div');
 		phpBoardDiv.className = 'Last_Modified_Tributary';
-		phpBoardDiv.innerHTML = `<a href='https://wm.mvs.ds.usace.army.mil/web_apps/board/public/board.php?display_type=${display_type}&display_tributary=True'>Switch to PHP Board</a>`;
+		phpBoardDiv.innerHTML = `<a href='/mvs/board/index.html?display_type=${display_type}&display_tributary=True&dev=True'>Switch to Original Board</a>`;
 		document.body.appendChild(phpBoardDiv);
 
 		// Create and append switch link
