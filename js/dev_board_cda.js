@@ -1041,6 +1041,7 @@ if (display_type === "Lake") {
 //====================================================
 
 function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, display_type, display_tributary, day1, day2, day3, lakeLocs) {
+	// Prepare and sort gage control
 	if (display_type === "Lake") {
 		combinedDataReservoir = combinedDataReservoir.filter((basin) => {
 			// Filter 'assigned-locations' within each basin
@@ -1183,7 +1184,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 
 	console.log("currentDateTimeIso: ", currentDateTimeIso);
 
-	// DISPLAY LAKE
+	// LAKE
 	if (display_type === "Lake" && display_tributary === "False") {
 		combinedDataReservoir.forEach((basin) => {
 			const headerRow = table.insertRow();
@@ -1200,419 +1201,751 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 				//==============================================================================================================================================
 				// LAKE
 				//==============================================================================================================================================
-				if (display_type === 'Lake') {
-					// =====================
-					// ======= ROW 1 ======= (STAGE, UTIL, INFLOW, OUTFLOW & RULE CURVE)
-					// =====================
+				// =====================
+				// ======= ROW 1 ======= (STAGE, UTIL, INFLOW, OUTFLOW & RULE CURVE)
+				// =====================
+				(() => {
+					// Create a new row for each lake data entry
+					const row = table.insertRow();
+
+					// 01-Lake
 					(() => {
-						// Create a new row for each lake data entry
-						const row = table.insertRow();
+						// Create a new table cell for lake name
+						const lakeTd = document.createElement('td');
+						lakeTd.classList.add('Font_20');
+						lakeTd.style.width = "15%";
 
-						// 01-Lake
-						(() => {
-							// Create a new table cell for lake name
-							const lakeTd = document.createElement('td');
-							lakeTd.classList.add('Font_20');
-							lakeTd.style.width = "15%";
+						// Initialize lakeCellInnerHTML as an empty string
+						let lakeCellInnerHTML = '--';
 
-							// Initialize lakeCellInnerHTML as an empty string
-							let lakeCellInnerHTML = '--';
+						// Update the inner HTML of the cell with data, preserving HTML
+						lakeCellInnerHTML = "<span>" + location['metadata']['public-name'] + "</span>";
+						// console.log('lakeCellInnerHTML =', lakeCellInnerHTML);
+						lakeTd.innerHTML = lakeCellInnerHTML;
 
-							// Update the inner HTML of the cell with data, preserving HTML
-							lakeCellInnerHTML = "<span>" + location['metadata']['public-name'] + "</span>";
-							// console.log('lakeCellInnerHTML =', lakeCellInnerHTML);
-							lakeTd.innerHTML = lakeCellInnerHTML;
+						row.appendChild(lakeTd);
+					})();
 
-							row.appendChild(lakeTd);
-						})();
+					// 02-Current Level and 03-Delta Level
+					(() => {
+						const stageTd = document.createElement('td');
+						const deltaTd = document.createElement('td');
 
-						// 02-Current Level and 03-Delta Level
-						(() => {
-							const stageTd = document.createElement('td');
-							const deltaTd = document.createElement('td');
+						stageTd.style.width = "12%";
+						deltaTd.style.width = "10%";
 
-							stageTd.style.width = "12%";
-							deltaTd.style.width = "10%";
+						stageTd.classList.add('Font_20');
+						deltaTd.classList.add('Font_20');
 
-							stageTd.classList.add('Font_20');
-							deltaTd.classList.add('Font_20');
+						const floodValue = location['flood'] ? location['flood']['constant-value'] : null;
+						const stageTsid = location?.['tsid-stage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
-							const floodValue = location['flood'] ? location['flood']['constant-value'] : null;
-							const stageTsid = location?.['tsid-stage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						if (stageTsid) {
+							fetchAndUpdateStageTd(stageTd, deltaTd, stageTsid, floodValue, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl);
+						}
 
-							if (stageTsid) {
-								fetchAndUpdateStageTd(stageTd, deltaTd, stageTsid, floodValue, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl);
-							}
+						row.appendChild(stageTd);
+						row.appendChild(deltaTd);
+					})();
 
-							row.appendChild(stageTd);
-							row.appendChild(deltaTd);
-						})();
+					// 04-Consr and 05-Flood Storage
+					(() => {
+						const ConsrTd = document.createElement('td');
+						const FloodTd = document.createElement('td');
 
-						// 04-Consr and 05-Flood Storage
-						(() => {
-							const ConsrTd = document.createElement('td');
-							const FloodTd = document.createElement('td');
+						ConsrTd.classList.add('Font_20');
+						FloodTd.classList.add('Font_20');
 
-							ConsrTd.classList.add('Font_20');
-							FloodTd.classList.add('Font_20');
+						ConsrTd.style.width = "8.5%";
+						FloodTd.style.width = "8.5%";
 
-							ConsrTd.style.width = "8.5%";
-							FloodTd.style.width = "8.5%";
+						const topOfConservationLevel = location['top-of-conservation']?.['constant-value'] || null;
+						// console.log("topOfConservationLevel: ", topOfConservationLevel);
 
-							const topOfConservationLevel = location['top-of-conservation']?.['constant-value'] || null;
-							// console.log("topOfConservationLevel: ", topOfConservationLevel);
+						const bottomOfConservationLevel = location['bottom-of-conservation']?.['constant-value'] || null;
+						// console.log("bottomOfConservationLevel: ", bottomOfConservationLevel);
 
-							const bottomOfConservationLevel = location['bottom-of-conservation']?.['constant-value'] || null;
-							// console.log("bottomOfConservationLevel: ", bottomOfConservationLevel);
+						const topOfFloodLevel = location['top-of-flood']?.['constant-value'] || null;
+						// console.log("topOfFloodLevel: ", topOfFloodLevel);
 
-							const topOfFloodLevel = location['top-of-flood']?.['constant-value'] || null;
-							// console.log("topOfFloodLevel: ", topOfFloodLevel);
+						const bottomOfFloodLevel = location['bottom-of-flood']?.['constant-value'] || null;
+						// console.log("bottomOfFloodLevel: ", bottomOfFloodLevel);
 
-							const bottomOfFloodLevel = location['bottom-of-flood']?.['constant-value'] || null;
-							// console.log("bottomOfFloodLevel: ", bottomOfFloodLevel);
+						const storageTsid = location?.['tsid-lake-storage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
-							const storageTsid = location?.['tsid-lake-storage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						if (storageTsid) {
+							fetchAndUpdateStorageTd(ConsrTd, FloodTd, storageTsid, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl, topOfConservationLevel, bottomOfConservationLevel, topOfFloodLevel, bottomOfFloodLevel);
+						} else {
+							ConsrTd.textContent = "--";
+							FloodTd.textContent = "--";
+						}
 
-							if (storageTsid) {
-								fetchAndUpdateStorageTd(ConsrTd, FloodTd, storageTsid, currentDateTimeIso, currentDateTimeMinus60HoursIso, setBaseUrl, topOfConservationLevel, bottomOfConservationLevel, topOfFloodLevel, bottomOfFloodLevel);
-							} else {
-								ConsrTd.textContent = "--";
-								FloodTd.textContent = "--";
-							}
+						row.appendChild(ConsrTd);
+						row.appendChild(FloodTd);
+					})();
 
-							row.appendChild(ConsrTd);
-							row.appendChild(FloodTd);
-						})();
+					// 06-Precip
+					(() => {
+						const precipTd = document.createElement('td');
+						precipTd.style.width = "9%";
+						precipTd.classList.add('Font_20');
 
-						// 06-Precip
-						(() => {
-							const precipTd = document.createElement('td');
-							precipTd.style.width = "9%";
-							precipTd.classList.add('Font_20');
+						const precipLakeTsid = location?.['tsid-lake-precip']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
-							const precipLakeTsid = location?.['tsid-lake-precip']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						if (precipLakeTsid) {
+							fetchAndUpdatePrecipTd(precipTd, precipLakeTsid, currentDateTimeIso, currentDateTimeMinus24HoursIso, setBaseUrl);
+						} else {
+							precipTd.textContent = "--";
+						}
 
-							if (precipLakeTsid) {
-								fetchAndUpdatePrecipTd(precipTd, precipLakeTsid, currentDateTimeIso, currentDateTimeMinus24HoursIso, setBaseUrl);
-							} else {
-								precipTd.textContent = "--";
-							}
+						row.appendChild(precipTd);
+					})();
 
-							row.appendChild(precipTd);
-						})();
+					// 07-Yesterdays Inflow
+					(() => {
+						const yesterdayInflowTd = document.createElement('td');
+						yesterdayInflowTd.style.width = "9%";
+						yesterdayInflowTd.classList.add('Font_20');
 
-						// 07-Yesterdays Inflow
-						(() => {
-							const yesterdayInflowTd = document.createElement('td');
-							yesterdayInflowTd.style.width = "9%";
-							yesterdayInflowTd.classList.add('Font_20');
+						const yesterdayInflowTsid = location?.['tsid-lake-inflow-yesterday']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
-							const yesterdayInflowTsid = location?.['tsid-lake-inflow-yesterday']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						if (yesterdayInflowTsid) {
+							fetchAndUpdateYesterdayInflowTd(yesterdayInflowTd, yesterdayInflowTsid, isoDateMinus1Str, isoDateTodayStr, setBaseUrl);
+						} else {
+							yesterdayInflowTd.textContent = "--";
+						}
 
-							if (yesterdayInflowTsid) {
-								fetchAndUpdateYesterdayInflowTd(yesterdayInflowTd, yesterdayInflowTsid, isoDateMinus1Str, isoDateTodayStr, setBaseUrl);
-							} else {
-								yesterdayInflowTd.textContent = "--";
-							}
+						row.appendChild(yesterdayInflowTd);
+					})();
 
-							row.appendChild(yesterdayInflowTd);
-						})();
+					// 08-Midnight Controlled Outflow and 09-Evening Controlled Outflow
+					(() => {
+						let midnightControlledOutflowTd = document.createElement('td');
+						let eveningControlledOutflowTd = document.createElement('td');
 
-						// 08-Midnight Controlled Outflow and 09-Evening Controlled Outflow
-						(() => {
-							let midnightControlledOutflowTd = document.createElement('td');
-							let eveningControlledOutflowTd = document.createElement('td');
+						midnightControlledOutflowTd.classList.add('Font_20');
+						eveningControlledOutflowTd.classList.add('Font_20');
 
-							midnightControlledOutflowTd.classList.add('Font_20');
-							eveningControlledOutflowTd.classList.add('Font_20');
+						midnightControlledOutflowTd.style.width = "8.5%";
+						eveningControlledOutflowTd.style.width = "8.5%";
 
-							midnightControlledOutflowTd.style.width = "8.5%";
-							eveningControlledOutflowTd.style.width = "8.5%";
+						midnightControlledOutflowTd.textContent = "";
+						eveningControlledOutflowTd.textContent = "";
 
-							midnightControlledOutflowTd.textContent = "";
-							eveningControlledOutflowTd.textContent = "";
+						const outflowTotalLakeTsid = location?.['tsid-outflow-total-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						const gateTotalLakeTsid = location?.['tsid-gate-total-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						const forecastLakeTsid = location?.['tsid-forecast-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						const yesterdayOutflowAverage = location?.['tsid-outflow-average-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
 
-							const outflowTotalLakeTsid = location?.['tsid-outflow-total-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-							const gateTotalLakeTsid = location?.['tsid-gate-total-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-							const forecastLakeTsid = location?.['tsid-forecast-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-							const yesterdayOutflowAverage = location?.['tsid-outflow-average-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						const flowUpperLimit = location['flow-upper-limit']?.['constant-value'] ?? null;
+						// console.log("flowUpperLimit: ", flowUpperLimit);
 
-							const flowUpperLimit = location['flow-upper-limit']?.['constant-value'] ?? null;
-							// console.log("flowUpperLimit: ", flowUpperLimit);
-
-							if (location['metadata'][`public-name`] === "Shelbyville Pool" || location['metadata'][`public-name`] === "Carlyle Pool") {
-								if (outflowTotalLakeTsid) {
-									fetchAndUpdateControlledOutflowTd(outflowTotalLakeTsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl, flowUpperLimit)
-										.then(data => {
-											const value = data?.values?.[0]?.[1];
-											// console.log("value: ", value);
-
-											if (value !== null && value !== undefined) {
-												midnightControlledOutflowTd.innerHTML = "<span title='" + "(Total outflow from the first row of the gate settings widget.) " + data.name + "'>" + value.toFixed(0) + "</span>";
-
-												if (flowUpperLimit !== null && value > flowUpperLimit) {
-													midnightControlledOutflowTd.style.color = 'red';
-												} else {
-													midnightControlledOutflowTd.style.color = ''; // reset to default
-												}
-											} else {
-												midnightControlledOutflowTd.innerHTML = "<span class='missing' title='(Total outflow from the first row of the gate settings widget'>-M-</span>";
-												midnightControlledOutflowTd.style.color = ''; // reset to default
-											}
-										})
-
-								}
-							}
-
-							if (location['metadata'][`public-name`] === "Wappapello Pool" || location['metadata'][`public-name`] === "Mark Twain Pool") {
-								if (gateTotalLakeTsid) {
-									fetchAndUpdateControlledOutflowTd(gateTotalLakeTsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl, flowUpperLimit)
-										.then(data => {
-											const value = data?.values?.[0]?.[1];
-											if (value !== null && value !== undefined) {
-												midnightControlledOutflowTd.innerHTML = "<span title='" + "(Total outflow from the first row of the gate settings widget.) " + data.name + "'>" + value.toFixed(0) + "</span>";
-												if (flowUpperLimit !== null && value > flowUpperLimit) {
-													midnightControlledOutflowTd.style.color = 'red';
-												} else {
-													midnightControlledOutflowTd.style.color = ''; // reset to default
-												}
-											} else {
-												midnightControlledOutflowTd.innerHTML = "<span class='missing' title='(Total outflow from the first row of the gate settings widget'>-M-</span>";
-												midnightControlledOutflowTd.style.color = ''; // reset to default
-											}
-										})
-										.catch(error => {
-											console.error("Error during fetch:", error);
-										});
-								}
-							}
-
-
-							if (forecastLakeTsid) {
-								fetchAndUpdateForecastTd(forecastLakeTsid, isoDateTodayStr, isoDatePlus1Str, isoDateTodayPlus6HoursStr, setBaseUrl)
+						if (location['metadata'][`public-name`] === "Shelbyville Pool" || location['metadata'][`public-name`] === "Carlyle Pool") {
+							if (outflowTotalLakeTsid) {
+								fetchAndUpdateControlledOutflowTd(outflowTotalLakeTsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl, flowUpperLimit)
 									.then(data => {
-										// console.log("Fetched forecastLakeTsid data:", data);
 										const value = data?.values?.[0]?.[1];
-										const displayValue = typeof value === "number" ? value.toFixed(0) : value;
+										// console.log("value: ", value);
 
 										if (value !== null && value !== undefined) {
-											eveningControlledOutflowTd.innerHTML = "<span title='" + "(First forecasted lake value for tomorrow.) " + data.name + "'>" + displayValue + "</span>";
+											midnightControlledOutflowTd.innerHTML = "<span title='" + "(Total outflow from the first row of the gate settings widget.) " + data.name + "'>" + value.toFixed(0) + "</span>";
+
+											if (flowUpperLimit !== null && value > flowUpperLimit) {
+												midnightControlledOutflowTd.style.color = 'red';
+											} else {
+												midnightControlledOutflowTd.style.color = ''; // reset to default
+											}
 										} else {
-											eveningControlledOutflowTd.innerHTML = "<span class='missing' title='(First forecasted lake value for tomorrow.'>-M-</span>";
+											midnightControlledOutflowTd.innerHTML = "<span class='missing' title='(Total outflow from the first row of the gate settings widget'>-M-</span>";
+											midnightControlledOutflowTd.style.color = ''; // reset to default
+										}
+									})
+
+							}
+						}
+
+						if (location['metadata'][`public-name`] === "Wappapello Pool" || location['metadata'][`public-name`] === "Mark Twain Pool") {
+							if (gateTotalLakeTsid) {
+								fetchAndUpdateControlledOutflowTd(gateTotalLakeTsid, isoDateTodayStr, isoDatePlus1Str, setBaseUrl, flowUpperLimit)
+									.then(data => {
+										const value = data?.values?.[0]?.[1];
+										if (value !== null && value !== undefined) {
+											midnightControlledOutflowTd.innerHTML = "<span title='" + "(Total outflow from the first row of the gate settings widget.) " + data.name + "'>" + value.toFixed(0) + "</span>";
+											if (flowUpperLimit !== null && value > flowUpperLimit) {
+												midnightControlledOutflowTd.style.color = 'red';
+											} else {
+												midnightControlledOutflowTd.style.color = ''; // reset to default
+											}
+										} else {
+											midnightControlledOutflowTd.innerHTML = "<span class='missing' title='(Total outflow from the first row of the gate settings widget'>-M-</span>";
+											midnightControlledOutflowTd.style.color = ''; // reset to default
 										}
 									})
 									.catch(error => {
 										console.error("Error during fetch:", error);
 									});
 							}
+						}
 
-							if (location['metadata']['public-name'] === "Rend Pool") {
-								if (yesterdayOutflowAverage) {
-									fetchAndUpdateOutflowAverageTd(yesterdayOutflowAverage, isoDateTodayStr, isoDateTodayStr, setBaseUrl)
-										.then(data => {
-											console.log("data:", data);
-											let value = data?.values?.[0]?.[1];
-											value = Math.round(value / 10) * 10;
-											const displayValue = typeof value === "number" ? value.toFixed(0) : value;
 
-											if (value !== null && value !== undefined) {
-												midnightControlledOutflowTd.innerHTML = "<span title='" + "(Yesterday Average Outflow.) " + data.name + "'>" + displayValue + "</span>";
-											} else {
-												midnightControlledOutflowTd.innerHTML = "<span class='missing' title='(Yesterday Average Outflow.'>-M-</span>";
-											}
-										})
-										.catch(error => {
-											console.error("Error during fetch:", error);
-										});
-								}
+						if (forecastLakeTsid) {
+							fetchAndUpdateForecastTd(forecastLakeTsid, isoDateTodayStr, isoDatePlus1Str, isoDateTodayPlus6HoursStr, setBaseUrl)
+								.then(data => {
+									// console.log("Fetched forecastLakeTsid data:", data);
+									const value = data?.values?.[0]?.[1];
+									const displayValue = typeof value === "number" ? value.toFixed(0) : value;
+
+									if (value !== null && value !== undefined) {
+										eveningControlledOutflowTd.innerHTML = "<span title='" + "(First forecasted lake value for tomorrow.) " + data.name + "'>" + displayValue + "</span>";
+									} else {
+										eveningControlledOutflowTd.innerHTML = "<span class='missing' title='(First forecasted lake value for tomorrow.'>-M-</span>";
+									}
+								})
+								.catch(error => {
+									console.error("Error during fetch:", error);
+								});
+						}
+
+						if (location['metadata']['public-name'] === "Rend Pool") {
+							if (yesterdayOutflowAverage) {
+								fetchAndUpdateOutflowAverageTd(yesterdayOutflowAverage, isoDateTodayStr, isoDateTodayStr, setBaseUrl)
+									.then(data => {
+										// console.log("data:", data);
+										let value = data?.values?.[0]?.[1];
+										value = Math.round(value / 10) * 10;
+										const displayValue = typeof value === "number" ? value.toFixed(0) : value;
+
+										if (value !== null && value !== undefined) {
+											midnightControlledOutflowTd.innerHTML = "<span title='" + "(Yesterday Average Outflow.) " + data.name + "'>" + displayValue + "</span>";
+										} else {
+											midnightControlledOutflowTd.innerHTML = "<span class='missing' title='(Yesterday Average Outflow.'>-M-</span>";
+										}
+									})
+									.catch(error => {
+										console.error("Error during fetch:", error);
+									});
 							}
+						}
 
-							row.appendChild(midnightControlledOutflowTd);
-							row.appendChild(eveningControlledOutflowTd);
-						})();
-
-						// 10-Seasonal Rule Curve
-						(() => {
-							const seasonalRuleCurveTd = document.createElement('td');
-							seasonalRuleCurveTd.style.width = "11%";
-							seasonalRuleCurveTd.classList.add('Font_20');
-
-							// fetchAndLogSeasonalRuleCurveDataTd(location['location-id'], seasonalRuleCurveTd, setJsonFileBaseUrl);
-							const seasonalRuleCurveValue = location['seasonal-rule-curve'][`constant-value`];
-							if (seasonalRuleCurveValue) {
-								seasonalRuleCurveTd.textContent = seasonalRuleCurveValue.toFixed(2);
-							} else {
-								seasonalRuleCurveTd.textContent = "--";
-							}
-							row.appendChild(seasonalRuleCurveTd);
-						})();
+						row.appendChild(midnightControlledOutflowTd);
+						row.appendChild(eveningControlledOutflowTd);
 					})();
 
-					// ====================================================================================
-					// ======= ROW 2 ======= CREST, TW DO, GAGED OUTFLOW AND RULECURVE
-					// ====================================================================================
-
+					// 10-Seasonal Rule Curve
 					(() => {
+						const seasonalRuleCurveTd = document.createElement('td');
+						seasonalRuleCurveTd.style.width = "11%";
+						seasonalRuleCurveTd.classList.add('Font_20');
+
+						// fetchAndLogSeasonalRuleCurveDataTd(location['location-id'], seasonalRuleCurveTd, setJsonFileBaseUrl);
+						const seasonalRuleCurveValue = location['seasonal-rule-curve'][`constant-value`];
+						if (seasonalRuleCurveValue) {
+							seasonalRuleCurveTd.textContent = seasonalRuleCurveValue.toFixed(2);
+						} else {
+							seasonalRuleCurveTd.textContent = "--";
+						}
+						row.appendChild(seasonalRuleCurveTd);
+					})();
+				})();
+
+				// ====================================================================================
+				// ======= ROW 2 ======= CREST, TW DO, GAGED OUTFLOW AND RULECURVE
+				// ====================================================================================
+
+				(() => {
+					// Create and add the second new row
+					const row2 = table.insertRow();
+
+					// ======= BLANK =======
+					(() => {
+						// Create a new table cell for lake name in the second row
+						const blankTd = row2.insertCell(0);
+						blankTd.colSpan = 1;
+						blankTd.classList.add('Font_15');
+						blankTd.style.width = '15%';
+
+						// Initialize lakeCellInnerHTML as an empty string for the second row
+						let blankCellInnerHTML = '--';
+
+						// Update the inner HTML of the cell with data for the second row, preserving HTML
+						blankCellInnerHTML = " ... ";
+						// console.log('blankCellInnerHTML =', blankCellInnerHTML);
+
+						blankTd.innerHTML = blankCellInnerHTML;
+					})();
+
+					// ======= CREST =======
+					(() => {
+						// Create a new table cell for lake name
+						const crestTd = row2.insertCell(1);
+						crestTd.colSpan = 2;
+						crestTd.classList.add('Font_15');
+						crestTd.style.width = '22%';
+						crestTd.style.backgroundColor = '#404040';
+						crestTd.style.color = 'lightgray';
+						crestTd.style.textAlign = 'left';
+						crestTd.style.paddingLeft = '10px';
+
+						let crestCellInnerHTML = 'Crest:  ';
+
+						const crestPoolForecastTsid = location?.['tsid-crest-forecast-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+
+						function getTodayAtSixCentral() {
+							const today = new Date();
+							const utcOffset = today.getTimezoneOffset();
+							const isDST = (utcOffset === 300);
+							const offset = isDST ? -5 : -6;
+
+							const centralTime = new Date(today);
+							centralTime.setHours(6, 0, 0, 0);
+							centralTime.setMinutes(centralTime.getMinutes() - (utcOffset + (offset * 60)));
+
+							const year = centralTime.getUTCFullYear();
+							const month = String(centralTime.getUTCMonth() + 1).padStart(2, '0');
+							const day = String(centralTime.getUTCDate()).padStart(2, '0');
+
+							return `${year}-${month}-${day}T06:00:00.000Z`;
+						}
+
+						const dateAtSixCentral = getTodayAtSixCentral();
+
+						if (crestPoolForecastTsid !== null) {
+							const url = `${setBaseUrl}timeseries?name=${crestPoolForecastTsid}&begin=${currentDateTime.toISOString()}&end=${currentDateTimePlus7Days.toISOString()}&office=${office}&version-date=${dateAtSixCentral}`;
+
+							fetch(url, {
+								method: 'GET',
+								headers: {
+									"Accept": "application/json;version=2", // Ensuring the correct version is used
+									"cache-control": "no-cache"
+								}
+							})
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(data => {
+									let valueLast = '';
+									let valueLastDate = '';
+									let valueLastQualityCode = '';
+
+									if (
+										data &&
+										Array.isArray(data.values) &&
+										data.values.length > 0 &&
+										Array.isArray(data.values[0])
+									) {
+										const rawStage = data.values[0][1];
+										const rawDate = data.values[0][0];
+										const rawQualityCode = data.values[0][2];
+
+										valueLast = isFinite(rawStage) ? Number(rawStage).toFixed(2) : '';
+										valueLastDate = rawDate ? formatNWSDate(rawDate).split(' ')[0] : '';
+										valueLastQualityCode = isFinite(rawQualityCode) ? Number(rawQualityCode) : '';
+									}
+
+									let label = null;
+									if (valueLastQualityCode === 1) {
+										label = "=" + " " + valueLast + " " + data.units;
+									} else if (valueLastQualityCode === 3) {
+										label = "<" + " " + valueLast + " " + data.units;
+									} else if (valueLastQualityCode === 5) {
+										label = "Cresting";
+									} else if (valueLastQualityCode === 9) {
+										label = "Crested";
+									} else {
+										label = null;
+									}
+
+									if (label !== null) {
+										crestTd.innerHTML = crestCellInnerHTML + label;
+									} else {
+										crestTd.innerHTML = "";
+									}
+								})
+								.catch(error => {
+									console.error("Error fetching or processing data:", error);
+									crestTd.innerHTML = crestCellInnerHTML + 'N/A';
+								});
+						} else {
+							crestTd.innerHTML = crestCellInnerHTML + 'N/A';
+						}
+					})();
+
+					// ======= BLANK =======
+					(() => {
+						// Create a new table cell for lake name
+						const blankblankCell = row2.insertCell(2);
+						blankblankCell.colSpan = 2;
+						blankblankCell.classList.add('Font_15');
+						blankblankCell.style.width = '17%';
+						blankblankCell.style.backgroundColor = '#404040';
+						blankblankCell.style.color = 'lightgray';
+
+						// Initialize twDoCellInnerHTML as an empty string
+						let blankblankCellInnerHTML = '--';
+
+						blankblankCellInnerHTML = "<span style='float: left; padding-left: 15px;'>" + "" + "</span>";
+						blankblankCellInnerHTML += "<span style='float: left; padding-left: 15px; color: lightblue;'>" + "" + "</span>";
+
+						// Set the combined value to the cell, preserving HTML
+						// console.log("blankblankCellInnerHTML = ", blankblankCellInnerHTML);
+
+						// Set the HTML inside the cell once the fetch is complete
+						blankblankCell.innerHTML = blankblankCellInnerHTML;
+					})();
+
+					// ======= TW DO =======
+					(() => {
+						// Create a new table cell for lake name
+						const twDoCell = row2.insertCell(3);
+						twDoCell.colSpan = 2;
+						twDoCell.classList.add('Font_15');
+						twDoCell.style.width = '18%';
+						twDoCell.style.backgroundColor = '#404040';
+						twDoCell.style.color = 'lightgray';
+						twDoCell.style.textAlign = 'center';
+
+						let twDoInnerHTML = 'Tw Do:  ';
+
+						const doTsid = location?.['tsid-do-tw-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+
+						if (doTsid !== null) {
+							const url = `${setBaseUrl}timeseries?name=${doTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+							fetch(url, {
+								method: 'GET',
+								headers: {
+									'Accept': 'application/json;version=2'
+								}
+							})
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(data => {
+									data.values.forEach(entry => {
+										entry[0] = formatNWSDate(entry[0]);
+									});
+
+									// console.log("data: ", data);
+
+									const c_count = calculateCCount(doTsid);
+
+									const lastNonNullValue = getLastNonNullValue(data);
+									// console.log("lastNonNullValue:", lastNonNullValue);
+
+									let valueLast = null;
+									let timestampLast = null;
+									let unitLast = null;
+
+									if (lastNonNullValue !== null) {
+										timestampLast = lastNonNullValue.timestamp;
+										valueLast = parseFloat(lastNonNullValue.value).toFixed(2);
+										unitLast = data.units;
+									}
+									// console.log("valueLast:", valueLast);
+									// console.log("timestampLast:", timestampLast);
+
+									let value24HoursLast = null;
+									let timestamp24HoursLast = null;
+
+									const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
+									// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
+
+									if (lastNonNull24HoursValue !== null) {
+										timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+										value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(2);
+									}
+									// console.log("value24HoursLast:", value24HoursLast);
+									// console.log("timestamp24HoursLast:", timestamp24HoursLast);
+
+									let delta_24 = null;
+
+									// Check if the values are numbers and not null/undefined
+									if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
+										delta_24 = (valueLast - value24HoursLast).toFixed(2);
+									} else {
+										delta_24 = "--";  // or set to "-1" or something else if you prefer
+									}
+
+									// console.log("delta_24:", delta_24);
+
+									// Make sure delta_24 is a valid number before calling parseFloat
+									if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
+										delta_24 = parseFloat(delta_24).toFixed(2);
+									} else {
+										delta_24 = "--";
+									}
+
+									let innerHTM;
+									if (valueLast === null) {
+										innerHTM = "<span class='missing'>-M-</span>";
+									} else {
+										innerHTM = `<span title='${timestampLast}'>Tw Do: ${valueLast} (${delta_24}) ${unitLast}</span>`;
+									}
+
+									twDoCell.innerHTML = innerHTM;
+								})
+								.catch(error => {
+									console.error("Error fetching or processing data:", error);
+									twDoCell.innerHTML = 'N/A';
+								});
+						} else {
+							twDoCell.innerHTML = '';
+						}
+					})();
+
+					// ======= GAGED OUTFLOW =======
+					(() => {
+						// Create a new table cell for lake name
+						const gagedOutflowCell = row2.insertCell(4);
+						gagedOutflowCell.colSpan = 2;
+						gagedOutflowCell.classList.add('Font_15');
+						gagedOutflowCell.style.width = '17%';
+						gagedOutflowCell.style.backgroundColor = '#404040';
+						gagedOutflowCell.style.color = 'lightgray';
+
+						const gagedOutflowTsid = location?.['tsid-gaged-outflow-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						// console.log("gagedOutflowTsid: ", gagedOutflowTsid);
+
+						if (gagedOutflowTsid !== null) {
+							const url = `${setBaseUrl}timeseries?name=${gagedOutflowTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+							fetch(url, {
+								method: 'GET',
+								headers: {
+									'Accept': 'application/json;version=2'
+								}
+							})
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(data => {
+									data.values.forEach(entry => {
+										entry[0] = formatNWSDate(entry[0]);
+									});
+
+									// console.log("data: ", data);
+
+									const c_count = calculateCCount(gagedOutflowTsid);
+
+									const lastNonNullValue = getLastNonNullValue(data);
+									// console.log("lastNonNullValue:", lastNonNullValue);
+
+									let valueLast = null;
+									let timestampLast = null;
+									let unitLast = null;
+
+									if (lastNonNullValue !== null) {
+										timestampLast = lastNonNullValue.timestamp;
+										valueLast = parseFloat(lastNonNullValue.value).toFixed(0);
+										unitLast = data.units;
+									}
+									// console.log("valueLast:", valueLast);
+									// console.log("timestampLast:", timestampLast);
+
+									let value24HoursLast = null;
+									let timestamp24HoursLast = null;
+
+									const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
+									// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
+
+									if (lastNonNull24HoursValue !== null) {
+										timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
+										value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(0);
+									}
+									// console.log("value24HoursLast:", value24HoursLast);
+									// console.log("timestamp24HoursLast:", timestamp24HoursLast);
+
+									let delta_24 = null;
+
+									// Check if the values are numbers and not null/undefined
+									if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
+										delta_24 = (valueLast - value24HoursLast).toFixed(0);
+									} else {
+										delta_24 = "--";  // or set to "-1" or something else if you prefer
+									}
+
+									// console.log("delta_24:", delta_24);
+
+									// Make sure delta_24 is a valid number before calling parseFloat
+									if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
+										delta_24 = parseFloat(delta_24).toFixed(0);
+									} else {
+										delta_24 = "--";
+									}
+
+									let innerHTM;
+									if (valueLast === null) {
+										innerHTM = "<span class='missing'>-M-</span>";
+									} else {
+										innerHTM = `<span title='${timestampLast}'>Outflow: ${valueLast} (${delta_24}) ${unitLast}</span>`;
+									}
+
+									gagedOutflowCell.innerHTML = innerHTM;
+								})
+								.catch(error => {
+									console.error("Error fetching or processing data:", error);
+									gagedOutflowCell.innerHTML = 'N/A';
+								});
+						} else {
+							gagedOutflowCell.innerHTML = '';
+						}
+					})();
+
+					// ======= SEASONAL RULE CURVE DELTA =======
+					(() => {
+						// Create a new table cell for lake name
+						const curveDeltaCell = row2.insertCell(5);
+						curveDeltaCell.colSpan = 1;
+						curveDeltaCell.classList.add('Font_15');
+						curveDeltaCell.style.width = "11%";
+						curveDeltaCell.style.backgroundColor = '#404040';
+						curveDeltaCell.style.color = 'lightgray';
+
+						const stageTsid = location?.['tsid-stage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+
+						if (stageTsid !== null) {
+							const url = `${setBaseUrl}timeseries?name=${stageTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+							fetch(url, {
+								method: 'GET',
+								headers: {
+									'Accept': 'application/json;version=2'
+								}
+							})
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(data => {
+									data.values.forEach(entry => {
+										entry[0] = formatNWSDate(entry[0]);
+									});
+
+									// console.log("data: ", data);
+
+									const c_count = calculateCCount(stageTsid);
+									// console.log("c_count: ", c_count);
+
+									const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
+									// console.log("lastNonNullValue:", lastNonNullValue);
+
+									let valueLast = null;
+									let timestampLast = null;
+
+									if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+										timestampLast = lastNonNullValue.current6am.timestamp;
+										valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
+									}
+									// console.log("valueLast:", valueLast);
+									// console.log("timestampLast:", timestampLast);
+
+									let value24HoursLast = null;
+									let timestamp24HoursLast = null;
+
+									if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+										timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
+										value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(2);
+									}
+
+									// console.log("value24HoursLast:", value24HoursLast);
+									// console.log("timestamp24HoursLast:", timestamp24HoursLast);
+
+									let delta_24 = null;
+
+									// Check if the values are numbers and not null/undefined
+									if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
+										delta_24 = (valueLast - value24HoursLast).toFixed(2);
+									} else {
+										delta_24 = "--";  // or set to "-1" or something else if you prefer
+									}
+									// console.log("delta_24:", delta_24);
+
+									// Make sure delta_24 is a valid number before calling parseFloat
+									if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
+										delta_24 = parseFloat(delta_24).toFixed(2);
+									} else {
+										delta_24 = "--";
+									}
+
+									const seasonalRuleCurveValue = location['seasonal-rule-curve'][`constant-value`];
+
+									const delta = valueLast - seasonalRuleCurveValue;
+									const deltaRuleCurve = (delta > 0 ? '+' : '') + delta.toFixed(2);
+
+
+									let innerHTML;
+									if (valueLast === null) {
+										innerHTML = "<span class='missing'>-M-</span>";
+									} else {
+										innerHTML = `<span>${deltaRuleCurve}</span>`;
+									}
+
+									curveDeltaCell.innerHTML = innerHTML;
+								})
+								.catch(error => {
+									console.error("Error fetching or processing data:", error);
+									twDoCell.innerHTML = 'N/A';
+								});
+						} else {
+							twDoCell.innerHTML = '';
+						}
+					})();
+				})();
+
+				// ====================================================================================
+				// ======= ROW 3 ======= (ONLY FOR MARKTWAIN, REREG, SCHD, GENERATION)
+				// ====================================================================================
+
+				(() => {
+					if (location['metadata']['public-name'] === "Mark Twain Pool") {
 						// Create and add the second new row
-						const row2 = table.insertRow();
+						const row3 = table.insertRow();
 
 						// ======= BLANK =======
 						(() => {
 							// Create a new table cell for lake name in the second row
-							const blankTd = row2.insertCell(0);
-							blankTd.colSpan = 1;
-							blankTd.classList.add('Font_15');
-							blankTd.style.width = '15%';
+							const blankCell3 = row3.insertCell(0);
+							blankCell3.colSpan = 1;
+							blankCell3.classList.add('Font_15');
+							blankCell3.style.width = "15%";
 
 							// Initialize lakeCellInnerHTML as an empty string for the second row
-							let blankCellInnerHTML = '--';
+							let blankCell3InnerHTML = '';
 
 							// Update the inner HTML of the cell with data for the second row, preserving HTML
-							blankCellInnerHTML = " ... ";
-							// console.log('blankCellInnerHTML =', blankCellInnerHTML);
-
-							blankTd.innerHTML = blankCellInnerHTML;
+							blankCell3InnerHTML = "..."; // Replace with the actual data for the second lake
+							// console.log('blankCell3InnerHTML =', blankCell3InnerHTML);
+							blankCell3.innerHTML = blankCell3InnerHTML;
 						})();
 
-						// ======= CREST =======
+						// ======= REREG =======
 						(() => {
 							// Create a new table cell for lake name
-							const crestTd = row2.insertCell(1);
-							crestTd.colSpan = 2;
-							crestTd.classList.add('Font_15');
-							crestTd.style.width = '22%';
-							crestTd.style.backgroundColor = '#404040';
-							crestTd.style.color = 'lightgray';
-							crestTd.style.textAlign = 'left';
-							crestTd.style.paddingLeft = '10px';
+							const reregCell = row3.insertCell(1);
+							reregCell.colSpan = 2;
+							reregCell.classList.add('Font_15');
+							reregCell.style.width = '22%';
+							reregCell.style.backgroundColor = '#404040';
+							reregCell.style.color = 'lightgray';
 
-							let crestCellInnerHTML = 'Crest:  ';
+							let reregInnerTextHTML = 'Re-Reg Pool:  ';
 
-							const crestPoolForecastTsid = location?.['tsid-crest-forecast-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+							const gagedOutflowTsid = location?.['tsid-re-reg-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+							// console.log("gagedOutflowTsid: ", gagedOutflowTsid);
 
-							function getTodayAtSixCentral() {
-								const today = new Date();
-								const utcOffset = today.getTimezoneOffset();
-								const isDST = (utcOffset === 300);
-								const offset = isDST ? -5 : -6;
-
-								const centralTime = new Date(today);
-								centralTime.setHours(6, 0, 0, 0);
-								centralTime.setMinutes(centralTime.getMinutes() - (utcOffset + (offset * 60)));
-
-								const year = centralTime.getUTCFullYear();
-								const month = String(centralTime.getUTCMonth() + 1).padStart(2, '0');
-								const day = String(centralTime.getUTCDate()).padStart(2, '0');
-
-								return `${year}-${month}-${day}T06:00:00.000Z`;
-							}
-
-							const dateAtSixCentral = getTodayAtSixCentral();
-
-							if (crestPoolForecastTsid !== null) {
-								const url = `${setBaseUrl}timeseries?name=${crestPoolForecastTsid}&begin=${currentDateTime.toISOString()}&end=${currentDateTimePlus7Days.toISOString()}&office=${office}&version-date=${dateAtSixCentral}`;
-
-								fetch(url, {
-									method: 'GET',
-									headers: {
-										"Accept": "application/json;version=2", // Ensuring the correct version is used
-										"cache-control": "no-cache"
-									}
-								})
-									.then(response => {
-										if (!response.ok) {
-											throw new Error('Network response was not ok');
-										}
-										return response.json();
-									})
-									.then(data => {
-										let valueLast = '';
-										let valueLastDate = '';
-										let valueLastQualityCode = '';
-
-										if (
-											data &&
-											Array.isArray(data.values) &&
-											data.values.length > 0 &&
-											Array.isArray(data.values[0])
-										) {
-											const rawStage = data.values[0][1];
-											const rawDate = data.values[0][0];
-											const rawQualityCode = data.values[0][2];
-
-											valueLast = isFinite(rawStage) ? Number(rawStage).toFixed(2) : '';
-											valueLastDate = rawDate ? formatNWSDate(rawDate).split(' ')[0] : '';
-											valueLastQualityCode = isFinite(rawQualityCode) ? Number(rawQualityCode) : '';
-										}
-
-										let label = null;
-										if (valueLastQualityCode === 1) {
-											label = "=" + " " + valueLast + " " + data.units;
-										} else if (valueLastQualityCode === 3) {
-											label = "<" + " " + valueLast + " " + data.units;
-										} else if (valueLastQualityCode === 5) {
-											label = "Cresting";
-										} else if (valueLastQualityCode === 9) {
-											label = "Crested";
-										} else {
-											label = null;
-										}
-
-										if (label !== null) {
-											crestTd.innerHTML = crestCellInnerHTML + label;
-										} else {
-											crestTd.innerHTML = "";
-										}
-									})
-									.catch(error => {
-										console.error("Error fetching or processing data:", error);
-										crestTd.innerHTML = crestCellInnerHTML + 'N/A';
-									});
-							} else {
-								crestTd.innerHTML = crestCellInnerHTML + 'N/A';
-							}
-						})();
-
-						// ======= BLANK =======
-						(() => {
-							// Create a new table cell for lake name
-							const blankblankCell = row2.insertCell(2);
-							blankblankCell.colSpan = 2;
-							blankblankCell.classList.add('Font_15');
-							blankblankCell.style.width = '17%';
-							blankblankCell.style.backgroundColor = '#404040';
-							blankblankCell.style.color = 'lightgray';
-
-							// Initialize twDoCellInnerHTML as an empty string
-							let blankblankCellInnerHTML = '--';
-
-							blankblankCellInnerHTML = "<span style='float: left; padding-left: 15px;'>" + "" + "</span>";
-							blankblankCellInnerHTML += "<span style='float: left; padding-left: 15px; color: lightblue;'>" + "" + "</span>";
-
-							// Set the combined value to the cell, preserving HTML
-							// console.log("blankblankCellInnerHTML = ", blankblankCellInnerHTML);
-
-							// Set the HTML inside the cell once the fetch is complete
-							blankblankCell.innerHTML = blankblankCellInnerHTML;
-						})();
-
-						// ======= TW DO =======
-						(() => {
-							// Create a new table cell for lake name
-							const twDoCell = row2.insertCell(3);
-							twDoCell.colSpan = 2;
-							twDoCell.classList.add('Font_15');
-							twDoCell.style.width = '18%';
-							twDoCell.style.backgroundColor = '#404040';
-							twDoCell.style.color = 'lightgray';
-							twDoCell.style.textAlign = 'center';
-
-							let twDoInnerHTML = 'Tw Do:  ';
-
-							const doTsid = location?.['tsid-do-tw-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-
-							if (doTsid !== null) {
-								const url = `${setBaseUrl}timeseries?name=${doTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+							if (gagedOutflowTsid !== null) {
+								const url = `${setBaseUrl}timeseries?name=${gagedOutflowTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
 								fetch(url, {
 									method: 'GET',
@@ -1633,7 +1966,177 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 
 										// console.log("data: ", data);
 
-										const c_count = calculateCCount(doTsid);
+										const c_count = calculateCCount(gagedOutflowTsid);
+										// console.log("c_count: ", c_count);
+
+										const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
+										// console.log("lastNonNullValue:", lastNonNullValue);
+
+										let valueLast = null;
+										let timestampLast = null;
+
+										if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+											timestampLast = lastNonNullValue.current6am.timestamp;
+											valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
+										}
+										// console.log("valueLast:", valueLast);
+										// console.log("timestampLast:", timestampLast);
+
+										let value24HoursLast = null;
+										let timestamp24HoursLast = null;
+
+										if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
+											timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
+											value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(2);
+										}
+
+										// console.log("value24HoursLast:", value24HoursLast);
+										// console.log("timestamp24HoursLast:", timestamp24HoursLast);
+
+										let delta_24 = null;
+
+										// Check if the values are numbers and not null/undefined
+										if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
+											delta_24 = (valueLast - value24HoursLast).toFixed(2);
+										} else {
+											delta_24 = "--";  // or set to "-1" or something else if you prefer
+										}
+										// console.log("delta_24:", delta_24);
+
+										// Make sure delta_24 is a valid number before calling parseFloat
+										if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
+											delta_24 = parseFloat(delta_24).toFixed(2);
+										} else {
+											delta_24 = "--";
+										}
+
+										let gagedOutflowInnerHTML;
+										if (valueLast === null) {
+											gagedOutflowInnerHTML = reregInnerTextHTML + "<span class='missing'>-M-</span>";
+										} else {
+											gagedOutflowInnerHTML = reregInnerTextHTML + `<span title='${data['name']} ${timestampLast}'>${valueLast} (${delta_24}) ${data.units}</span>`;
+										}
+
+										reregCell.innerHTML = gagedOutflowInnerHTML;
+									})
+									.catch(error => {
+										console.error("Error fetching or processing data:", error);
+										reregCell.innerHTML = 'N/A';
+									});
+							} else {
+								reregCell.innerHTML = '';
+							}
+						})();
+
+						// ======= SCHD =======
+						(() => {
+							// Create a new table cell for lake name
+							const schdCell = row3.insertCell(2);
+							schdCell.colSpan = 1;
+							schdCell.classList.add('Font_15');
+							schdCell.style.width = '8.5%';
+							schdCell.style.backgroundColor = '#404040';
+							schdCell.style.color = 'lightgray';
+
+							let scheduleTextHTML = 'Schedule:  ';
+
+							const scheduleTsid = location?.['tsid-schedule-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+							// console.log("scheduleTsid: ", scheduleTsid);
+
+							if (scheduleTsid !== null) {
+								const url = `${setBaseUrl}timeseries/text?name=${scheduleTsid}&begin=${currentDateTimeMinus24HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+								fetch(url, {
+									method: 'GET',
+									headers: {
+										'Accept': 'application/json;version=2'
+									}
+								})
+									.then(response => {
+										if (!response.ok) {
+											throw new Error('Network response was not ok');
+										}
+										return response.json();
+									})
+									.then(data => {
+										// console.log("data: ", data);
+
+										const currentSchedule = data['regular-text-values'] && data['regular-text-values'].length > 0
+											? data['regular-text-values'][data['regular-text-values'].length - 1]['text-value']
+											: null;
+
+										let gagedOutflowInnerHTML;
+										if (currentSchedule === null) {
+											gagedOutflowInnerHTML = scheduleTextHTML + "<span title = '" + data['name'] + "' class='missing'>-M-</span>";
+										} else {
+											gagedOutflowInnerHTML = scheduleTextHTML + `<span title='${data['name']}'>${currentSchedule}</span>`;
+										}
+
+										schdCell.innerHTML = gagedOutflowInnerHTML;
+									})
+									.catch(error => {
+										console.error("Error fetching or processing data:", error);
+										schdCell.innerHTML = 'N/A';
+									});
+							} else {
+								schdCell.innerHTML = '';
+							}
+						})();
+
+						// ======= BLANK =======
+						(() => {
+							// Create a new table cell for lake name in the second row
+							const blankCell33 = row3.insertCell(3);
+							blankCell33.colSpan = 1;
+							blankCell33.style.width = "8.5%";
+							blankCell33.classList.add('Font_15');
+							blankCell33.style.backgroundColor = '#404040';
+							blankCell33.style.color = 'lightgray';
+
+							// Initialize lakeCellInnerHTML as an empty string for the second row
+							let blankCell3InnerHTML = '';
+
+							// Update the inner HTML of the cell with data for the second row, preserving HTML
+							blankCell3InnerHTML = ""; // Replace with the actual data for the second lake
+							// console.log('blankCell3InnerHTML =', blankCell3InnerHTML);
+							blankCell33.innerHTML = blankCell3InnerHTML;
+						})();
+
+						// ======= REREG DO 1 =======
+						(() => {
+							// Create a new table cell for lake name
+							const reregDoCell = row3.insertCell(4);
+							reregDoCell.colSpan = 2;
+							reregDoCell.classList.add('Font_15');
+							reregDoCell.style.width = '18%';
+							reregDoCell.style.backgroundColor = '#404040';
+							reregDoCell.style.color = 'lightgray';
+
+							const doReRegTsid = location?.['tsid-do-re-reg-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+
+							if (doReRegTsid !== null) {
+								const url = `${setBaseUrl}timeseries?name=${doReRegTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+								fetch(url, {
+									method: 'GET',
+									headers: {
+										'Accept': 'application/json;version=2'
+									}
+								})
+									.then(response => {
+										if (!response.ok) {
+											throw new Error('Network response was not ok');
+										}
+										return response.json();
+									})
+									.then(data => {
+										data.values.forEach(entry => {
+											entry[0] = formatNWSDate(entry[0]);
+										});
+
+										// console.log("data: ", data);
+
+										const c_count = calculateCCount(doReRegTsid);
 
 										const lastNonNullValue = getLastNonNullValue(data);
 										// console.log("lastNonNullValue:", lastNonNullValue);
@@ -1685,35 +2188,34 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 										if (valueLast === null) {
 											innerHTM = "<span class='missing'>-M-</span>";
 										} else {
-											innerHTM = `<span title='${timestampLast}'>Tw Do: ${valueLast} (${delta_24}) ${unitLast}</span>`;
+											innerHTM = `<span title='${data['name']} ${timestampLast}'>Do: ${valueLast} (${delta_24}) ${unitLast}</span>`;
 										}
 
-										twDoCell.innerHTML = innerHTM;
+										reregDoCell.innerHTML = innerHTM;
 									})
 									.catch(error => {
 										console.error("Error fetching or processing data:", error);
-										twDoCell.innerHTML = 'N/A';
+										reregDoCell.innerHTML = 'N/A';
 									});
 							} else {
-								twDoCell.innerHTML = '';
+								reregDoCell.innerHTML = '';
 							}
 						})();
 
-						// ======= GAGED OUTFLOW =======
+						// ======= REREG DO 2 =======
 						(() => {
 							// Create a new table cell for lake name
-							const gagedOutflowCell = row2.insertCell(4);
-							gagedOutflowCell.colSpan = 2;
-							gagedOutflowCell.classList.add('Font_15');
-							gagedOutflowCell.style.width = '17%';
-							gagedOutflowCell.style.backgroundColor = '#404040';
-							gagedOutflowCell.style.color = 'lightgray';
+							const reregDoCell2 = row3.insertCell(5);
+							reregDoCell2.colSpan = 2;
+							reregDoCell2.classList.add('Font_15');
+							reregDoCell2.style.width = '17%';
+							reregDoCell2.style.backgroundColor = '#404040';
+							reregDoCell2.style.color = 'lightgray';
 
-							const gagedOutflowTsid = location?.['tsid-gaged-outflow-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-							// console.log("gagedOutflowTsid: ", gagedOutflowTsid);
+							const doReRegTsid2 = location?.['tsid-do-re-reg-lake']?.['assigned-time-series']?.[1]?.['timeseries-id'] ?? null;
 
-							if (gagedOutflowTsid !== null) {
-								const url = `${setBaseUrl}timeseries?name=${gagedOutflowTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+							if (doReRegTsid2 !== null) {
+								const url = `${setBaseUrl}timeseries?name=${doReRegTsid2}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
 								fetch(url, {
 									method: 'GET',
@@ -1734,7 +2236,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 
 										// console.log("data: ", data);
 
-										const c_count = calculateCCount(gagedOutflowTsid);
+										const c_count = calculateCCount(doReRegTsid2);
 
 										const lastNonNullValue = getLastNonNullValue(data);
 										// console.log("lastNonNullValue:", lastNonNullValue);
@@ -1745,7 +2247,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 
 										if (lastNonNullValue !== null) {
 											timestampLast = lastNonNullValue.timestamp;
-											valueLast = parseFloat(lastNonNullValue.value).toFixed(0);
+											valueLast = parseFloat(lastNonNullValue.value).toFixed(2);
 											unitLast = data.units;
 										}
 										// console.log("valueLast:", valueLast);
@@ -1759,105 +2261,8 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 
 										if (lastNonNull24HoursValue !== null) {
 											timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
-											value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(0);
+											value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(2);
 										}
-										// console.log("value24HoursLast:", value24HoursLast);
-										// console.log("timestamp24HoursLast:", timestamp24HoursLast);
-
-										let delta_24 = null;
-
-										// Check if the values are numbers and not null/undefined
-										if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
-											delta_24 = (valueLast - value24HoursLast).toFixed(0);
-										} else {
-											delta_24 = "--";  // or set to "-1" or something else if you prefer
-										}
-
-										// console.log("delta_24:", delta_24);
-
-										// Make sure delta_24 is a valid number before calling parseFloat
-										if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
-											delta_24 = parseFloat(delta_24).toFixed(0);
-										} else {
-											delta_24 = "--";
-										}
-
-										let innerHTM;
-										if (valueLast === null) {
-											innerHTM = "<span class='missing'>-M-</span>";
-										} else {
-											innerHTM = `<span title='${timestampLast}'>Outflow: ${valueLast} (${delta_24}) ${unitLast}</span>`;
-										}
-
-										gagedOutflowCell.innerHTML = innerHTM;
-									})
-									.catch(error => {
-										console.error("Error fetching or processing data:", error);
-										gagedOutflowCell.innerHTML = 'N/A';
-									});
-							} else {
-								gagedOutflowCell.innerHTML = '';
-							}
-						})();
-
-						// ======= SEASONAL RULE CURVE DELTA =======
-						(() => {
-							// Create a new table cell for lake name
-							const curveDeltaCell = row2.insertCell(5);
-							curveDeltaCell.colSpan = 1;
-							curveDeltaCell.classList.add('Font_15');
-							curveDeltaCell.style.width = "11%";
-							curveDeltaCell.style.backgroundColor = '#404040';
-							curveDeltaCell.style.color = 'lightgray';
-
-							const stageTsid = location?.['tsid-stage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-
-							if (stageTsid !== null) {
-								const url = `${setBaseUrl}timeseries?name=${stageTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
-
-								fetch(url, {
-									method: 'GET',
-									headers: {
-										'Accept': 'application/json;version=2'
-									}
-								})
-									.then(response => {
-										if (!response.ok) {
-											throw new Error('Network response was not ok');
-										}
-										return response.json();
-									})
-									.then(data => {
-										data.values.forEach(entry => {
-											entry[0] = formatNWSDate(entry[0]);
-										});
-
-										// console.log("data: ", data);
-
-										const c_count = calculateCCount(stageTsid);
-										// console.log("c_count: ", c_count);
-
-										const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
-										// console.log("lastNonNullValue:", lastNonNullValue);
-
-										let valueLast = null;
-										let timestampLast = null;
-
-										if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-											timestampLast = lastNonNullValue.current6am.timestamp;
-											valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
-										}
-										// console.log("valueLast:", valueLast);
-										// console.log("timestampLast:", timestampLast);
-
-										let value24HoursLast = null;
-										let timestamp24HoursLast = null;
-
-										if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-											timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
-											value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(2);
-										}
-
 										// console.log("value24HoursLast:", value24HoursLast);
 										// console.log("timestamp24HoursLast:", timestamp24HoursLast);
 
@@ -1869,6 +2274,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 										} else {
 											delta_24 = "--";  // or set to "-1" or something else if you prefer
 										}
+
 										// console.log("delta_24:", delta_24);
 
 										// Make sure delta_24 is a valid number before calling parseFloat
@@ -1878,531 +2284,41 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 											delta_24 = "--";
 										}
 
-										const seasonalRuleCurveValue = location['seasonal-rule-curve'][`constant-value`];
-
-										const delta = valueLast - seasonalRuleCurveValue;
-										const deltaRuleCurve = (delta > 0 ? '+' : '') + delta.toFixed(2);
-
-
-										let innerHTML;
+										let innerHTM;
 										if (valueLast === null) {
-											innerHTML = "<span class='missing'>-M-</span>";
+											innerHTM = "<span class='missing'>-M-</span>";
 										} else {
-											innerHTML = `<span>${deltaRuleCurve}</span>`;
+											innerHTM = `<span title='${data['name']} ${timestampLast}'>Do2: ${valueLast} (${delta_24}) ${unitLast}</span>`;
 										}
 
-										curveDeltaCell.innerHTML = innerHTML;
+										reregDoCell2.innerHTML = innerHTM;
 									})
 									.catch(error => {
 										console.error("Error fetching or processing data:", error);
-										twDoCell.innerHTML = 'N/A';
+										reregDoCell2.innerHTML = 'N/A';
 									});
 							} else {
-								twDoCell.innerHTML = '';
+								reregDoCell2.innerHTML = '';
 							}
 						})();
-					})();
 
-					// ====================================================================================
-					// ======= ROW 3 ======= (ONLY FOR MARKTWAIN, REREG, SCHD, GENERATION)
-					// ====================================================================================
-
-					(() => {
-						if (location['metadata']['public-name'] === "Mark Twain Pool") {
-							// Create and add the second new row
-							const row3 = table.insertRow();
-
-							// ======= BLANK =======
-							(() => {
-								// Create a new table cell for lake name in the second row
-								const blankCell3 = row3.insertCell(0);
-								blankCell3.colSpan = 1;
-								blankCell3.classList.add('Font_15');
-								blankCell3.style.width = "15%";
-
-								// Initialize lakeCellInnerHTML as an empty string for the second row
-								let blankCell3InnerHTML = '';
-
-								// Update the inner HTML of the cell with data for the second row, preserving HTML
-								blankCell3InnerHTML = "..."; // Replace with the actual data for the second lake
-								// console.log('blankCell3InnerHTML =', blankCell3InnerHTML);
-								blankCell3.innerHTML = blankCell3InnerHTML;
-							})();
-
-							// ======= REREG =======
-							(() => {
-								// Create a new table cell for lake name
-								const reregCell = row3.insertCell(1);
-								reregCell.colSpan = 2;
-								reregCell.classList.add('Font_15');
-								reregCell.style.width = '22%';
-								reregCell.style.backgroundColor = '#404040';
-								reregCell.style.color = 'lightgray';
-
-								let reregInnerTextHTML = 'Re-Reg Pool:  ';
-
-								const gagedOutflowTsid = location?.['tsid-re-reg-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-								// console.log("gagedOutflowTsid: ", gagedOutflowTsid);
-
-								if (gagedOutflowTsid !== null) {
-									const url = `${setBaseUrl}timeseries?name=${gagedOutflowTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
-
-									fetch(url, {
-										method: 'GET',
-										headers: {
-											'Accept': 'application/json;version=2'
-										}
-									})
-										.then(response => {
-											if (!response.ok) {
-												throw new Error('Network response was not ok');
-											}
-											return response.json();
-										})
-										.then(data => {
-											data.values.forEach(entry => {
-												entry[0] = formatNWSDate(entry[0]);
-											});
-
-											// console.log("data: ", data);
-
-											const c_count = calculateCCount(gagedOutflowTsid);
-											// console.log("c_count: ", c_count);
-
-											const lastNonNullValue = getLastNonNullMidnightValue(data, data.name, c_count);
-											// console.log("lastNonNullValue:", lastNonNullValue);
-
-											let valueLast = null;
-											let timestampLast = null;
-
-											if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-												timestampLast = lastNonNullValue.current6am.timestamp;
-												valueLast = parseFloat(lastNonNullValue.current6am.value).toFixed(2);
-											}
-											// console.log("valueLast:", valueLast);
-											// console.log("timestampLast:", timestampLast);
-
-											let value24HoursLast = null;
-											let timestamp24HoursLast = null;
-
-											if (lastNonNullValue.current6am !== null && lastNonNullValue.valueCountRowsBefore !== null) {
-												timestamp24HoursLast = lastNonNullValue.valueCountRowsBefore.timestamp;
-												value24HoursLast = parseFloat(lastNonNullValue.valueCountRowsBefore.value).toFixed(2);
-											}
-
-											// console.log("value24HoursLast:", value24HoursLast);
-											// console.log("timestamp24HoursLast:", timestamp24HoursLast);
-
-											let delta_24 = null;
-
-											// Check if the values are numbers and not null/undefined
-											if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
-												delta_24 = (valueLast - value24HoursLast).toFixed(2);
-											} else {
-												delta_24 = "--";  // or set to "-1" or something else if you prefer
-											}
-											// console.log("delta_24:", delta_24);
-
-											// Make sure delta_24 is a valid number before calling parseFloat
-											if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
-												delta_24 = parseFloat(delta_24).toFixed(2);
-											} else {
-												delta_24 = "--";
-											}
-
-											let gagedOutflowInnerHTML;
-											if (valueLast === null) {
-												gagedOutflowInnerHTML = reregInnerTextHTML + "<span class='missing'>-M-</span>";
-											} else {
-												gagedOutflowInnerHTML = reregInnerTextHTML + `<span title='${timestampLast}'>${valueLast} (${delta_24}) ${data.units}</span>`;
-											}
-
-											reregCell.innerHTML = gagedOutflowInnerHTML;
-										})
-										.catch(error => {
-											console.error("Error fetching or processing data:", error);
-											reregCell.innerHTML = 'N/A';
-										});
-								} else {
-									reregCell.innerHTML = '';
-								}
-							})();
-
-							// ======= SCHD =======
-							(() => {
-								// Create a new table cell for lake name
-								const schdCell = row3.insertCell(2);
-								schdCell.colSpan = 1;
-								schdCell.classList.add('Font_15');
-								schdCell.style.width = '8.5%';
-								schdCell.style.backgroundColor = '#404040';
-								schdCell.style.color = 'lightgray';
-
-								let scheduleTextHTML = 'Schedule:  ';
-
-								const scheduleTsid = location?.['tsid-schedule-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-								// console.log("scheduleTsid: ", scheduleTsid);
-
-								if (scheduleTsid !== null) {
-									const url = `${setBaseUrl}timeseries/text?name=${scheduleTsid}&begin=${currentDateTimeMinus24HoursIso}&end=${currentDateTimeIso}&office=${office}`;
-
-									fetch(url, {
-										method: 'GET',
-										headers: {
-											'Accept': 'application/json;version=2'
-										}
-									})
-										.then(response => {
-											if (!response.ok) {
-												throw new Error('Network response was not ok');
-											}
-											return response.json();
-										})
-										.then(data => {
-											// console.log("data: ", data);
-
-											const currentSchedule = data['regular-text-values'] && data['regular-text-values'].length > 0
-												? data['regular-text-values'][data['regular-text-values'].length - 1]['text-value']
-												: null;
-
-											let gagedOutflowInnerHTML;
-											if (currentSchedule === null) {
-												gagedOutflowInnerHTML = scheduleTextHTML + "<span class='missing'>-M-</span>";
-											} else {
-												gagedOutflowInnerHTML = scheduleTextHTML + `<span >${currentSchedule}</span>`;
-											}
-
-											schdCell.innerHTML = gagedOutflowInnerHTML;
-										})
-										.catch(error => {
-											console.error("Error fetching or processing data:", error);
-											schdCell.innerHTML = 'N/A';
-										});
-								} else {
-									schdCell.innerHTML = '';
-								}
-							})();
-
-							// ======= BLANK =======
-							(() => {
-								// Create a new table cell for lake name in the second row
-								const blankCell33 = row3.insertCell(3);
-								blankCell33.colSpan = 1;
-								blankCell33.style.width = "8.5%";
-								blankCell33.classList.add('Font_15');
-								blankCell33.style.backgroundColor = '#404040';
-								blankCell33.style.color = 'lightgray';
-
-								// Initialize lakeCellInnerHTML as an empty string for the second row
-								let blankCell3InnerHTML = '';
-
-								// Update the inner HTML of the cell with data for the second row, preserving HTML
-								blankCell3InnerHTML = ""; // Replace with the actual data for the second lake
-								// console.log('blankCell3InnerHTML =', blankCell3InnerHTML);
-								blankCell33.innerHTML = blankCell3InnerHTML;
-							})();
-
-							// ======= REREG DO 1 =======
-							(() => {
-								// Create a new table cell for lake name
-								const reregDoCell = row3.insertCell(4);
-								reregDoCell.colSpan = 2;
-								reregDoCell.classList.add('Font_15');
-								reregDoCell.style.width = '18%';
-								reregDoCell.style.backgroundColor = '#404040';
-								reregDoCell.style.color = 'lightgray';
-
-								const doReRegTsid = location?.['tsid-do-re-reg-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-
-								if (doReRegTsid !== null) {
-									const url = `${setBaseUrl}timeseries?name=${doReRegTsid}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
-
-									fetch(url, {
-										method: 'GET',
-										headers: {
-											'Accept': 'application/json;version=2'
-										}
-									})
-										.then(response => {
-											if (!response.ok) {
-												throw new Error('Network response was not ok');
-											}
-											return response.json();
-										})
-										.then(data => {
-											data.values.forEach(entry => {
-												entry[0] = formatNWSDate(entry[0]);
-											});
-
-											// console.log("data: ", data);
-
-											const c_count = calculateCCount(doReRegTsid);
-
-											const lastNonNullValue = getLastNonNullValue(data);
-											// console.log("lastNonNullValue:", lastNonNullValue);
-
-											let valueLast = null;
-											let timestampLast = null;
-											let unitLast = null;
-
-											if (lastNonNullValue !== null) {
-												timestampLast = lastNonNullValue.timestamp;
-												valueLast = parseFloat(lastNonNullValue.value).toFixed(2);
-												unitLast = data.units;
-											}
-											// console.log("valueLast:", valueLast);
-											// console.log("timestampLast:", timestampLast);
-
-											let value24HoursLast = null;
-											let timestamp24HoursLast = null;
-
-											const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
-											// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
-
-											if (lastNonNull24HoursValue !== null) {
-												timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
-												value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(2);
-											}
-											// console.log("value24HoursLast:", value24HoursLast);
-											// console.log("timestamp24HoursLast:", timestamp24HoursLast);
-
-											let delta_24 = null;
-
-											// Check if the values are numbers and not null/undefined
-											if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
-												delta_24 = (valueLast - value24HoursLast).toFixed(2);
-											} else {
-												delta_24 = "--";  // or set to "-1" or something else if you prefer
-											}
-
-											// console.log("delta_24:", delta_24);
-
-											// Make sure delta_24 is a valid number before calling parseFloat
-											if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
-												delta_24 = parseFloat(delta_24).toFixed(2);
-											} else {
-												delta_24 = "--";
-											}
-
-											let innerHTM;
-											if (valueLast === null) {
-												innerHTM = "<span class='missing'>-M-</span>";
-											} else {
-												innerHTM = `<span title='${timestampLast}'>Do: ${valueLast} (${delta_24}) ${unitLast}</span>`;
-											}
-
-											reregDoCell.innerHTML = innerHTM;
-										})
-										.catch(error => {
-											console.error("Error fetching or processing data:", error);
-											reregDoCell.innerHTML = 'N/A';
-										});
-								} else {
-									reregDoCell.innerHTML = '';
-								}
-							})();
-
-							// ======= REREG DO 2 =======
-							(() => {
-								// Create a new table cell for lake name
-								const reregDoCell2 = row3.insertCell(5);
-								reregDoCell2.colSpan = 2;
-								reregDoCell2.classList.add('Font_15');
-								reregDoCell2.style.width = '17%';
-								reregDoCell2.style.backgroundColor = '#404040';
-								reregDoCell2.style.color = 'lightgray';
-
-								const doReRegTsid2 = location?.['tsid-do-re-reg-lake']?.['assigned-time-series']?.[1]?.['timeseries-id'] ?? null;
-
-								if (doReRegTsid2 !== null) {
-									const url = `${setBaseUrl}timeseries?name=${doReRegTsid2}&begin=${currentDateTimeMinus60HoursIso}&end=${currentDateTimeIso}&office=${office}`;
-
-									fetch(url, {
-										method: 'GET',
-										headers: {
-											'Accept': 'application/json;version=2'
-										}
-									})
-										.then(response => {
-											if (!response.ok) {
-												throw new Error('Network response was not ok');
-											}
-											return response.json();
-										})
-										.then(data => {
-											data.values.forEach(entry => {
-												entry[0] = formatNWSDate(entry[0]);
-											});
-
-											// console.log("data: ", data);
-
-											const c_count = calculateCCount(doReRegTsid2);
-
-											const lastNonNullValue = getLastNonNullValue(data);
-											// console.log("lastNonNullValue:", lastNonNullValue);
-
-											let valueLast = null;
-											let timestampLast = null;
-											let unitLast = null;
-
-											if (lastNonNullValue !== null) {
-												timestampLast = lastNonNullValue.timestamp;
-												valueLast = parseFloat(lastNonNullValue.value).toFixed(2);
-												unitLast = data.units;
-											}
-											// console.log("valueLast:", valueLast);
-											// console.log("timestampLast:", timestampLast);
-
-											let value24HoursLast = null;
-											let timestamp24HoursLast = null;
-
-											const lastNonNull24HoursValue = getLastNonNull24HoursValue(data, c_count);
-											// console.log("lastNonNull24HoursValue:", lastNonNull24HoursValue);
-
-											if (lastNonNull24HoursValue !== null) {
-												timestamp24HoursLast = lastNonNull24HoursValue.timestamp;
-												value24HoursLast = parseFloat(lastNonNull24HoursValue.value).toFixed(2);
-											}
-											// console.log("value24HoursLast:", value24HoursLast);
-											// console.log("timestamp24HoursLast:", timestamp24HoursLast);
-
-											let delta_24 = null;
-
-											// Check if the values are numbers and not null/undefined
-											if (valueLast !== null && value24HoursLast !== null && !isNaN(valueLast) && !isNaN(value24HoursLast)) {
-												delta_24 = (valueLast - value24HoursLast).toFixed(2);
-											} else {
-												delta_24 = "--";  // or set to "-1" or something else if you prefer
-											}
-
-											// console.log("delta_24:", delta_24);
-
-											// Make sure delta_24 is a valid number before calling parseFloat
-											if (delta_24 !== "--" && delta_24 !== null && delta_24 !== undefined) {
-												delta_24 = parseFloat(delta_24).toFixed(2);
-											} else {
-												delta_24 = "--";
-											}
-
-											let innerHTM;
-											if (valueLast === null) {
-												innerHTM = "<span class='missing'>-M-</span>";
-											} else {
-												innerHTM = `<span title='${timestampLast}'>Do2: ${valueLast} (${delta_24}) ${unitLast}</span>`;
-											}
-
-											reregDoCell2.innerHTML = innerHTM;
-										})
-										.catch(error => {
-											console.error("Error fetching or processing data:", error);
-											reregDoCell2.innerHTML = 'N/A';
-										});
-								} else {
-									reregDoCell2.innerHTML = '';
-								}
-							})();
-
-							// ======= GENERATION TURBINES =======
-							(() => {
-								// Create a new table cell for lake name
-								const genCell = row3.insertCell(6);
-								genCell.colSpan = 1;
-								genCell.classList.add('Font_15');
-								genCell.style.width = '11%';
-								genCell.style.backgroundColor = '#404040';
-								genCell.style.color = 'lightgray';
-
-								let turbinesTextHTML = 'Turbines:  ';
-
-								const turbinesTsid = location?.['tsid-turbines-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-								// console.log("turbinesTsid: ", turbinesTsid);
-
-								if (turbinesTsid !== null) {
-									const url = `${setBaseUrl}timeseries?name=${turbinesTsid}&begin=${currentDateTimeMinus24HoursIso}&end=${currentDateTimeIso}&office=${office}`;
-
-									fetch(url, {
-										method: 'GET',
-										headers: {
-											'Accept': 'application/json;version=2'
-										}
-									})
-										.then(response => {
-											if (!response.ok) {
-												throw new Error('Network response was not ok');
-											}
-											return response.json();
-										})
-										.then(data => {
-											// console.log("data: ", data);
-
-											const currentSchedule = data['values'] && data['values'].length > 0
-												? data['values'][data['values'].length - 1][1]
-												: null;
-
-											let gagedOutflowInnerHTML;
-											if (currentSchedule === null) {
-												gagedOutflowInnerHTML = turbinesTextHTML + "<span class='missing'>-M-</span>";
-											} else {
-												gagedOutflowInnerHTML = turbinesTextHTML + `<span >${currentSchedule} (dsf)</span>`;
-											}
-
-											genCell.innerHTML = gagedOutflowInnerHTML;
-										})
-										.catch(error => {
-											console.error("Error fetching or processing data:", error);
-											genCell.innerHTML = 'N/A';
-										});
-								} else {
-									genCell.innerHTML = '';
-								}
-							})();
-						}
-					})();
-
-					// ====================================================================================
-					// ======= ROW 4 ======= (NOTE)
-					// ====================================================================================
-
-					(() => {
-						// Create and add the second new row
-						const row4 = table.insertRow();
-
-						// ======= BLANK =======
-						(() => {
-							// Create a new table cell for lake name in the second row
-							const blankCell4 = row4.insertCell(0);
-							blankCell4.colSpan = 1;
-							blankCell4.classList.add('Font_15');
-							blankCell4.style.width = '15%';
-
-							// Initialize lakeCellInnerHTML as an empty string for the second row
-							let blankCell4InnerHTML = '--';
-
-							// Update the inner HTML of the cell with data for the second row, preserving HTML
-							blankCell4InnerHTML = "..."; // Replace with the actual data for the second lake
-							// console.log('blankCell4InnerHTML =', blankCell4InnerHTML);
-							blankCell4.innerHTML = blankCell4InnerHTML;
-						})();
-
-						// ======= NOTE =======
+						// ======= GENERATION TURBINES =======
 						(() => {
 							// Create a new table cell for lake name
-							const noteCell = row4.insertCell(1);
-							noteCell.colSpan = 9;
-							noteCell.classList.add('Font_15');
-							noteCell.style.width = '85%';
-							noteCell.style.backgroundColor = 'lightyellow';
-							noteCell.style.color = '#333333';
-							noteCell.style.textAlign = 'left'; // Add this line to align content to the left
-							noteCell.style.paddingLeft = '10px'; // Add this line to set left padding
+							const genCell = row3.insertCell(6);
+							genCell.colSpan = 1;
+							genCell.classList.add('Font_15');
+							genCell.style.width = '11%';
+							genCell.style.backgroundColor = '#404040';
+							genCell.style.color = 'lightgray';
 
-							let scheduleTextHTML = 'Note:  ';
+							let turbinesTextHTML = 'Turbines:  ';
 
-							const noteTsid = location?.['tsid-note-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
-							// console.log("noteTsid: ", noteTsid);
+							const turbinesTsid = location?.['tsid-turbines-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+							// console.log("turbinesTsid: ", turbinesTsid);
 
-							if (noteTsid !== null) {
-								const url = `${setBaseUrl}timeseries/text?name=${noteTsid}&begin=${currentDateTimeMinus24HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+							if (turbinesTsid !== null) {
+								const url = `${setBaseUrl}timeseries?name=${turbinesTsid}&begin=${currentDateTimeMinus24HoursIso}&end=${currentDateTimeIso}&office=${office}`;
 
 								fetch(url, {
 									method: 'GET',
@@ -2419,64 +2335,146 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 									.then(data => {
 										// console.log("data: ", data);
 
-										const currentSchedule = data['regular-text-values'] && data['regular-text-values'].length > 0
-											? data['regular-text-values'][data['regular-text-values'].length - 1]['text-value']
+										const currentSchedule = data['values'] && data['values'].length > 0
+											? data['values'][data['values'].length - 1][1]
 											: null;
 
 										let gagedOutflowInnerHTML;
 										if (currentSchedule === null) {
-											gagedOutflowInnerHTML = scheduleTextHTML + "<span class='missing'>-M-</span>";
+											gagedOutflowInnerHTML = turbinesTextHTML + `<span class='missing'>-M-</span>`;
 										} else {
-											gagedOutflowInnerHTML = scheduleTextHTML + `<span >${currentSchedule}</span>`;
+											gagedOutflowInnerHTML = turbinesTextHTML + `<span title='${data['name']}'>${currentSchedule} (dsf)</span>`;
 										}
 
-										noteCell.innerHTML = gagedOutflowInnerHTML;
+										genCell.innerHTML = gagedOutflowInnerHTML;
 									})
 									.catch(error => {
 										console.error("Error fetching or processing data:", error);
-										noteCell.innerHTML = 'N/A';
+										genCell.innerHTML = 'N/A';
 									});
 							} else {
-								noteCell.innerHTML = '';
+								genCell.innerHTML = '';
 							}
 						})();
-					})();
+					}
+				})();
 
-					// ====================================================================================
-					// ======= ROW 5 ======= (BLANK WHITE BLOCK)
-					// ====================================================================================
+				// ====================================================================================
+				// ======= ROW 4 ======= (NOTE)
+				// ====================================================================================
 
+				(() => {
+					// Create and add the second new row
+					const row4 = table.insertRow();
+
+					// ======= BLANK =======
 					(() => {
-						// Create and add the second new row
-						const row5 = table.insertRow();
+						// Create a new table cell for lake name in the second row
+						const blankCell4 = row4.insertCell(0);
+						blankCell4.colSpan = 1;
+						blankCell4.classList.add('Font_15');
+						blankCell4.style.width = '15%';
 
-						// ======= BLANK =======
-						(() => {
-							// Create a new table cell for lake name in the second row
-							const blankCell5 = row5.insertCell(0);
-							blankCell5.colSpan = 10;
-							blankCell5.style.width = '100%';
-							blankCell5.classList.add('Font_15');
-							blankCell5.style.color = 'white';
-							blankCell5.style.height = '20px'; // Add this line to set the height
+						// Initialize lakeCellInnerHTML as an empty string for the second row
+						let blankCell4InnerHTML = '--';
 
-							// Initialize lakeCellInnerHTML as an empty string for the second row
-							let blankCell5InnerHTML = '--';
-
-							// Update the inner HTML of the cell with data for the second row, preserving HTML
-							blankCell5InnerHTML = "..."; // Replace with the actual data for the second lake
-							// console.log('blankCell5InnerHTML =', blankCell5InnerHTML);
-							blankCell5.innerHTML = blankCell5InnerHTML;
-						})();
+						// Update the inner HTML of the cell with data for the second row, preserving HTML
+						blankCell4InnerHTML = "..."; // Replace with the actual data for the second lake
+						// console.log('blankCell4InnerHTML =', blankCell4InnerHTML);
+						blankCell4.innerHTML = blankCell4InnerHTML;
 					})();
-				} else {
-					// Handle other display types if needed
-				}
+
+					// ======= NOTE =======
+					(() => {
+						// Create a new table cell for lake name
+						const noteCell = row4.insertCell(1);
+						noteCell.colSpan = 9;
+						noteCell.classList.add('Font_15');
+						noteCell.style.width = '85%';
+						noteCell.style.backgroundColor = 'lightyellow';
+						noteCell.style.color = '#333333';
+						noteCell.style.textAlign = 'left'; // Add this line to align content to the left
+						noteCell.style.paddingLeft = '10px'; // Add this line to set left padding
+
+						let scheduleTextHTML = 'Note:  ';
+
+						const noteTsid = location?.['tsid-note-lake']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
+						// console.log("noteTsid: ", noteTsid);
+
+						if (noteTsid !== null) {
+							const url = `${setBaseUrl}timeseries/text?name=${noteTsid}&begin=${currentDateTimeMinus24HoursIso}&end=${currentDateTimeIso}&office=${office}`;
+
+							fetch(url, {
+								method: 'GET',
+								headers: {
+									'Accept': 'application/json;version=2'
+								}
+							})
+								.then(response => {
+									if (!response.ok) {
+										throw new Error('Network response was not ok');
+									}
+									return response.json();
+								})
+								.then(data => {
+									// console.log("data: ", data);
+
+									const currentSchedule = data['regular-text-values'] && data['regular-text-values'].length > 0
+										? data['regular-text-values'][data['regular-text-values'].length - 1]['text-value']
+										: null;
+
+									let gagedOutflowInnerHTML;
+									if (currentSchedule === null) {
+										gagedOutflowInnerHTML = scheduleTextHTML + "<span class='missing'>-M-</span>";
+									} else {
+										gagedOutflowInnerHTML = scheduleTextHTML + `<span >${currentSchedule}</span>`;
+									}
+
+									noteCell.innerHTML = gagedOutflowInnerHTML;
+								})
+								.catch(error => {
+									console.error("Error fetching or processing data:", error);
+									noteCell.innerHTML = 'N/A';
+								});
+						} else {
+							noteCell.innerHTML = '';
+						}
+					})();
+				})();
+
+				// ====================================================================================
+				// ======= ROW 5 ======= (BLANK WHITE BLOCK)
+				// ====================================================================================
+
+				(() => {
+					// Create and add the second new row
+					const row5 = table.insertRow();
+
+					// ======= BLANK =======
+					(() => {
+						// Create a new table cell for lake name in the second row
+						const blankCell5 = row5.insertCell(0);
+						blankCell5.colSpan = 10;
+						blankCell5.style.width = '100%';
+						blankCell5.classList.add('Font_15');
+						blankCell5.style.color = 'white';
+						blankCell5.style.height = '20px'; // Add this line to set the height
+
+						// Initialize lakeCellInnerHTML as an empty string for the second row
+						let blankCell5InnerHTML = '--';
+
+						// Update the inner HTML of the cell with data for the second row, preserving HTML
+						blankCell5InnerHTML = "..."; // Replace with the actual data for the second lake
+						// console.log('blankCell5InnerHTML =', blankCell5InnerHTML);
+						blankCell5.innerHTML = blankCell5InnerHTML;
+					})();
+				})();
+
 			});
 		});
 	}
 
-	// DISPLAY RIVER
+	// RIVER
 	if ((display_type === "LWRP" || display_type === "FloodStage")) {
 		combinedDataRiver.forEach((basin) => {
 			const headerRow = table.insertRow();

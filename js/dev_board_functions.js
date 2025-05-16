@@ -1575,31 +1575,45 @@ async function fetchAndUpdateStorageTd(consrTd, floodTd, tsidStorage, currentDat
         }
 
         let conservationStorageValue = "%";
+        let conservationStorageTitle = ""; // new variable for later use
+
         if (valueLast > 0.0 && topOfConservationLevel > 0.0 && bottomOfConservationLevel >= 0.0) {
             if (valueLast < bottomOfConservationLevel) {
                 conservationStorageValue = "0.00%";
+                conservationStorageTitle = `Below conservation pool. Value: ${valueLast}, Bottom: ${bottomOfConservationLevel}, Top: ${topOfConservationLevel}`;
             } else if (valueLast > topOfConservationLevel) {
                 conservationStorageValue = "100.00%";
+                conservationStorageTitle = `At or above conservation capacity. Value: ${valueLast}, Bottom: ${bottomOfConservationLevel}, Top: ${topOfConservationLevel}`;
             } else {
                 const total = ((valueLast - bottomOfConservationLevel) / (topOfConservationLevel - bottomOfConservationLevel)) * 100;
                 conservationStorageValue = total.toFixed(2) + "%";
+                conservationStorageTitle = `Conservation storage is ${conservationStorageValue}. Value: ${valueLast}, Bottom: ${bottomOfConservationLevel}, Top: ${topOfConservationLevel}`;
             }
+        } else {
+            conservationStorageTitle = `Insufficient data. Value: ${valueLast}, Bottom: ${bottomOfConservationLevel}, Top: ${topOfConservationLevel}`;
         }
 
         let floodStorageValue = "%";
+        let floodStorageTitle = ""; // new variable for later use
+
         if (valueLast > 0.0 && topOfFloodLevel > 0.0 && bottomOfFloodLevel >= 0.0) {
             if (valueLast < bottomOfFloodLevel) {
                 floodStorageValue = "0.00%";
+                floodStorageTitle = `Below flood pool. Value: ${valueLast}, Bottom: ${bottomOfFloodLevel}, Top: ${topOfFloodLevel}`;
             } else if (valueLast > topOfFloodLevel) {
                 floodStorageValue = "100.00%";
+                floodStorageTitle = `At or above flood capacity. Value: ${valueLast}, Bottom: ${bottomOfFloodLevel}, Top: ${topOfFloodLevel}`;
             } else {
                 const total = ((valueLast - bottomOfFloodLevel) / (topOfFloodLevel - bottomOfFloodLevel)) * 100;
                 floodStorageValue = total.toFixed(2) + "%";
+                floodStorageTitle = `Flood storage is ${floodStorageValue}. Value: ${valueLast}, Bottom: ${bottomOfFloodLevel}, Top: ${topOfFloodLevel}`;
             }
+        } else {
+            floodStorageTitle = `Insufficient data. Value: ${valueLast}, Bottom: ${bottomOfFloodLevel}, Top: ${topOfFloodLevel}`;
         }
 
-        consrTd.innerHTML = conservationStorageValue ?? "-";
-        floodTd.innerHTML = floodStorageValue ?? "-";
+        consrTd.innerHTML = "<span title='" + conservationStorageTitle + "'>" + conservationStorageValue + "</span>" ?? "-";
+        floodTd.innerHTML = "<span title='" + floodStorageTitle + "'>" + floodStorageValue + "</span>" ?? "-";
 
         return { consrTd: conservationStorageValue, floodTd: floodStorageValue };
 
@@ -1681,7 +1695,7 @@ function fetchAndUpdatePrecipTd(precipTd, tsid, end, begin, setBaseUrl) {
                 if (lastNonNullPrecipValue === null) {
                     innerHTMLPrecip = "<span class='missing'>" + "-M-" + "</span>";
                 } else {
-                    innerHTMLPrecip = "<span class='last_max_value' title='"+ data.name + " " + timestampPrecipLast + "'>" + valuePrecipLast + "</span>";
+                    innerHTMLPrecip = "<span class='last_max_value' title='" + data.name + " " + timestampPrecipLast + "'>" + valuePrecipLast + "</span>";
                 }
                 return precipTd.innerHTML += innerHTMLPrecip;
             })
