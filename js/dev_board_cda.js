@@ -778,10 +778,10 @@ if (display_tributary === "False" && display_type !== "Lake") {
 	// Switch link cell
 	const th2_2 = document.createElement('th');
 	th2_2.colSpan = 13;
-	if (display_type === "FloodStage" && display_tributary === "False") {
-		th2_2.innerHTML = `<div id='formsContainer'><div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=FloodStage&display_tributary=False&dev=True'>Switch to Dev Board</a></div></div>`;
+	if (dev === "True") {
+		th2_2.innerHTML = `<div id='formsContainer'><div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=${display_type}&display_tributary=${display_tributary}&dev=False&json=${json}'>Switch to Production Board</a></div></div>`;
 	} else {
-		th2_2.innerHTML = `<div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=LWRP&display_tributary=False&dev=True'>Switch to PHP Board</a></div>`;
+		th2_2.innerHTML = `<div id='switch_php_board'><a href='https://wm.mvs.ds.usace.army.mil/mvs/board/dev.html?display_type=${display_type}&display_tributary=${display_tributary}&dev=True&json=${json}'>Switch to Dev Board</a></div>`;
 	}
 	row2.appendChild(th2_2);
 
@@ -801,9 +801,9 @@ if (display_tributary === "False" && display_type !== "Lake") {
 	typeCell.colSpan = 2;
 	typeCell.rowSpan = 1;
 	if (display_type === "LWRP") {
-		typeCell.innerHTML = `<a href='dev.html?display_type=FloodStage&display_tributary=False&dev=True'>Switch to FloodStage</a>`;
+		typeCell.innerHTML = `<a href='dev.html?display_type=FloodStage&display_tributary=${display_tributary}&dev=${dev}&json=${json}'>Switch to FloodStage</a>`;
 	} else if (display_type === "FloodStage") {
-		typeCell.innerHTML = `<a href='dev.html?display_type=LWRP&display_tributary=False&dev=True'>Switch to LWRP</a>`;
+		typeCell.innerHTML = `<a href='dev.html?display_type=LWRP&display_tributary=${display_tributary}&dev=${dev}&json=${json}'>Switch to LWRP</a>`;
 	}
 	row3.appendChild(typeCell);
 
@@ -862,16 +862,16 @@ if (display_tributary === "False" && display_type !== "Lake") {
 		// Create and append PHP Board link
 		const phpBoardDiv = document.createElement('div');
 		phpBoardDiv.className = 'Last_Modified_Tributary';
-		phpBoardDiv.innerHTML = `<a href='/mvs/board/index.html?display_type=${display_type}&display_tributary=True&dev=True'>Switch to Original Board</a>`;
+		phpBoardDiv.innerHTML = `<a href='dev.html?display_type=${display_type}&display_tributary=${display_tributary}&dev=False&json=${json}'>Switch to Production Board</a>`;
 		document.body.appendChild(phpBoardDiv);
 
 		// Create and append switch link
 		const switchDiv = document.createElement('div');
 		switchDiv.className = 'Flood_Stage_Switch_Tributary';
 		if (display_type === "LWRP") {
-			switchDiv.innerHTML = `<a href='dev.html?display_type=FloodStage&display_tributary=True&dev=True'>Switch to FloodStage</a>`;
+			switchDiv.innerHTML = `<a href='dev.html?display_type=FloodStage&display_tributary=${display_tributary}&dev=${dev}&json=${json}'>Switch to FloodStage</a>`;
 		} else {
-			switchDiv.innerHTML = `<a href='dev.html?display_type=LWRP&display_tributary=True&dev=True'>Switch to LWRP</a>`;
+			switchDiv.innerHTML = `<a href='dev.html?display_type=LWRP&display_tributary=${display_tributary}&dev=${dev}&json=${json}'>Switch to LWRP</a>`;
 		}
 		document.body.appendChild(switchDiv);
 
@@ -896,10 +896,13 @@ if (display_type === "Lake") {
 
 		// === Row 1: Title Row ===
 		var row1 = document.createElement('tr');
+
 		var headerCell = document.createElement('th');
 		headerCell.colSpan = 10;
 		headerCell.classList.add('Font_10');
-		headerCell.innerHTML = "<div id='board_title'>MVS LAKE DATA (WITH CLOUD LAKE SHEET)</div>";
+		headerCell.innerHTML = "<div id='board_title'>MVS LAKE DATA (CLOUD LAKE SHEET)</div>";
+		headerCell.style.color = "lightblue";
+
 		row1.appendChild(headerCell);
 		thead.appendChild(row1);
 
@@ -1387,7 +1390,6 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 							}
 						}
 
-
 						if (forecastLakeTsid) {
 							fetchAndUpdateForecastTd(forecastLakeTsid, isoDateTodayStr, isoDatePlus1Str, isoDateTodayPlus6HoursStr, setBaseUrl)
 								.then(data => {
@@ -1411,14 +1413,14 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 								fetchAndUpdateOutflowAverageTd(yesterdayOutflowAverage, isoDateTodayStr, isoDateTodayStr, setBaseUrl)
 									.then(data => {
 										// console.log("data:", data);
-										let value = data?.values?.[0]?.[1];
-										value = Math.round(value / 10) * 10;
-										const displayValue = typeof value === "number" ? value.toFixed(0) : value;
 
-										if (value !== null && value !== undefined) {
-											midnightControlledOutflowTd.innerHTML = "<span title='" + "(Yesterday Average Outflow.) " + data.name + "'>" + displayValue + "</span>";
+										let value = data?.values?.[0]?.[1];
+										if (typeof value === "number") {
+											value = Math.round(value / 10) * 10;
+											const displayValue = value.toFixed(0);
+											midnightControlledOutflowTd.innerHTML = `<span title="Yesterday Average Outflow. ${data?.name || ''}">${displayValue}</span>`;
 										} else {
-											midnightControlledOutflowTd.innerHTML = "<span class='missing' title='(Yesterday Average Outflow.'>-M-</span>";
+											midnightControlledOutflowTd.innerHTML = `<span class="missing" title="Yesterday Average Outflow.">-M-</span>`;
 										}
 									})
 									.catch(error => {
@@ -2527,8 +2529,8 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 					let publicNameCellInnerHTML = "--";
 
 					// Update the inner HTML of the cell with data, preserving HTML
-					// publicNameCellInnerHTML = "<span title='" + location['location-id'] + "'>" + location['metadata']['public-name'] + "</span>";
-					publicNameCellInnerHTML = "<span title='" + location['location-id'] + "'>" + location['location-id'] + "</span>";
+					publicNameCellInnerHTML = "<span title='" + location['location-id'] + "'>" + location['metadata']['public-name'] + "</span>";
+					// publicNameCellInnerHTML = "<span title='" + location['location-id'] + "'>" + location['location-id'] + "</span>";
 					// console.log("publicNameCellInnerHTML = ", publicNameCellInnerHTML);
 					publicNameCell.innerHTML = publicNameCellInnerHTML;
 				})();
@@ -2676,7 +2678,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 					let nwsDayOneCellInnerHTML = "--";
 					let nwsDayTwoCellInnerHTML = "--";
 					let nwsDayThreeCellInnerHTML = "--";
-					let forecastTimeCellInnerHTML = "--";
+					let forecastTimeCellInnerHTML = "cdana";
 
 					// Get stagerev tsid to check for version equal to 29
 					const tsidStage = location['tsid-stage']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
@@ -2776,7 +2778,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 											nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + "-" + "</span>";
 										}
 
-										fetchAndLogNwsData(tsidNwsForecast, forecastTimeCell);
+										// fetchAndLogNwsData(tsidNwsForecast, forecastTimeCell); // Use PHP json method to get forecast time
 									} else {
 										nwsDayOneCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
 										nwsDayTwoCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
@@ -2807,8 +2809,8 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 					crestDateCell.style.width = "5%";
 
 					// Initialize stageCwmsIdCell.innerHTML as an empty string
-					let crestCellInnerHTML = "";
-					let crestDateCellInnerHTML = "";
+					let crestCellInnerHTML = "cdana";
+					let crestDateCellInnerHTML = "cdana";
 
 					// Get tsid
 					const tsidCrest = location['tsid-nws-crest']?.['assigned-time-series']?.[0]?.['timeseries-id'] ?? null;
@@ -3086,7 +3088,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 							});
 					} else {
 						if (location['closure'] && location['closure']['level-comment']) {
-							lDSettingCellInnerHTML = "<span>" + location['closure']['level-comment'] + "</span>";
+							lDSettingCellInnerHTML = "<span>" + location['closure']['level-comment'].split(',')[0] + "</span>";
 						} else {
 							lDSettingCellInnerHTML = "";
 						}
@@ -3322,7 +3324,7 @@ function createTable(combinedDataRiver, combinedDataReservoir, setBaseUrl, displ
 							// console.log("gageZeroCellInnerHTML = ", gageZeroCellInnerHTML);
 						} else if (location['metadata']["vertical-datum"] === "NGVD29") {
 							// Set the combined value to the cell, preserving HTML
-							gageZeroCellInnerHTML = "<span style='color: darkorange;' title='" + "vertical_datum: " + location['metadata']["vertical-datum"] + "'>" + location['metadata']["elevation"].toFixed(2) + "</span>";
+							gageZeroCellInnerHTML = "<span style='color: black;' title='" + "vertical_datum: " + location['metadata']["vertical-datum"] + "'>" + location['metadata']["elevation"].toFixed(2) + "<sub style='font-size: 0.5em;'>(NGVD29)</sub>" + "</span>";
 							// console.log("gageZeroCellInnerHTML = ", gageZeroCellInnerHTML);
 						} else {
 							// Set the combined value to the cell, preserving HTML
