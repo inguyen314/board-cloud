@@ -1180,10 +1180,10 @@ function updateNwsForecastTimeHTML(filteredData, forecastTimeCell) {
 async function fetchAndLogNwsCrestData(tsid, crestCell, crestDateCell) {
     try {
         const NwsCrestOutput = await fetchDataFromNwsCrestForecastsOutput();
-        console.log('NwsCrestOutput:', NwsCrestOutput);
+        // console.log('NwsCrestOutput:', NwsCrestOutput);
 
         const filteredData = filterDataByTsidCrest(NwsCrestOutput, tsid);
-        console.log("Filtered NwsCrestOutput Data for", tsid + ":", filteredData);
+        // console.log("Filtered NwsCrestOutput Data for", tsid + ":", filteredData);
 
         // Update the HTML element with filtered data
         updateNwsCrestForecastTimeHTML(filteredData, crestCell, crestDateCell);
@@ -1369,4 +1369,65 @@ function determineStageDateTimeClass(stage29_date_time_cst_formatted, currentDat
     }
     // console.log("myStage29DateTimeClass = ", myStage29DateTimeClass);
     return myStage29DateTimeClass;
+}
+
+async function fetchAndUpdateNwsForecastTd(tsidStage, nwsForecastTsid, flood_level, currentDateTimeMidNightISO, currentDateTimePlus4DaysMidNightISO) {
+    if (tsidStage !== null && tsidStage.slice(-2) !== "29" && nwsForecastTsid !== null) {
+        const preUrl = 'https://wm.mvs.ds.usace.army.mil/php_data_api/public/json/exportNwsForecasts2Json.json';
+        let match = null;
+
+        try {
+            const preResponse = await fetch(preUrl, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!preResponse.ok) throw new Error('Pre-fetch failed');
+
+            const preFetchData = await preResponse.json();
+            match = preFetchData.find(entry => entry?.cwms_ts_id_day1 === nwsForecastTsid) || null;
+
+            if (!match) {
+                console.log("No matching entry found for", nwsForecastTsid);
+                return { nwsDay1Td: "", nwsDay2Td: "", nwsDay3Td: "" };
+            }
+
+        } catch (error) {
+            console.error("Pre-fetch error:", error);
+            return { nwsDay1Td: "", nwsDay2Td: "", nwsDay3Td: "" };
+        }
+
+        const urlNWS = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${nwsForecastTsid}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+
+        try {
+            const response = await fetch(urlNWS, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json;version=2' }
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok');
+
+            const nws3Days = await response.json();
+            nws3Days.values.forEach(entry => {
+                entry[0] = formatNWSDate(entry[0]);
+            });
+
+            const valuesWithTimeNoon = extractValuesWithTimeNoon(nws3Days.values);
+            const getFormattedValue = (arr, index) => {
+                const rawValue = arr?.[index]?.[1];
+                const parsedValue = parseFloat(rawValue);
+                return !isNaN(parsedValue) ? parsedValue.toFixed(2) : "-";
+            };
+
+            return {
+                nwsDay1Td: getFormattedValue(valuesWithTimeNoon, 1),
+                nwsDay2Td: getFormattedValue(valuesWithTimeNoon, 2),
+                nwsDay3Td: getFormattedValue(valuesWithTimeNoon, 3)
+            };
+        } catch (error) {
+            console.error("Error fetching or processing NWS data:", error);
+            return { nwsDay1Td: "", nwsDay2Td: "", nwsDay3Td: "" };
+        }
+    } else {
+        return { nwsDay1Td: "", nwsDay2Td: "", nwsDay3Td: "" };
+    }
 }

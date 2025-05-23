@@ -1324,143 +1324,122 @@ async function createTable(dataArray) {
 
 				// NWS DAY1, DAY2, DAY3, Forecast Time
 				(() => {
-					// Create a new table cell
-					const nwsDayOneCell = row.insertCell(4);
-					nwsDayOneCell.classList.add("next_3_days");
-					nwsDayOneCell.style.width = "5%";
+					// Create forecast-related table cells
+					const nwsDay1Td = row.insertCell(4);
+					nwsDay1Td.classList.add("next_3_days");
+					nwsDay1Td.style.width = "5%";
 
-					const nwsDayTwoCell = row.insertCell(5);
-					nwsDayTwoCell.classList.add("next_3_days");
-					nwsDayTwoCell.style.width = "5%";
+					const nwsDay2Td = row.insertCell(5);
+					nwsDay2Td.classList.add("next_3_days");
+					nwsDay2Td.style.width = "5%";
 
-					const nwsDayThreeCell = row.insertCell(6);
-					nwsDayThreeCell.classList.add("next_3_days");
-					nwsDayThreeCell.style.width = "5%";
+					const nwsDay3Td = row.insertCell(6);
+					nwsDay3Td.classList.add("next_3_days");
+					nwsDay3Td.style.width = "5%";
 
 					const forecastTimeCell = row.insertCell(7);
 					forecastTimeCell.classList.add("forecast_time");
 					forecastTimeCell.style.width = "8%";
 
-					// Initialize stageCwmsIdCell.innerHTML as an empty string
-					let nwsDayOneCellInnerHTML = "--";
-					let nwsDayTwoCellInnerHTML = "--";
-					let nwsDayThreeCellInnerHTML = "--";
-					let forecastTimeCellInnerHTML = "--";
+					// Get stagerev tsid
+					const stageTsid = data.tsid_stage_rev;
 
-					// Get stagerev tsid to check for version equal to 29
-					const tsidStage = data.tsid_stage_rev
-					// console.log("tsidStage = ", tsidStage);
-
-					// Prepare time to send to CDA
+					// Prepare time range
 					const { currentDateTimeMidNightISO, currentDateTimePlus4DaysMidNightISO } = generateDateTimeStrings(currentDateTime, currentDateTimePlus4Days);
 
-					// Forecasts exist only at stage rev, no projects
-					if (tsidStage !== null) {
-						// console.log("tsidStage:", tsidStage);
+					const nwsForecastTsid = data.tsid_stage_nws_3_day_forecast;
 
-						if (data.tsid_stage_nws_3_day_forecast !== null) {
-							// console.log("The last two characters are not '29'");
+					if (nwsForecastTsid) {
+						fetchAndLogNwsData(data.tsid_stage_nws_3_day_forecast, forecastTimeCell);
+						fetchAndUpdateNwsForecastTd(stageTsid, nwsForecastTsid, flood_level, currentDateTimeMidNightISO, currentDateTimePlus4DaysMidNightISO)
+							.then(({ nwsDay1Td: val1, nwsDay2Td: val2, nwsDay3Td: val3 }) => {
+								const isValid1 = !isNaN(parseFloat(val1));
+								const isValid2 = !isNaN(parseFloat(val2));
+								const isValid3 = !isNaN(parseFloat(val3));
 
-							// Fetch the time series data from the API using the determined query string
-							let urlNWS = null;
-							if (cda === "public") {
-								urlNWS = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${data.tsid_stage_nws_3_day_forecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
-							} else if (cda === "internal") {
-								urlNWS = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${data.tsid_stage_nws_3_day_forecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
-							} else {
-								urlNWS = null;
-							}
-							// console.log("urlNWS = ", urlNWS);
-							fetch(urlNWS, {
-								method: 'GET',
-								headers: {
-									'Accept': 'application/json;version=2'
+								if (isValid1 && isValid2 && isValid3) {
+									nwsDay1Td.textContent = parseFloat(val1).toFixed(2);
+									nwsDay2Td.textContent = parseFloat(val2).toFixed(2);
+									nwsDay3Td.textContent = parseFloat(val3).toFixed(2);
+								} else {
+									nwsDay1Td.textContent = "--";
+									nwsDay2Td.textContent = "--";
+									nwsDay3Td.textContent = "--";
 								}
 							})
-								.then(response => {
-									// Check if the response is ok
-									if (!response.ok) {
-										// If not, throw an error
-										throw new Error('Network response was not ok');
-									}
-									// If response is ok, parse it as JSON
-									return response.json();
-								})
-								.then(nws3Days => {
-									// console.log("nws3Days: ", nws3Days);
-
-									// Convert timestamps in the JSON object
-									nws3Days.values.forEach(entry => {
-										entry[0] = formatNWSDate(entry[0]); // Update timestamp
-									});
-									// console.log("nws3Days = ", nws3Days);
-
-									// Extract values with time ending in "13:00"
-									const valuesWithTimeNoon = extractValuesWithTimeNoon(nws3Days.values);
-									// console.log("valuesWithTimeNoon = ", valuesWithTimeNoon);
-
-									// Extract the first second middle value
-									const firstFirstValue = valuesWithTimeNoon?.[1]?.[0];
-									const firstMiddleValue = (valuesWithTimeNoon?.[1]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[1]?.[1])).toFixed(1)) : "";
-									// console.log("firstMiddleValue = ", firstMiddleValue);
-									// console.log("firstMiddleValue = ", typeof (firstMiddleValue));
-
-									// Extract the second second middle value
-									const secondFirstValue = valuesWithTimeNoon?.[2]?.[0];
-									const secondMiddleValue = (valuesWithTimeNoon?.[2]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[2]?.[1])).toFixed(1)) : "";
-
-									// Extract the third second middle value
-									const thirdFirstValue = valuesWithTimeNoon?.[3]?.[0];
-									const thirdMiddleValue = (valuesWithTimeNoon?.[3]?.[1] !== null) ? (((parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) < 10) & ((parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) >= 0) ? (parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1) : (parseFloat(valuesWithTimeNoon?.[3]?.[1])).toFixed(1)) : "";
-
-									// Dertermine Flood Classes
-									var floodClassDay1 = determineStageClass(firstMiddleValue, flood_level, firstFirstValue);
-									// console.log("floodClassDay1:", floodClassDay1);
-
-									var floodClassDay2 = determineStageClass(secondMiddleValue, flood_level, secondFirstValue);
-									// console.log("floodClassDay2:", floodClassDay2);
-
-									var floodClassDay3 = determineStageClass(thirdMiddleValue, flood_level, thirdFirstValue);
-									// console.log("floodClassDay3:", floodClassDay3);
-
-									if (nws3Days !== null || nws3Days !== undefined) {
-										if (firstMiddleValue !== null && !isNaN(firstMiddleValue)) {
-											nwsDayOneCellInnerHTML = "<span class='" + floodClassDay1 + "'>" + firstMiddleValue + "</span>";
-										} else {
-											nwsDayOneCellInnerHTML = "<span class='" + floodClassDay1 + "'>" + "-" + "</span>";
-										}
-
-										if (secondMiddleValue !== null && !isNaN(secondMiddleValue)) {
-											nwsDayTwoCellInnerHTML = "<span class='" + floodClassDay2 + "'>" + secondMiddleValue + "</span>";
-										} else {
-											nwsDayTwoCellInnerHTML = "<span class='" + floodClassDay2 + "'>" + "-" + "</span>";
-										}
-
-										if (thirdMiddleValue !== null && !isNaN(thirdMiddleValue)) {
-											nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + thirdMiddleValue + "</span>";
-										} else {
-											nwsDayThreeCellInnerHTML = "<span class='" + floodClassDay3 + "'>" + "-" + "</span>";
-										}
-
-										fetchAndLogNwsData(data.tsid_stage_nws_3_day_forecast, forecastTimeCell);
-									} else {
-										nwsDayOneCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
-										nwsDayTwoCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
-										nwsDayThreeCellInnerHTML = "<span class='missing'>" + "-M-" + "</span>";
-										forecastTimeCellInnerHTML = "<span class='missing' style='background-color: orange;'>" + "-cdana-" + "</span>";
-									}
-
-									nwsDayOneCell.innerHTML = nwsDayOneCellInnerHTML;
-									nwsDayTwoCell.innerHTML = nwsDayTwoCellInnerHTML;
-									nwsDayThreeCell.innerHTML = nwsDayThreeCellInnerHTML;
-									forecastTimeCell.innerHTML = forecastTimeCellInnerHTML;
-								})
-								.catch(error => {
-									// Catch and log any errors that occur during fetching or processing
-									console.error("Error fetching or processing data:", error);
-								});
-						}
+							.catch(error => console.error("Failed to fetch NWS data:", error));
+					} else {
+						nwsDay1Td.textContent = "";
+						nwsDay2Td.textContent = "";
+						nwsDay3Td.textContent = "";
+						forecastTimeCell.innerHTML = "";//"<span class='missing' style='background-color: orange;'>--</span>";
 					}
+
+					row.appendChild(nwsDay1Td);
+					row.appendChild(nwsDay2Td);
+					row.appendChild(nwsDay3Td);
+					row.appendChild(forecastTimeCell);
+
+
+
+					// // Fetch forecast if tsid_stage is valid
+					// if (tsidStage !== null && data.tsid_stage_nws_3_day_forecast !== null) {
+					// 	let urlNWS = null;
+					// 	if (cda === "public") {
+					// 		urlNWS = `https://cwms-data.usace.army.mil/cwms-data/timeseries?name=${data.tsid_stage_nws_3_day_forecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+					// 	} else if (cda === "internal") {
+					// 		urlNWS = `https://coe-mvsuwa04mvs.mvs.usace.army.mil:8243/mvs-data/timeseries?name=${data.tsid_stage_nws_3_day_forecast}&begin=${currentDateTimeMidNightISO}&end=${currentDateTimePlus4DaysMidNightISO}&office=MVS`;
+					// 	}
+
+					// 	fetch(urlNWS, {
+					// 		method: 'GET',
+					// 		headers: {
+					// 			'Accept': 'application/json;version=2'
+					// 		}
+					// 	})
+					// 		.then(response => {
+					// 			if (!response.ok) throw new Error('Network response was not ok');
+					// 			return response.json();
+					// 		})
+					// 		.then(nws3Days => {
+					// 			nws3Days.values.forEach(entry => {
+					// 				entry[0] = formatNWSDate(entry[0]);
+					// 			});
+
+					// 			const valuesWithTimeNoon = extractValuesWithTimeNoon(nws3Days.values);
+
+					// 			const firstFirstValue = valuesWithTimeNoon?.[1]?.[0];
+					// 			const firstMiddleValue = parseFloat(valuesWithTimeNoon?.[1]?.[1])?.toFixed(1) ?? "";
+					// 			const secondFirstValue = valuesWithTimeNoon?.[2]?.[0];
+					// 			const secondMiddleValue = parseFloat(valuesWithTimeNoon?.[2]?.[1])?.toFixed(1) ?? "";
+					// 			const thirdFirstValue = valuesWithTimeNoon?.[3]?.[0];
+					// 			const thirdMiddleValue = parseFloat(valuesWithTimeNoon?.[3]?.[1])?.toFixed(1) ?? "";
+
+					// 			const floodClassDay1 = determineStageClass(firstMiddleValue, flood_level, firstFirstValue);
+					// 			const floodClassDay2 = determineStageClass(secondMiddleValue, flood_level, secondFirstValue);
+					// 			const floodClassDay3 = determineStageClass(thirdMiddleValue, flood_level, thirdFirstValue);
+
+					// 			if (nws3Days) {
+					// 				nwsDayOneCellInnerHTML = `<span class="${floodClassDay1}">${!isNaN(firstMiddleValue) ? firstMiddleValue : "-"}</span>`;
+					// 				nwsDayTwoCellInnerHTML = `<span class="${floodClassDay2}">${!isNaN(secondMiddleValue) ? secondMiddleValue : "-"}</span>`;
+					// 				nwsDayThreeCellInnerHTML = `<span class="${floodClassDay3}">${!isNaN(thirdMiddleValue) ? thirdMiddleValue : "-"}</span>`;
+					// 				fetchAndLogNwsData(data.tsid_stage_nws_3_day_forecast, forecastTimeCell);
+					// 			} else {
+					// 				nwsDayOneCellInnerHTML = "<span class='missing'>-M-</span>";
+					// 				nwsDayTwoCellInnerHTML = "<span class='missing'>-M-</span>";
+					// 				nwsDayThreeCellInnerHTML = "<span class='missing'>-M-</span>";
+					// 				forecastTimeCellInnerHTML = "<span class='missing' style='background-color: orange;'>-cdana-</span>";
+					// 			}
+
+					// 			nwsDayOneCell.innerHTML = nwsDayOneCellInnerHTML;
+					// 			nwsDayTwoCell.innerHTML = nwsDayTwoCellInnerHTML;
+					// 			nwsDayThreeCell.innerHTML = nwsDayThreeCellInnerHTML;
+					// 			forecastTimeCell.innerHTML = forecastTimeCellInnerHTML;
+					// 		})
+					// 		.catch(error => {
+					// 			console.error("Error fetching or processing data:", error);
+					// 		});
+					// }
 				})();
 
 				// CREST AND CREST DATE
@@ -1652,10 +1631,14 @@ async function createTable(dataArray) {
 									}
 
 									let tainter_value = "";
-									if (valueLast > 900) {
-										tainter_value = "OR";
+									if (typeof valueLast === 'number' && !isNaN(valueLast)) {
+										if (valueLast > 900) {
+											tainter_value = "OR";
+										} else {
+											tainter_value = valueLast.toFixed(1);
+										}
 									} else {
-										tainter_value = valueLast.toFixed(1);
+										tainter_value = "N/A"; // or another fallback value
 									}
 
 									// Set the combined value to the cell, preserving HTML
@@ -1723,10 +1706,14 @@ async function createTable(dataArray) {
 									}
 
 									let roller_value = "";
-									if (valueLast > 900) {
-										roller_value = "OR";
+									if (typeof valueLast === 'number' && !isNaN(valueLast)) {
+										if (valueLast > 900) {
+											roller_value = "OR";
+										} else {
+											roller_value = valueLast.toFixed(1);
+										}
 									} else {
-										roller_value = valueLast.toFixed(1);
+										roller_value = "N/A"; // or another fallback value
 									}
 
 									// Set the combined value to the cell, preserving HTML
